@@ -1,0 +1,128 @@
+"""Main FastAPI application initialization and configuration"""
+
+import logging
+import time
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+from backend.core.config import settings
+from backend.core.database import check_database_health
+from backend.core.exceptions import APIError
+from backend.routers import health
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO if settings.environment == "production" else logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+# Rate limiter setup
+limiter = Limiter(key_func=get_remote_address)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan context manager for startup and shutdown events"""
+    # Startup
+    logger.info("Starting FOOD-STORE backend application")
+    db_health = check_database_health()
+    if not db_health:
+        logger.warning("Database is not reachable on startup")
+    yield
+
+    # Shutdown
+    logger.info("Shutting down FOOD-STORE backend application")
+
+
+# Create FastAPI application
+app = FastAPI(
+    title="FOOD-STORE API",
+    description="Backend API for FOOD-STORE e-commerce platform",
+    version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+)
+
+
+# Configure CORS middleware
+cors_origins = settings.cors_origins_list
+if settings.environment == "development":
+    cors_origins.append("http://localhost:8000")
+    cors_origins.append("http://127.0.0.1:8000")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["X-Total-Count", "X-Page-Count"],
+)
+
+
+# Request/Response logging middleware
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log all HTTP requests and responses"""
+    start_time = time.time()
+    request.state.start_time = start_time
+
+    response = await call_next(request)
+
+    process_time = time.time() - start_time
+    logger.info(
+        f"{request.method} {request.url.path} - "
+        f"Status: {response.status_code} - "
+        f"Duration: {process_time:.3f}s"
+    )
+
+    response.headers["X-Process-Time"] = str(process_time)
+    return response
+
+
+# Global exception handler for APIError
+@app.exception_handler(APIError)
+async def api_error_handler(request: Request, exc: APIError):
+    """Handle APIError exceptions with RFC 7807 format"""
+    return {
+        "type": f"https://example.com/errors/{exc.error_code.lower()}",
+        "title": exc.error_code.replace("_", " ").title(),
+        "status": exc.status_code,
+        "detail": exc.message,
+        "error_code": exc.error_code,
+        "timestamp": time.time(),
+        "details": exc.details if exc.details else None,
+    }
+
+
+# Register routers
+app.include_router(health.router, tags=["health"])
+
+
+# Root endpoint
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "FOOD-STORE API",
+        "version": "0.1.0",
+        "environment": settings.environment,
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "backend.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=settings.environment == "development",
+    )
