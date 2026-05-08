@@ -34,6 +34,10 @@ Cada skill es un agente IA especializado con responsabilidades, reglas, y proces
 
 ## 🎯 Skills Disponibles
 
+### 📍 Skills Internas (SDD Workflow)
+
+Los siguientes 6 skills especializados implementan el ciclo completo de Spec-Driven Development:
+
 ### 1. **sdd-explore** — Explorador de Codebase
 **Archivo**: `skills/sdd-explore/SKILL.md`
 
@@ -290,6 +294,48 @@ Vuelve a sdd-apply, corregir issue CRÍTICO, re-run verify.
 
 ---
 
+### 📍 Skills Externas (Reutilizables)
+
+Además de las 6 skills internas de SDD, el proyecto integra skills externas instaladas via npm para tareas complementarias:
+
+#### **find-skills** — Descubridor de Skills del Ecosistema
+**Fuente**: `https://github.com/vercel-labs/skills`  
+**Instalación**: `npx skills add https://github.com/vercel-labs/skills --skill find-skills`
+
+| Aspecto | Detalle |
+|---------|---------|
+| **Propósito** | Buscar y descubrir skills reutilizables en el ecosistema |
+| **Entrada** | Query: nombre/categoría de skill a buscar |
+| **Proceso** | Busca en registro de skills disponibles, retorna opciones |
+| **Salida** | Lista de skills compatibles con descripción, instalación |
+| **Cuándo usar** | Necesitas task especializada (testing, linting, deployment, etc.) |
+| **NO hace** | Ejecuta skills, solo las descubre |
+| **SÍ hace** | Busca, describe, sugiere instalación |
+
+**Ejemplo de uso**:
+```bash
+# Encontrar skills para testing
+/find-skills testing
+
+# Encontrar skills para deployment
+/find-skills deploy
+
+# Encontrar skills para documentación
+/find-skills documentation
+```
+
+**Integración con SDD**:
+- `find-skills` es complementario: úsalo cuando necesites tasks fuera del ciclo core SDD
+- Si descubres skill interesante: agrégalo con `npx skills add <url> --skill <name>`
+- Documenta nuevas skills externas en esta sección
+
+**Skills Externas Disponibles**:
+| Skill | Fuente | Instalado | Estado |
+|-------|--------|-----------|--------|
+| `find-skills` | vercel-labs/skills | ✅ | Activo |
+
+---
+
 ## 🔄 Workflow: De Idea a Deploy
 
 ### Fase 1: Exploración (Optional)
@@ -434,10 +480,55 @@ El orchestrator coordina múltiples skills:
 /sdd-ff auth-jwt               # Fast-forward: proposal → specs → design → tasks
 ```
 
+### Vía Skills Externas (Complementarias)
+```bash
+# Buscar skills reutilizables
+/find-skills testing           # Descubrir skills para testing
+
+/find-skills deploy            # Descubrir skills para deployment
+
+/find-skills documentation     # Descubrir skills para documentación
+```
+
+**Instalación de nuevas skills externas**:
+```bash
+# Instalar una skill descubierta
+npx skills add <url> --skill <name>
+
+# Luego agrégala al registry de FOOD-STORE
+# (ver sección "Gestión de Skills Externas")
+```
+
+---
+
+## 🔧 Gestión de Skills Externas
+
+### Instalación
+Cuando descubras skill útil via `/find-skills`:
+```bash
+npx skills add https://github.com/owner/repo --skill skill-name
+```
+
+### Registro y Documentación
+1. Ejecuta: `npx skills add <url> --skill <name>`
+2. Actualiza esta tabla en `skills/README.md`:
+```markdown
+| Skill | Fuente | Instalado | Estado |
+|-------|--------|-----------|--------|
+| `skill-name` | owner/repo | ✅ | Activo |
+```
+
+### Integración con SDD
+- Skills externas **complementan** el ciclo SDD core
+- NO reemplazan fases SDD (explore, spec, design, tasks, apply, verify)
+- Úsalas para tareas auxiliares: testing, linting, deployment, docs
+- Si descubres skill que debería ser interna → Propuesta nueva feature
+
 ---
 
 ## 📊 Matriz de Responsabilidad
 
+### Skills Internas (SDD Core)
 | Skill | Lee | Escribe | Implementa | Verifica |
 |-------|-----|---------|-----------|----------|
 | sdd-explore | Codebase | Reporte mental | — | — |
@@ -446,6 +537,11 @@ El orchestrator coordina múltiples skills:
 | sdd-tasks | specs + design | tasks.md | — | — |
 | sdd-apply | tasks + specs + design | Código + commits | ✅ | — |
 | sdd-verify | specs + design + código | Reporte | — | ✅ |
+
+### Skills Externas (Complementarias)
+| Skill | Propósito | Tipo | Integración |
+|-------|-----------|------|-------------|
+| `find-skills` | Descubrir skills reutilizables | Búsqueda | Usable en cualquier fase |
 
 ---
 

@@ -76,6 +76,15 @@ FOOD-STORE-SDD/
 │   ├── Historias_de_usuario.txt  # US-000 a US-076 + criterios aceptación
 │   └── CHANGES.md                # Historial de cambios
 │
+├── skills/                        # 🤖 Agentes IA especializados (SDD Orchestrator)
+│   ├── README.md                 # Index + workflow
+│   ├── sdd-explore/SKILL.md      # Investigación
+│   ├── sdd-spec/SKILL.md         # Especificaciones
+│   ├── sdd-design/SKILL.md       # Diseño técnico
+│   ├── sdd-tasks/SKILL.md        # Tareas + estimación
+│   ├── sdd-apply/SKILL.md        # Implementación
+│   └── sdd-verify/SKILL.md       # Validación
+│
 ├── openspec/                      # 🎯 Artefactos SDD / OPSX
 │   ├── config.yaml               # Configuración de proyecto para IA
 │   ├── specs/                    # Especificaciones fuente de verdad
@@ -114,7 +123,8 @@ FOOD-STORE-SDD/
 ├── .git/                          # Control de versiones
 ├── .gitignore
 ├── README.md
-└── AGENTS.md                      # Este archivo
+├── AGENTS.md                      # Este archivo (SDD framework + skills)
+└── SKILLS.md                      # Registro de skills externas (ver skills/README.md)
 
 ```
 
@@ -346,10 +356,59 @@ Todos los cambios al sistema siguen este ciclo SDD (Spec-Driven Development):
 ### Archiver (`sdd-archive`)
 - **Rol**: Finaliza y documenta
 - **Responsabilidades**:
-  - Sincroniza delta specs → specs principales
-  - Archiva change en `openspec/archive/`
-  - Limpia estado de trabajo
-  - Documenta lecciones aprendidas
+   - Sincroniza delta specs → specs principales
+   - Archiva change en `openspec/archive/`
+   - Limpia estado de trabajo
+   - Documenta lecciones aprendidas
+
+---
+
+## 🔌 Skills Externas Reutilizables
+
+El proyecto soporta **skills externas** instaladas via npm como complemento al ciclo SDD core.
+
+### Qué Son
+- Agentes especializados del ecosistema (testing, linting, deployment, etc.)
+- **Complementan** el workflow SDD, NO lo reemplazan
+- Reutilizables en otros proyectos
+- Instaladas via: `npx skills add <url> --skill <name>`
+
+### Integración Actual
+| Skill | Fuente | Propósito |
+|-------|--------|----------|
+| `find-skills` | vercel-labs/skills | Descubrir skills reutilizables |
+
+### Cuándo Usar
+- ✅ Necesitas task especializada fuera del ciclo SDD core
+- ✅ Testing, linting, deployment, documentación
+- ✅ Integraciones con herramientas externas
+- ❌ NO reemplazar skills SDD core (explore, spec, design, tasks, apply, verify)
+
+### Instalación de Nuevas Skills
+```bash
+# 1. Buscar skill
+/find-skills <category>
+
+# 2. Instalar
+npx skills add <url> --skill <name>
+
+# 3. Documentar en skills/README.md
+# Agregar a tabla de "Skills Externas Disponibles"
+
+# 4. Actualizar este archivo
+# Agregar fila en tabla "Integración Actual"
+```
+
+### Ejemplo: Agregar Testing Skill
+```bash
+# Buscar skills de testing
+/find-skills testing
+
+# Instalar (ejemplo)
+npx skills add https://github.com/example/test-skill --skill test-runner
+
+# Documentar en skills/README.md + AGENTS.md
+```
 
 ---
 
