@@ -1,20 +1,104 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  **Project**: Food Store — E-commerce de productos alimenticios
+  
+  **Tech Stack**:
+  - Frontend: React 18+, TypeScript, Vite, TanStack Query/Form, Zustand, Tailwind CSS, Axios
+  - Backend: FastAPI 0.110+, SQLModel, PostgreSQL 15+, Alembic, bcrypt, python-jose, slowapi
+  - Infrastructure: Node.js 18+, npm 9+, OpenSpec CLI, Git
+  
+  **Architecture**:
+  - Backend: Capas unidireccionales (Router → Service → UoW → Repository → Model)
+  - Frontend: Feature-Sliced Design (app → pages → widgets → features → entities → shared)
+  - Database: 3NF schema con soft deletes, snapshots (Pedidos), audit trails (HistorialEstadoPedido)
+  - Auth: JWT dual-token (30m access + 7d refresh), rotación automática
+  - FSM: Pedidos (PENDIENTE → CONFIRMADO → EN_PREPARACIÓN → EN_CAMINO → ENTREGADO | CANCELADO)
+  
+  **Patterns**:
+  - Unit of Work (atomic multi-entity transactions)
+  - Snapshot (immutable order state)
+  - RBAC (ADMIN, STOCK, PEDIDOS, CLIENT)
+  - Rate Limiting (5 attempts/15min on login)
+  
+  **Key Files**:
+  - docs/Descripcion.txt — Vision & stack details
+  - docs/Integrador.txt — Architecture, ERD, API
+  - docs/Historias_de_usuario.txt — US-000 to US-076 with acceptance criteria
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Keep under 300 words; focus on intent, not implementation
+    - Identify affected modules (auth, productos, pedidos, etc.)
+    - State complexity estimate: low/medium/high
+    - Include rollback strategy for risky changes
+    - Mention required roles (ADMIN, STOCK, PEDIDOS, CLIENT)
+    - List key dependencies or blockers
+    
+  specs:
+    - Use RFC 2119 keywords: MUST, SHALL, SHOULD, MAY, MUST NOT
+    - Write minimum 3 scenarios in Given/When/Then format
+    - Cover happy path, edge cases, and error cases
+    - Define inputs/outputs with types (use backend schemas as reference)
+    - Acceptance criteria must be testable and verifiable
+    - Reference user stories (US-XXX) from docs/Historias_de_usuario.txt
+    - Include state transitions if FSM-related (pedidos, auth)
+    
+  design:
+    - Show architecture layers affected (Router, Service, UoW, Repository, Model)
+    - Include sequence diagrams for complex flows (multi-step transactions)
+    - Document schema changes (new columns, relationships, indices)
+    - Justify architectural decisions with trade-offs
+    - For pedidos: explain FSM state transitions and atomicity guarantees
+    - For frontend: show component hierarchy and data flow (Zustand vs TanStack Query split)
+    - Performance considerations: N+1 queries, soft delete filtering, pagination
+    - Security: RBAC checks, input validation, SQL injection prevention
+    
+  tasks:
+    - Maximum 2 hours per task; prefer 1 hour when possible
+    - Use hierarchical numbering: 1, 1.1, 1.2, 2, 2.1, etc.
+    - Group by phase: Setup/Infrastructure → Implementation → Testing → Documentation
+    - Each task must have clear "done" criteria
+    - Include commit message template (conventional: feat/fix/test/docs)
+    - Backend tasks: specify which layer(s) are affected
+    - Frontend tasks: specify which FSD layer(s) are affected
+    - Database tasks: link to Alembic migration if needed
+    
+  apply:
+    - Follow specs and design exactly; no improvisation
+    - One commit per task with conventional message format
+    - Include unit tests for backend services and logic
+    - Frontend: test components with React Testing Library or similar
+    - Update related documentation (docstrings, README)
+    - Ensure type safety: no `any` types in TypeScript, type hints in Python
+    - Test database migrations: upgrade and downgrade work correctly
+    - Check soft delete queries include `eliminado_en IS NULL` filter
+    - Verify FSM state transitions follow spec exactly
+    - Backend endpoint responses must match schema definitions
+    
+  verify:
+    - Compare implementation line-by-line against each scenario (Given/When/Then)
+    - Run full test suite: pytest for backend, npm test for frontend
+    - Check coverage: aim for 80%+ on critical paths (auth, pedidos, pagos)
+    - Lint check: backend (pylint/black), frontend (ESLint/Prettier)
+    - Type check: mypy for Python, TypeScript compiler for TS
+    - Manual test: walk through happy path and error cases in the app
+    - Database: verify schema matches design (tables, columns, constraints, indices)
+    - API response: validate against OpenAPI/Swagger spec
+    - Report format: CRITICAL (blocker), WARNING (needs fix), SUGGESTION (nice-to-have)
+    - If issues found: do NOT fix, report to orchestrator with clear steps to reproduce
+    
+  archive:
+    - Merge delta specs → specs (main specs file)
+    - Move change folder from openspec/changes/ → openspec/archive/
+    - Create archive summary: what was built, lessons learned, gotchas
+    - Clean up temporary state files
+    - Tag in git if major release (vX.Y.Z)
+
+language_policy: |
+  **Spanish**: Documentation (README, specs, design, tasks, proposals)
+  **English**: Code comments, docstrings, type hints, variable names, git messages
+  **Rationale**: Team is Spanish-speaking; documentation must be clear. Code is international standard.
+  
+  **Allowed**: "GIVEN/WHEN/THEN" in spec scenarios (standard format, language-agnostic)
+  **Forbidden**: Mixed Spanish/English in same code block (pick one per file)
