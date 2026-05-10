@@ -1,8 +1,8 @@
 """Product category models with recursive hierarchy support"""
 
 from datetime import datetime
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional
+from sqlmodel import SQLModel, Field
 
 
 class Categoria(SQLModel, table=True):
@@ -19,22 +19,3 @@ class Categoria(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
-    
-    # Relationships
-    subcategorias: List["Categoria"] = Relationship(
-        back_populates="parent",
-        sa_relationship_kwargs={
-            "remote_side": "Categoria.id",
-            "foreign_keys": "[Categoria.parent_id]"
-        }
-    )
-    parent: Optional["Categoria"] = Relationship(
-        back_populates="subcategorias",
-        sa_relationship_kwargs={
-            "remote_side": "[Categoria.parent_id]"
-        }
-    )
-    productos: List["Producto"] = Relationship(
-        back_populates="categoria",
-        link_model="ProductoCategoria"
-    )

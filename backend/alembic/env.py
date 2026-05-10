@@ -7,13 +7,23 @@ import os
 import sys
 
 # Add backend to path
-sys.path.insert(0, os.path.dirname(__file__))
+backend_path = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, backend_path)
 
-# Import config and models
-from core.config import settings
-from models import (
-    usuario, direccion, categoria, producto, pedido
-)
+# Import models to register them with SQLModel metadata
+from models import usuario, direccion, categoria, producto, pedido
+
+# Import settings with fallback
+try:
+    from core.config import settings
+except ImportError:
+    # Fallback: get DATABASE_URL from environment
+    import dotenv
+    dotenv.load_dotenv(os.path.join(backend_path, '.env'))
+    db_url = os.getenv('DATABASE_URL', 'postgresql://user:password@localhost/food_store_db')
+    class Settings:
+        database_url = db_url
+    settings = Settings()
 
 # this is the Alembic Config object, which provides
 # the values of the [alembic] section of the .ini file

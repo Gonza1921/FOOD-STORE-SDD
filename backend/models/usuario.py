@@ -1,11 +1,9 @@
 """User, Role, and Authentication models"""
 
 from datetime import datetime
-from typing import Optional, List
-from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional
+from sqlmodel import SQLModel, Field
 from pydantic import EmailStr
-
-from backend.core.security import hash_password
 
 
 class Rol(SQLModel, table=True):
@@ -14,12 +12,6 @@ class Rol(SQLModel, table=True):
     codigo: str = Field(primary_key=True, max_length=20)  # ADMIN, STOCK, PEDIDOS, CLIENT
     nombre: str = Field(max_length=50)
     descripcion: Optional[str] = Field(default=None, max_length=200)
-    
-    # Relationships
-    usuarios: List["Usuario"] = Relationship(
-        back_populates="roles",
-        link_model="UsuarioRol"
-    )
 
 
 class UsuarioRol(SQLModel, table=True):
@@ -55,25 +47,3 @@ class Usuario(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
-    
-    # Relationships
-    roles: List[Rol] = Relationship(
-        back_populates="usuarios",
-        link_model=UsuarioRol
-    )
-    direcciones: List["DireccionEntrega"] = Relationship(back_populates="usuario")
-    pedidos: List["Pedido"] = Relationship(back_populates="usuario")
-    refresh_tokens: List[RefreshToken] = Relationship(back_populates="usuario")
-    
-    def is_deleted(self) -> bool:
-        """Check if user is soft deleted"""
-        return self.deleted_at is not None
-    
-    def has_role(self, rol_codigo: str) -> bool:
-        """Check if user has a specific role"""
-        return any(rol.codigo == rol_codigo for rol in self.roles)
-
-
-# Import after models to avoid circular imports
-from backend.models.direccion import DireccionEntrega  # noqa: E402
-from backend.models.pedido import Pedido  # noqa: E402

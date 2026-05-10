@@ -2,11 +2,8 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from backend.models.categoria import Categoria
+from typing import Optional
+from sqlmodel import SQLModel, Field
 
 
 class Ingrediente(SQLModel, table=True):
@@ -20,12 +17,6 @@ class Ingrediente(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
-    
-    # Relationships
-    productos: List["Producto"] = Relationship(
-        back_populates="ingredientes",
-        link_model="ProductoIngrediente"
-    )
 
 
 class ProductoIngrediente(SQLModel, table=True):
@@ -62,22 +53,6 @@ class Producto(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
-    
-    # Relationships
-    categoria: Optional["Categoria"] = Relationship(back_populates="productos")
-    ingredientes: List[Ingrediente] = Relationship(
-        back_populates="productos",
-        link_model=ProductoIngrediente
-    )
-    categorias_adicionales: List["Categoria"] = Relationship(
-        back_populates="productos",
-        link_model=ProductoCategoria
-    )
-    detalles_pedido: List["DetallePedido"] = Relationship(back_populates="producto")
-    
-    def is_deleted(self) -> bool:
-        """Check if product is soft deleted"""
-        return self.deleted_at is not None
     
     @property
     def precio_formateado(self) -> str:

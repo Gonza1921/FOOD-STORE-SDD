@@ -1,11 +1,8 @@
 """Delivery address models"""
 
 from datetime import datetime
-from typing import Optional, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from backend.models.usuario import Usuario
+from typing import Optional
+from sqlmodel import SQLModel, Field
 
 
 class DireccionEntrega(SQLModel, table=True):
@@ -26,7 +23,3 @@ class DireccionEntrega(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
-    
-    # Relationships
-    usuario: Optional["Usuario"] = Relationship(back_populates="direcciones")
-    pedidos: list["Pedido"] = Relationship(back_populates="direccion")

@@ -2,13 +2,8 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, List, TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
-
-if TYPE_CHECKING:
-    from backend.models.usuario import Usuario
-    from backend.models.direccion import DireccionEntrega
-    from backend.models.producto import Producto
+from typing import Optional
+from sqlmodel import SQLModel, Field
 
 
 class FormaPago(SQLModel, table=True):
@@ -17,9 +12,6 @@ class FormaPago(SQLModel, table=True):
     codigo: str = Field(primary_key=True, max_length=20)
     descripcion: str = Field(max_length=200)
     habilitado: bool = Field(default=True)
-    
-    # Relationships
-    pagos: List["Pago"] = Relationship(back_populates="forma_pago")
 
 
 class EstadoPedido(SQLModel, table=True):
@@ -29,10 +21,6 @@ class EstadoPedido(SQLModel, table=True):
     descripcion: str = Field(max_length=200)
     orden: int  # Visual order: 1-6
     es_terminal: bool = Field(default=False)  # No outgoing transitions if true
-    
-    # Relationships
-    pedidos: List["Pedido"] = Relationship(back_populates="estado")
-    historiales: List["HistorialEstadoPedido"] = Relationship(back_populates="estado_nuevo_rel")
 
 
 class Pedido(SQLModel, table=True):
@@ -56,21 +44,6 @@ class Pedido(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     
-    # Relationships
-    usuario: Optional["Usuario"] = Relationship(back_populates="pedidos")
-    estado: Optional[EstadoPedido] = Relationship(back_populates="pedidos")
-    direccion: Optional["DireccionEntrega"] = Relationship(back_populates="pedidos")
-    forma_pago: Optional[FormaPago] = Relationship(back_populates="pagos")
-    detalles: List["DetallePedido"] = Relationship(
-        back_populates="pedido",
-        cascade_delete=True
-    )
-    historial: List["HistorialEstadoPedido"] = Relationship(
-        back_populates="pedido",
-        cascade_delete=True
-    )
-    pago: Optional["Pago"] = Relationship(back_populates="pedido")
-    
     @property
     def total_con_envio(self) -> Decimal:
         """Total including shipping"""
@@ -89,13 +62,10 @@ class DetallePedido(SQLModel, table=True):
     nombre_snapshot: str = Field(max_length=200)
     precio_snapshot: Decimal = Field(max_digits=10, decimal_places=2)
     
-    # Customization (IDs of removable ingredients)
-    personalizacion: Optional[List[int]] = None  # PostgreSQL INTEGER[]
+    # Customization (IDs of removable ingredients stored as JSON string)
+    personalizacion: Optional[str] = Field(default=None)  # JSON: ["id1", "id2"]
     
-    # Relationships
-    pedido: Optional[Pedido] = Relationship(back_populates="detalles")
-    producto: Optional["Producto"] = Relationship(back_populates="detalles_pedido")
-    
+    @property
     def subtotal(self) -> Decimal:
         """Line total = precio_snapshot * cantidad"""
         return self.precio_snapshot * self.cantidad
@@ -121,11 +91,6 @@ class HistorialEstadoPedido(SQLModel, table=True):
     
     # Append-only - never updated
     created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
-    
-    # Relationships
-    pedido: Optional[Pedido] = Relationship(back_populates="historial")
-    estado_nuevo_rel: Optional[EstadoPedido] = Relationship(back_populates="historiales")
-    usuario: Optional["Usuario"] = Relationship()  # Read-only reference
 
 
 class Pago(SQLModel, table=True):
@@ -143,7 +108,3 @@ class Pago(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
-    
-    # Relationships
-    pedido: Optional[Pedido] = Relationship(back_populates="pago")
-    forma_pago: Optional[FormaPago] = Relationship(back_populates="pagos")

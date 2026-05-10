@@ -6,7 +6,7 @@ from typing import Any, Optional
 import bcrypt
 from jose import JWTError, jwt
 
-from backend.core.config import settings
+from .config import settings
 
 
 def create_access_token(
