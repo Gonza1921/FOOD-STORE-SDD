@@ -6,5 +6,5 @@ export default function LoginForm(_props: LoginFormProps) {
       <h3>LoginForm Component</h3>
       <p>Placeholder</p>
     </form>
-  )
+  );
 }

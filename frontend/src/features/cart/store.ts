@@ -1,11 +1,11 @@
-import { create } from 'zustand'
+import { create } from 'zustand';
 
 export interface CartStore {
-  cartOpen: boolean
-  toggleCart: () => void
+  cartOpen: boolean;
+  toggleCart: () => void;
 }
 
 export const useCartStore = create<CartStore>((set) => ({
   cartOpen: false,
   toggleCart: () => set((state) => ({ cartOpen: !state.cartOpen })),
-}))
+}));

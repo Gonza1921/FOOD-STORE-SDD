@@ -1,2 +1,2 @@
-export { default as ProductList } from './ProductList'
-export type { ProductListProps } from './ProductList'
+export { default as ProductList } from './ProductList';
+export type { ProductListProps } from './ProductList';

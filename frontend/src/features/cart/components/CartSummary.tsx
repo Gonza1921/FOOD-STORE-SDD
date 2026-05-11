@@ -6,5 +6,5 @@ export default function CartSummary(_props: CartSummaryProps) {
       <h3>CartSummary Component</h3>
       <p>Placeholder</p>
     </div>
-  )
+  );
 }

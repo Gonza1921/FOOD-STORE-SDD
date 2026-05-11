@@ -1,2 +1,2 @@
-export { default as CartSummary } from './CartSummary'
-export type { CartSummaryProps } from './CartSummary'
+export { default as CartSummary } from './CartSummary';
+export type { CartSummaryProps } from './CartSummary';

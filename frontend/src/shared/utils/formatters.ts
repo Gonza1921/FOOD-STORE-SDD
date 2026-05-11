@@ -2,7 +2,7 @@ export function formatPrice(price: number): string {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
     currency: 'ARS',
-  }).format(price)
+  }).format(price);
 }
 
 export function formatDate(date: Date): string {
@@ -10,5 +10,5 @@ export function formatDate(date: Date): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-  }).format(date)
+  }).format(date);
 }

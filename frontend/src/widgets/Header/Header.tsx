@@ -6,5 +6,5 @@ export default function Header(_props: HeaderProps) {
       <h2>Header Widget</h2>
       <p>Placeholder</p>
     </header>
-  )
+  );
 }

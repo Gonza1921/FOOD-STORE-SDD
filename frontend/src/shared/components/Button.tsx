@@ -1,11 +1,11 @@
-import { ReactNode } from 'react'
+import { ReactNode } from 'react';
 
 export interface ButtonProps {
-  children: ReactNode
-  onClick?: () => void
-  disabled?: boolean
-  variant?: 'primary' | 'secondary' | 'danger'
-  className?: string
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: 'primary' | 'secondary' | 'danger';
+  className?: string;
 }
 
 export default function Button({
@@ -19,7 +19,7 @@ export default function Button({
     primary: 'bg-blue-500 hover:bg-blue-600',
     secondary: 'bg-gray-500 hover:bg-gray-600',
     danger: 'bg-red-500 hover:bg-red-600',
-  }[variant]
+  }[variant];
 
   return (
     <button
@@ -29,5 +29,5 @@ export default function Button({
     >
       {children}
     </button>
-  )
+  );
 }

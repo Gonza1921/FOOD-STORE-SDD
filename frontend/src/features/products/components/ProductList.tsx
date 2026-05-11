@@ -6,5 +6,5 @@ export default function ProductList(_props: ProductListProps) {
       <h3>ProductList Component</h3>
       <p>Placeholder</p>
     </div>
-  )
+  );
 }
