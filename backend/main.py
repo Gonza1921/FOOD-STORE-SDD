@@ -26,14 +26,39 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 
+def run_alembic_migrations():
+    """Run Alembic migrations on startup"""
+    try:
+        from alembic.config import Config
+        from alembic.command import upgrade
+        
+        alembic_cfg = Config("backend/alembic/alembic.ini")
+        upgrade(alembic_cfg, "head")
+        logger.info("✓ Alembic migrations applied successfully")
+        return True
+    except Exception as e:
+        logger.error(f"✗ Failed to run Alembic migrations: {e}")
+        return False
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan context manager for startup and shutdown events"""
     # Startup
     logger.info("Starting FOOD-STORE backend application")
+    
+    # Run database migrations
+    migrations_ok = run_alembic_migrations()
+    
+    # Check database health
     db_health = check_database_health()
     if not db_health:
         logger.warning("Database is not reachable on startup")
+    elif not migrations_ok:
+        logger.warning("Migrations failed, but application started")
+    else:
+        logger.info("✓ Database ready and migrations applied")
+    
     yield
 
     # Shutdown
@@ -48,6 +73,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 
