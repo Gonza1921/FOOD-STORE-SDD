@@ -3,6 +3,7 @@
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
+from sqlmodel import SQLModel
 
 from backend.core.config import settings
 
@@ -68,4 +69,18 @@ def create_all_tables():
     Note: This is a placeholder. In production, use Alembic for migrations.
     """
     # Import all models to ensure they are registered
-    logger.info("Database tables creation placeholder")
+    from backend import models  # noqa: F401
+    
+    SQLModel.metadata.create_all(engine)
+    logger.info("All tables created")
+
+
+def get_metadata():
+    """
+    Get SQLModel metadata for Alembic.
+    
+    Used by Alembic's env.py for autogenerate.
+    """
+    from backend import models  # noqa: F401
+    
+    return SQLModel.metadata
