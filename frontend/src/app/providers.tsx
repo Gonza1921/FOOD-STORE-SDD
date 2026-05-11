@@ -1,5 +1,5 @@
-import { ReactNode } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -8,16 +8,12 @@ const queryClient = new QueryClient({
       gcTime: 1000 * 60 * 10, // 10 minutes (formerly cacheTime)
     },
   },
-})
+});
 
 interface ProvidersProps {
-  children: ReactNode
+  children: ReactNode;
 }
 
 export default function Providers({ children }: ProvidersProps) {
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  )
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

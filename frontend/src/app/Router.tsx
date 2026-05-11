@@ -7,5 +7,5 @@ export default function Router() {
       <h1>App loaded</h1>
       <p>Router implementation: CH-023</p>
     </div>
-  )
+  );
 }

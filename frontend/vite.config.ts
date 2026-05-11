@@ -23,7 +23,7 @@ export default defineConfig({
   build: {
     target: 'ES2020',
     sourcemap: true,
-    minify: 'terser',
+    minify: 'esbuild',
   },
   resolve: {
     alias: {
