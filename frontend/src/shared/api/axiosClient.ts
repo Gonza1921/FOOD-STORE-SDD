@@ -1,38 +1,48 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
-// Using non-null assertion to avoid TS issues with import.meta.env
-const API_BASE_URL =
-  (import.meta.env as Record<string, unknown>).VITE_API_URL || 'http://localhost:8000/api/v1';
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
-export const axiosClient = axios.create({
-  baseURL: API_BASE_URL as string,
+/**
+ * Axios instance for API requests.
+ * Base URL configured from VITE_API_URL environment variable.
+ * Request/response interceptors are stubs (implemented in CH-004 auth guard).
+ */
+export const axiosClient: AxiosInstance = axios.create({
+  baseURL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor: attach token (if exists)
+/**
+ * Request interceptor stub.
+ * TODO CH-004: Attach JWT token from Zustand auth store.
+ */
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // TODO: Attach Bearer token from useAuthStore()
+    // const { token } = useAuthStore.getState();
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor: handle 401 (token refresh in CH-004)
+/**
+ * Response interceptor stub.
+ * TODO CH-004: Handle 401 Unauthorized, refresh token, retry request.
+ */
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token refresh logic: deferred to CH-004
-      // eslint-disable-next-line no-console
-      console.warn('401 Unauthorized — token refresh deferred to CH-004');
-    }
+    // TODO: Handle 401, attempt refresh, retry original request
+    // if (error.response?.status === 401) {
+    //   // Attempt token refresh
+    //   // If refresh fails, redirect to login
+    // }
     return Promise.reject(error);
   }
 );
