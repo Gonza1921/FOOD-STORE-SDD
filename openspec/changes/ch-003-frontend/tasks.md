@@ -2,49 +2,49 @@
 
 ## Phase 1: Foundation & Config Setup (1.5 hours)
 
-- [ ] **1.1** Create `frontend/package.json` with dependencies
+- [x] **1.1** Create `frontend/package.json` with dependencies
   - React 18+, TypeScript 5+, Vite 5+, TanStack Query/Form, Zustand, Axios, Tailwind, recharts, mercadopago.js
   - Dev: @vitejs/plugin-react, @types/react, eslint, prettier, typescript
   - Scripts: dev, build, preview, lint, type-check, format, format:check
   - Verify: `npm install` → 0 vulnerabilities, package-lock.json created
 
-- [ ] **1.2** Create `frontend/tsconfig.json` with strict mode
+- [x] **1.2** Create `frontend/tsconfig.json` with strict mode
   - `"strict": true, "noImplicitAny": true, "strictNullChecks": true`
   - Path aliases: `@/app`, `@/pages`, `@/widgets`, `@/features`, `@/entities`, `@/shared`
   - Target: ES2020, module: ESNext, lib: [ES2020, DOM, DOM.Iterable]
   - Verify: `npm run type-check` → 0 errors with empty src/
 
-- [ ] **1.3** Create `frontend/vite.config.ts`
+- [x] **1.3** Create `frontend/vite.config.ts`
   - React plugin: `@vitejs/plugin-react`
   - Path aliases (same as tsconfig.json)
   - API proxy: `/api → http://localhost:8000/api`
   - HMR enabled, source maps enabled
   - Verify: `npm run build` → dist/ created
 
-- [ ] **1.4** Create `frontend/tailwind.config.ts` and `postcss.config.cjs`
+- [x] **1.4** Create `frontend/tailwind.config.ts` and `postcss.config.cjs`
   - Tailwind content: `["./index.html", "./src/**/*.{js,ts,jsx,tsx}"]`
   - Extend theme (not replace): primary, secondary, accent colors
   - PostCSS: tailwindcss, autoprefixer
   - Verify: Tailwind classes in HTML → styles applied
 
-- [ ] **1.5** Create `frontend/.eslintrc.json`
+- [x] **1.5** Create `frontend/.eslintrc.json`
   - Extends: @typescript-eslint/recommended, react/recommended, react-hooks/recommended
   - Rules: no-implicit-any, no-unused-vars, react-hooks/rules-of-hooks, import/no-cycle
   - Include: eslint-plugin-jsx-a11y
   - Verify: `npm run lint` → 0 errors (empty src/ OK)
 
-- [ ] **1.6** Create `frontend/.prettierrc`
+- [x] **1.6** Create `frontend/.prettierrc`
   - 2-space indentation, 100 char line length, semicolons true, trailingComma: es5
   - Verify: `npm run format:check` → passes (empty src/ OK)
 
-- [ ] **1.7** Create `frontend/.env.example`
+- [x] **1.7** Create `frontend/.env.example`
   - VITE_API_URL=http://localhost:8000/api/v1
   - VITE_MERCADOPAGO_PUBLIC_KEY=YOUR_KEY
   - VITE_APP_NAME=FOOD STORE, VITE_APP_ENV=development
   - Create `frontend/vite.env.d.ts` for TypeScript autocomplete
   - Verify: IDE shows VITE_* in import.meta.env
 
-- [ ] **1.8** Create `frontend/.gitignore`
+- [x] **1.8** Create `frontend/.gitignore`
   - node_modules, dist, .env.local, .DS_Store, *.log, .vscode, coverage
   - Verify: `git status` ignores build outputs
 
@@ -52,31 +52,31 @@
 
 ## Phase 2: React Entry Points (1 hour)
 
-- [ ] **2.1** Create `frontend/index.html`
+- [x] **2.1** Create `frontend/index.html`
   - `<div id="root"></div>` entry point
   - `<script type="module" src="./src/main.tsx"></script>`
   - DOCTYPE, lang, meta charset, favicon (placeholder)
   - Verify: Browser loads HTML at localhost:5173 (blank OK)
 
-- [ ] **2.2** Create `frontend/src/main.tsx`
+- [x] **2.2** Create `frontend/src/main.tsx`
   - Import React, ReactDOM, App
   - `ReactDOM.createRoot(document.getElementById('root')!).render(<App />)`
   - Verify: `npm run dev` → no console errors
 
-- [ ] **2.3** Create `frontend/src/App.tsx`
+- [x] **2.3** Create `frontend/src/App.tsx`
   - Root component: `<Providers><Router /></Providers>`
   - Import Providers, Router
   - Placeholder JSX
   - Verify: Dev server shows content (no errors)
 
-- [ ] **2.4** Create `frontend/src/app/` files
+- [x] **2.4** Create `frontend/src/app/` files
   - `app/App.tsx`: export root component
   - `app/providers.tsx`: QueryClientProvider + context setup
   - `app/Router.tsx`: placeholder for CH-023
   - `app/index.ts`: barrel export
   - Verify: `import { App } from '@/app'` works in IDE
 
-- [ ] **2.5** Create `frontend/src/shared/styles/globals.css`
+- [x] **2.5** Create `frontend/src/shared/styles/globals.css`
   - `@tailwind base; @tailwind components; @tailwind utilities;`
   - Global resets (if needed)
   - Import in main.tsx before React render
