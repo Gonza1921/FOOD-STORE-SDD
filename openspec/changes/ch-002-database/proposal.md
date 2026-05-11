@@ -1,5 +1,23 @@
 # Proposal — ch-002-database
 
+## What Changes
+
+Establishes the foundational PostgreSQL database layer with 13 complete entities (SQLModel), versioned migrations (Alembic), seed data catalogs (roles, order states, payment methods), and full referential integrity with indexes for production performance.
+
+---
+
+## Why
+
+FOOD-STORE requires a robust, auditable data layer as the foundation for all business logic. This change:
+- Locks in schema contract across services (APIs, workers)
+- Enables reversible migrations for safe deployment
+- Provides soft delete audit trail for compliance
+- Implements hierarchical categories via PostgreSQL CTE
+- Snapshots product prices at order time (immutable history)
+- Enables fast queries with strategic indexes on FK + foreign keys
+
+---
+
 ## Objetivo
 
 Establecer la base de datos PostgreSQL con esquema completo (13 entidades), migraciones Alembic, seed data crítica (roles, estados de pedido, formas de pago) y validaciones de integridad referencial.
@@ -51,4 +69,3 @@ Base de datos PostgreSQL 100% funcional con todas las entidades, sin datos de ne
 ## Estimación
 
 **4 horas** (~3 horas implement + 1 hora testing)
-
