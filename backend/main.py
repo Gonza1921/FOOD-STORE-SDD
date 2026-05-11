@@ -7,12 +7,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from backend.core.config import settings
 from backend.core.database import check_database_health
 from backend.core.exceptions import APIError
+from backend.core.rate_limit import limiter
+from backend.auth.router import router as auth_router
 from backend.routers import health
 
 # Configure logging
@@ -21,10 +23,6 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-
-# Rate limiter setup
-limiter = Limiter(key_func=get_remote_address)
 
 
 def run_alembic_migrations():
@@ -93,6 +91,9 @@ app.add_middleware(
     expose_headers=["X-Total-Count", "X-Page-Count"],
 )
 
+# Wire rate limiter into app state (required by slowapi middleware)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Request/Response logging middleware
 @app.middleware("http")
@@ -173,6 +174,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 # Register routers
 app.include_router(health.router, tags=["health"])
+app.include_router(auth_router)
 
 
 # Root endpoint

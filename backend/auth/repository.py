@@ -12,7 +12,7 @@ from sqlalchemy import update
 from sqlmodel import select
 
 from backend.core.repository import BaseRepository
-from backend.models.usuario import RefreshToken, Usuario
+from backend.models.usuario import RefreshToken, Usuario, UsuarioRol
 
 
 class AuthRepository(BaseRepository[Usuario]):
@@ -44,6 +44,32 @@ class AuthRepository(BaseRepository[Usuario]):
         )
         result = await self.session.execute(statement)
         return result.scalar_one_or_none()
+
+    # ------------------------------------------------------------------
+    # Role assignment
+    # ------------------------------------------------------------------
+
+    async def assign_role(
+        self,
+        usuario_id: int,
+        rol_codigo: str,
+        asignado_por_id: int | None = None,
+    ) -> None:
+        """Assign a role to a user.
+
+        Args:
+            usuario_id: FK to the user.
+            rol_codigo: Role code (ADMIN, STOCK, PEDIDOS, CLIENT).
+            asignado_por_id: Admin who assigned the role (``None`` for
+                             self-registration).
+        """
+        user_role = UsuarioRol(
+            usuario_id=usuario_id,
+            rol_codigo=rol_codigo,
+            asignado_por_id=asignado_por_id,
+        )
+        self.session.add(user_role)
+        await self.session.flush()
 
     # ------------------------------------------------------------------
     # RefreshToken queries

@@ -1,13 +1,14 @@
 """Auth module — registration, login, token refresh, and logout.
 
 This module follows the feature-first convention:
-- ``router.py``: FastAPI route handlers (Phase 3)
+- ``router.py``: FastAPI route handlers
 - ``schemas.py``: Pydantic request/response models
-- ``service.py``: Business logic layer (Phase 3)
+- ``service.py``: Business logic layer
 - ``repository.py``: Data access layer (inherits ``BaseRepository``)
 """
 
 from .repository import AuthRepository
+from .router import router as auth_router
 from .schemas import (
     AuthResponse,
     LoginRequest,
@@ -16,9 +17,12 @@ from .schemas import (
     RegisterRequest,
     UserResponse,
 )
+from .service import AuthService
 
 __all__ = [
     "AuthRepository",
+    "AuthService",
+    "auth_router",
     "RegisterRequest",
     "LoginRequest",
     "RefreshRequest",
