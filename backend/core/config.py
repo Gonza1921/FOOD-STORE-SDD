@@ -73,6 +73,19 @@ class Settings(BaseSettings):
         """Parse CORS_ORIGINS into a list"""
         return [origin.strip() for origin in self.cors_origins.split(",")]
 
+    @property
+    def async_database_url(self) -> str:
+        """Derive async-friendly database URL from the sync URL.
+
+        Replaces 'postgresql://' or 'postgresql+psycopg2://' with
+        'postgresql+asyncpg://' for use with async sessions.
+        """
+        return self.database_url.replace(
+            "postgresql://", "postgresql+asyncpg://"
+        ).replace(
+            "postgresql+psycopg2://", "postgresql+asyncpg://"
+        )
+
 
 @lru_cache
 def get_settings() -> Settings:
