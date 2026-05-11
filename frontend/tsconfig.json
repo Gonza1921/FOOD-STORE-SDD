@@ -23,6 +23,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
+    "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
       "@/app/*": ["./src/app/*"],
@@ -33,6 +34,7 @@
       "@/shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "vite.env.d.ts"],
   "exclude": ["node_modules", "dist"]
 }
+
