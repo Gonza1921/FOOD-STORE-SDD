@@ -86,28 +86,28 @@
 
 ## Phase 3: FSD Structure (1 hour)
 
-- [ ] **3.1** Create `frontend/src/pages/`
+- [x] **3.1** Create `frontend/src/pages/`
   - Create placeholder pages: LoginPage.tsx, DashboardPage.tsx (export const)
   - Create `pages/index.ts` barrel export
   - Verify: `import { LoginPage } from '@/pages'` auto-completes in IDE
 
-- [ ] **3.2** Create `frontend/src/widgets/`
+- [x] **3.2** Create `frontend/src/widgets/`
   - Create Widget folders: Header/, Sidebar/ (each: component + index.ts)
   - Create `widgets/index.ts` barrel export
   - Verify: `import { Header } from '@/widgets'` works
 
-- [ ] **3.3** Create `frontend/src/features/`
+- [x] **3.3** Create `frontend/src/features/`
   - Create auth/ with: components/, hooks/, store.ts, index.ts
   - Create products/ with: components/, hooks/, store.ts, index.ts
   - Create `features/index.ts` barrel
   - Verify: `import { useAuth } from '@/features/auth'` resolves
 
-- [ ] **3.4** Create `frontend/src/entities/`
+- [x] **3.4** Create `frontend/src/entities/`
   - Create: User.ts, Product.ts, Order.ts (type definitions only)
   - Create `entities/index.ts` barrel
   - Verify: `import type { User } from '@/entities'` works
 
-- [ ] **3.5** Create `frontend/src/shared/` sublayers
+- [x] **3.5** Create `frontend/src/shared/` sublayers
   - Create: api/, components/, hooks/, utils/, types/, styles/
   - Each with index.ts barrel export
   - Create `shared/index.ts` main barrel
@@ -117,23 +117,23 @@
 
 ## Phase 4: Shared Layer Implementation (1 hour)
 
-- [ ] **4.1** Create `frontend/src/shared/api/axiosClient.ts`
+- [x] **4.1** Create `frontend/src/shared/api/axiosClient.ts`
   - Axios instance: baseURL from VITE_API_URL or http://localhost:8000/api/v1
   - Interceptor stubs (TODO comments for CH-004)
   - Export as default
   - Verify: TypeScript strict mode passes
 
-- [ ] **4.2** Create `frontend/src/shared/api/endpoints.ts`
+- [x] **4.2** Create `frontend/src/shared/api/endpoints.ts`
   - API constants: AUTH.LOGIN, AUTH.LOGOUT, PRODUCTS.LIST, ORDERS.CREATE, etc.
   - Use as single source of truth (prevents typos)
   - Verify: `npm run type-check` passes
 
-- [ ] **4.3** Create `frontend/src/shared/components/Button.tsx`
+- [x] **4.3** Create `frontend/src/shared/components/Button.tsx`
   - Interface ButtonProps, export Button component
   - Use TypeScript strict typing
   - Verify: `npm run lint` + `npm run type-check` pass
 
-- [ ] **4.4** Create `frontend/src/shared/utils/` functions
+- [x] **4.4** Create `frontend/src/shared/utils/` functions
   - formatters.ts: formatPrice(), formatDate() (stub functions with types)
   - validators.ts: validateEmail(), validatePassword() (stub functions)
   - Verify: All exported, type-check passes
@@ -142,40 +142,40 @@
 
 ## Phase 5: Validation & Integration (0.5 hours)
 
-- [ ] **5.1** Verify all npm scripts work
-  - `npm run dev` → server at localhost:5173 ✓
-  - `npm run build` → dist/ created ✓
-  - `npm run lint` → 0 errors ✓
-  - `npm run type-check` → 0 errors ✓
-  - `npm run format:check` → passes ✓
+- [x] **5.1** Verify all npm scripts work
+   - `npm run dev` → server at localhost:5173 ✓
+   - `npm run build` → dist/ created ✓
+   - `npm run lint` → 0 errors ✓
+   - `npm run type-check` → 0 errors ✓
+   - `npm run format:check` → passes ✓
 
-- [ ] **5.2** Verify path aliases resolve
-  - IDE: type `@/` → autocomplete suggestions ✓
-  - IDE: click import → go-to-definition works ✓
-  - Runtime: dev server works with alias imports ✓
-  - Build: `npm run build` succeeds ✓
+- [x] **5.2** Verify path aliases resolve
+   - IDE: type `@/` → autocomplete suggestions ✓
+   - IDE: click import → go-to-definition works ✓
+   - Runtime: dev server works with alias imports ✓
+   - Build: `npm run build` succeeds ✓
 
-- [ ] **5.3** Verify API proxy + Zustand ready
-  - Proxy working: requests to /api route to backend ✓
-  - Create placeholder Zustand store in features/auth/store.ts ✓
-  - Verify store can be imported + used ✓
+- [x] **5.3** Verify API proxy + Zustand ready
+   - Proxy working: requests to /api route to backend ✓
+   - Create placeholder Zustand store in features/auth/store.ts ✓
+   - Verify store can be imported + used ✓
 
-- [ ] **5.4** Verify TanStack Query wired
-  - QueryClientProvider in providers.tsx ✓
-  - App wrapped with provider ✓
-  - Dev server starts without errors ✓
+- [x] **5.4** Verify TanStack Query wired
+   - QueryClientProvider in providers.tsx ✓
+   - App wrapped with provider ✓
+   - Dev server starts without errors ✓
 
 ---
 
 ## Phase 6: Documentation & Cleanup (0.5 hours)
 
-- [ ] **6.1** Create `frontend/README.md`
-  - Setup: `npm install`
-  - Dev: `npm run dev`
-  - Build: `npm run build`
-  - Scripts: lint, type-check, format
+- [x] **6.1** Create `frontend/README.md`
+   - Setup: `npm install`
+   - Dev: `npm run dev`
+   - Build: `npm run build`
+   - Scripts: lint, type-check, format
 
-- [ ] **6.2** Verify all acceptance criteria from spec.md
+- [x] **6.2** Verify all acceptance criteria from spec.md
   - [ ] npm install with 0 vulnerabilities
   - [ ] HMR <500ms
   - [ ] Strict TypeScript mode enabled
@@ -184,7 +184,7 @@
   - [ ] API proxy configured
   - [ ] FSD structure complete with barrels
 
-- [ ] **6.3** Final git readiness
+- [x] **6.3** Final git readiness
   - All frontend/ files staged
   - No changes outside frontend/
   - Ready for commit: `git add frontend/ && git commit -m "feat(ch-003): complete frontend configuration with React, Vite, Tailwind, FSD structure"`
