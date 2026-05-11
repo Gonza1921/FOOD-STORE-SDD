@@ -29,9 +29,7 @@ export const validatePassword = (password: string): boolean => {
  * @param password - Password string to analyze
  * @returns 'weak' | 'fair' | 'good' | 'strong'
  */
-export const validatePasswordStrength = (
-  password: string
-): 'weak' | 'fair' | 'good' | 'strong' => {
+export const validatePasswordStrength = (password: string): 'weak' | 'fair' | 'good' | 'strong' => {
   if (password.length === 0) return 'weak';
 
   let score = 0;

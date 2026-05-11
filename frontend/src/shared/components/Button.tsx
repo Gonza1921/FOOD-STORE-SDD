@@ -13,7 +13,15 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
  */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { variant = 'primary', size = 'md', isLoading = false, disabled, children, className, ...props },
+    {
+      variant = 'primary',
+      size = 'md',
+      isLoading = false,
+      disabled,
+      children,
+      className,
+      ...props
+    },
     ref
   ) => {
     // Base Tailwind styles
@@ -34,15 +42,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'px-6 py-3 text-lg',
     };
 
-    const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className || ''}`.trim();
+    const combinedClassName =
+      `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className || ''}`.trim();
 
     return (
-      <button
-        ref={ref}
-        disabled={disabled || isLoading}
-        className={combinedClassName}
-        {...props}
-      >
+      <button ref={ref} disabled={disabled || isLoading} className={combinedClassName} {...props}>
         {isLoading ? (
           <span className="flex items-center justify-center">
             <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em]" />
