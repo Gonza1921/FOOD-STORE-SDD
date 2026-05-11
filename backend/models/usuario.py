@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from pydantic import EmailStr
 
 
@@ -42,6 +42,12 @@ class Usuario(SQLModel, table=True):
     password_hash: str = Field(max_length=60)  # bcrypt cost ≥ 12
     nombre: str = Field(max_length=50)
     apellido: str = Field(max_length=50)
+    
+    # Relationships
+    roles: list["Rol"] = Relationship(
+        link_model=UsuarioRol,
+        sa_relationship_kwargs={"lazy": "selectin"},
+    )
     
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)

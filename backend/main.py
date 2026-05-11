@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
@@ -113,19 +114,61 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-# Global exception handler for APIError
+# ---------------------------------------------------------------------------
+# Exception handlers (RFC 7807 — Problem Details for HTTP APIs)
+# ---------------------------------------------------------------------------
+
 @app.exception_handler(APIError)
 async def api_error_handler(request: Request, exc: APIError):
-    """Handle APIError exceptions with RFC 7807 format"""
-    return {
-        "type": f"https://example.com/errors/{exc.error_code.lower()}",
-        "title": exc.error_code.replace("_", " ").title(),
-        "status": exc.status_code,
-        "detail": exc.message,
-        "error_code": exc.error_code,
-        "timestamp": time.time(),
-        "details": exc.details if exc.details else None,
-    }
+    """Handle ``APIError`` exceptions with RFC 7807 ``application/problem+json`` response.
+
+    Returns a structured problem detail object that includes a machine-readable
+    error code in addition to the standard RFC 7807 fields.
+    """
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "type": f"https://example.com/errors/{exc.error_code.lower()}",
+            "title": exc.error_code.replace("_", " ").title(),
+            "status": exc.status_code,
+            "detail": exc.message,
+            "instance": str(request.url),
+            "error_code": exc.error_code,
+            "timestamp": time.time(),
+            "details": exc.details or None,
+        },
+        headers={"Content-Type": "application/problem+json"},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Catch-all handler for unexpected exceptions.
+
+    In production, the original error details are hidden to avoid leaking
+    internal information. The full traceback is still logged server-side.
+    """
+    logger.exception("Unhandled exception: %s", exc)
+
+    # Hide stack trace details in production
+    if settings.environment == "production":
+        detail = "An unexpected internal error occurred"
+    else:
+        detail = str(exc) if str(exc) else "An unexpected internal error occurred"
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "type": "https://example.com/errors/internal_server_error",
+            "title": "Internal Server Error",
+            "status": 500,
+            "detail": detail,
+            "instance": str(request.url),
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "timestamp": time.time(),
+        },
+        headers={"Content-Type": "application/problem+json"},
+    )
 
 
 # Register routers
