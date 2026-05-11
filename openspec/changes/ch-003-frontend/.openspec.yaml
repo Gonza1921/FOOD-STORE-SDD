@@ -1,0 +1,36 @@
+change_name: ch-003-frontend
+change_id: CH-003
+title: "Frontend Configuration (React + Vite + Dependencies Core)"
+description: |
+  Inicializar el proyecto React con TypeScript, Vite como bundler, Tailwind CSS para estilos,
+  TanStack Query para sincronización de servidor, y Axios configurado. Establecer estructura
+  Feature-Sliced Design (FSD) y variables de entorno. Configurar ESLint + Prettier.
+status: exploration_complete
+created_at: 2026-05-11
+updated_at: 2026-05-11
+
+module: DevOps
+sprint: 0
+priority: Critical
+complexity: Low
+estimated_hours: 3
+
+user_stories:
+  - US-000c: Configuración del entorno frontend (React + Vite + dependencias)
+
+dependencies:
+  upstream:
+    - CH-000 (scaffolding structure) ✅ completed
+  downstream:
+    - CH-004 (Zustand stores) — needs path aliases, strict TypeScript, HMR
+    - CH-023 (catalog frontend) — needs TanStack Query, Tailwind ready
+
+artifacts:
+  - exploration.md: ✅ Complete exploration report
+  - (pending) proposal.md
+  - (pending) specs.md
+  - (pending) design.md
+  - (pending) tasks.md
+
+next_phase: sdd-propose
+recommendation: "Ready for proposal. Clear scope, no blockers, proven stack."
