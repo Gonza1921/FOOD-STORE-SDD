@@ -1,5 +1,7 @@
 """Security utilities for JWT and password management"""
 
+import hashlib
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 
@@ -109,3 +111,30 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         )
     except Exception:
         return False
+
+
+def create_refresh_token() -> str:
+    """Generate a cryptographically random refresh token (UUID v4).
+
+    The returned token is opaque — it contains no user information.
+    Only its SHA-256 hash is stored in the database for lookup.
+
+    Returns:
+        A UUID v4 string (e.g. ``"550e8400-e29b-41d4-a716-446655440000"``).
+    """
+    return str(uuid.uuid4())
+
+
+def hash_token(token: str) -> str:
+    """Create a SHA-256 hash of a token for secure storage.
+
+    Args:
+        token: The raw token string to hash.
+
+    Returns:
+        Hex-encoded SHA-256 digest (64 characters).
+
+    Example:
+        ``hash_token("my-token")`` → ``"73475cb40a568e8da8a045ced110137e...``
+    """
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()

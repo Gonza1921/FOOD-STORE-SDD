@@ -28,6 +28,10 @@ class Settings(BaseSettings):
         default=30,
         description="JWT access token expiration time in minutes",
     )
+    jwt_refresh_token_expire_days: int = Field(
+        default=7,
+        description="JWT refresh token expiration time in days",
+    )
 
     # CORS configuration
     cors_origins: str = Field(
@@ -72,6 +76,19 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> List[str]:
         """Parse CORS_ORIGINS into a list"""
         return [origin.strip() for origin in self.cors_origins.split(",")]
+
+    @property
+    def async_database_url(self) -> str:
+        """Derive async-friendly database URL from the sync URL.
+
+        Replaces 'postgresql://' or 'postgresql+psycopg2://' with
+        'postgresql+asyncpg://' for use with async sessions.
+        """
+        return self.database_url.replace(
+            "postgresql://", "postgresql+asyncpg://"
+        ).replace(
+            "postgresql+psycopg2://", "postgresql+asyncpg://"
+        )
 
 
 @lru_cache

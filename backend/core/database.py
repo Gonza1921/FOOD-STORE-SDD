@@ -3,6 +3,7 @@
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlmodel import SQLModel
 
 from backend.core.config import settings
@@ -10,7 +11,10 @@ from backend.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-# Create engine
+# ---------------------------------------------------------------------------
+# Synchronous engine & session (existing)
+# ---------------------------------------------------------------------------
+
 engine = create_engine(
     settings.database_url,
     echo=settings.environment == "development",
@@ -19,11 +23,29 @@ engine = create_engine(
     pool_pre_ping=True,
 )
 
-# Create session factory
 SessionLocal = sessionmaker(
     autocommit=False,
     autoflush=False,
     bind=engine,
+)
+
+
+# ---------------------------------------------------------------------------
+# Asynchronous engine & session (for BaseRepository / async endpoints)
+# ---------------------------------------------------------------------------
+
+async_engine = create_async_engine(
+    settings.async_database_url,
+    echo=settings.environment == "development",
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
+)
+
+AsyncSessionLocal = async_sessionmaker(
+    async_engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
 )
 
 
@@ -43,6 +65,24 @@ def get_session() -> Session:
         yield db
     finally:
         db.close()
+
+
+async def get_async_session() -> AsyncSession:
+    """
+    Dependency injection function for getting async database sessions.
+
+    Usage in FastAPI routes:
+        async def my_endpoint(session: AsyncSession = Depends(get_async_session)):
+            ...
+
+    Yields:
+        AsyncSession: Async database session
+    """
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
 
 
 def check_database_health() -> bool:

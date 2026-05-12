@@ -6,12 +6,15 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from backend.core.config import settings
 from backend.core.database import check_database_health
 from backend.core.exceptions import APIError
+from backend.core.rate_limit import limiter
+from backend.auth.router import router as auth_router
 from backend.routers import health
 
 # Configure logging
@@ -20,10 +23,6 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-
-# Rate limiter setup
-limiter = Limiter(key_func=get_remote_address)
 
 
 def run_alembic_migrations():
@@ -92,6 +91,9 @@ app.add_middleware(
     expose_headers=["X-Total-Count", "X-Page-Count"],
 )
 
+# Wire rate limiter into app state (required by slowapi middleware)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Request/Response logging middleware
 @app.middleware("http")
@@ -113,23 +115,66 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-# Global exception handler for APIError
+# ---------------------------------------------------------------------------
+# Exception handlers (RFC 7807 — Problem Details for HTTP APIs)
+# ---------------------------------------------------------------------------
+
 @app.exception_handler(APIError)
 async def api_error_handler(request: Request, exc: APIError):
-    """Handle APIError exceptions with RFC 7807 format"""
-    return {
-        "type": f"https://example.com/errors/{exc.error_code.lower()}",
-        "title": exc.error_code.replace("_", " ").title(),
-        "status": exc.status_code,
-        "detail": exc.message,
-        "error_code": exc.error_code,
-        "timestamp": time.time(),
-        "details": exc.details if exc.details else None,
-    }
+    """Handle ``APIError`` exceptions with RFC 7807 ``application/problem+json`` response.
+
+    Returns a structured problem detail object that includes a machine-readable
+    error code in addition to the standard RFC 7807 fields.
+    """
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "type": f"https://example.com/errors/{exc.error_code.lower()}",
+            "title": exc.error_code.replace("_", " ").title(),
+            "status": exc.status_code,
+            "detail": exc.message,
+            "instance": str(request.url),
+            "error_code": exc.error_code,
+            "timestamp": time.time(),
+            "details": exc.details or None,
+        },
+        headers={"Content-Type": "application/problem+json"},
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    """Catch-all handler for unexpected exceptions.
+
+    In production, the original error details are hidden to avoid leaking
+    internal information. The full traceback is still logged server-side.
+    """
+    logger.exception("Unhandled exception: %s", exc)
+
+    # Hide stack trace details in production
+    if settings.environment == "production":
+        detail = "An unexpected internal error occurred"
+    else:
+        detail = str(exc) if str(exc) else "An unexpected internal error occurred"
+
+    return JSONResponse(
+        status_code=500,
+        content={
+            "type": "https://example.com/errors/internal_server_error",
+            "title": "Internal Server Error",
+            "status": 500,
+            "detail": detail,
+            "instance": str(request.url),
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "timestamp": time.time(),
+        },
+        headers={"Content-Type": "application/problem+json"},
+    )
 
 
 # Register routers
 app.include_router(health.router, tags=["health"])
+app.include_router(auth_router)
 
 
 # Root endpoint

@@ -4,8 +4,8 @@ from datetime import datetime
 
 from fastapi import APIRouter
 
-from core.database import check_database_health
-from models.base import HealthResponse
+from backend.core.database import check_database_health
+from backend.models.base import HealthResponse
 
 router = APIRouter()
 
