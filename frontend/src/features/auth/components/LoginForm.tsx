@@ -1,10 +1,174 @@
-export interface LoginFormProps {}
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axiosClient from '../../../shared/api/axiosClient';
+import { useAuthStore } from '../store';
+import { validateEmail } from '../../../shared/utils/validators';
 
-export default function LoginForm(_props: LoginFormProps) {
+interface FormData {
+  email: string;
+  password: string;
+}
+
+interface FormErrors {
+  [key: string]: string;
+}
+
+export interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export default function LoginForm({ onSuccess }: LoginFormProps) {
+  const navigate = useNavigate();
+  const { login } = useAuthStore();
+
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    password: '',
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'El email es requerido';
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'El formato del email es inválido';
+    }
+
+    if (!formData.password) {
+      newErrors.password = 'La contraseña es requerida';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setServerError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await axiosClient.post('/auth/login', {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      const { accessToken, refreshToken, user } = response.data;
+
+      // Update auth store
+      login({ accessToken, refreshToken }, user);
+
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Navigate to home page
+        navigate('/');
+      }
+    } catch (error: any) {
+      if (error.response?.status === 429) {
+        setServerError('Demasiados intentos. Por favor, intenta más tarde.');
+      } else {
+        setServerError('Credenciales inválidas');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form>
-      <h3>LoginForm Component</h3>
-      <p>Placeholder</p>
+    <form onSubmit={handleSubmit} className="w-full max-w-md mx-auto space-y-4">
+      <h2 className="text-2xl font-bold mb-6">Inicia Sesión</h2>
+
+      {serverError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          {serverError}
+        </div>
+      )}
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium mb-1">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          placeholder="tu@email.com"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+            errors.email
+              ? 'border-red-500 focus:ring-red-500'
+              : 'border-gray-300 focus:ring-blue-500'
+          }`}
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+      </div>
+
+      <div>
+        <label htmlFor="password" className="block text-sm font-medium mb-1">
+          Contraseña
+        </label>
+        <input
+          id="password"
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="Tu contraseña"
+          className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+            errors.password
+              ? 'border-red-500 focus:ring-red-500'
+              : 'border-gray-300 focus:ring-blue-500'
+          }`}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+      </div>
+
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        {isSubmitting ? 'Iniciando sesión...' : 'Inicia Sesión'}
+      </button>
+
+      <p className="text-center text-sm text-gray-600">
+        ¿No tienes cuenta?{' '}
+        <button
+          type="button"
+          onClick={() => navigate('/registro')}
+          className="text-blue-600 hover:underline font-medium"
+        >
+          Regístrate
+        </button>
+      </p>
     </form>
   );
 }
