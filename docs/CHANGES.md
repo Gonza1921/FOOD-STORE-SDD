@@ -1,9 +1,12 @@
 # Mapa Completo de Changes — Food Store v5.0
 
-> **Documento**: Propuesta de estructura de changes para implementar Food Store de principio a fin  
+> **Documento**: Mapa de changes — plan original + registro de cambios ejecutados  
 > **Metodología**: Spec-Driven Development (SDD) — Feature-First  
-> **Fecha**: 2026-04-28  
+> **Fecha inicial**: 2026-04-28  
+> **Última actualización**: 2026-05-12  
 > **Autor**: Análisis de Especificación Técnica v5.0
+
+> ⚡ **Nota sobre la implementación real**: Los cambios ejecutados pueden diferir del plan original. Los cambios consolidados (ej: CH-005 reemplaza CH-010/011/012) se indican con ~~tachado~~ en la tabla. Esta sección detallada es la fuente de verdad de lo implementado.
 
 ---
 
@@ -30,9 +33,10 @@ Cada change es **atómico y versionable**: tiene proposal.md, design.md, tasks.m
 | | CH-002 | Base de datos | US-000b | Dev | CH-001 |
 | | CH-003 | Frontend config | US-000c | Dev | CH-000 |
 | | CH-004 | Patrones base | US-000d, US-000e | Dev | CH-002 |
-| **1** | CH-010 | Registro de cliente | US-001 | Auth | CH-004 |
-| | CH-011 | Login y JWT | US-002, US-073 | Auth | CH-010 |
-| | CH-012 | RBAC y roles | US-005, US-006 | Auth | CH-011 |
+| | **CH-005** 🔥 | **Auth completo** | **US-001 a US-006, US-066, US-073** | **Auth** | **CH-004** |
+| **1** | ~~CH-010~~ | ~~Registro de cliente~~ | ~~US-001~~ | — | Consolidado en CH-005 |
+| | ~~CH-011~~ | ~~Login y JWT~~ | ~~US-002, US-073~~ | — | Consolidado en CH-005 |
+| | ~~CH-012~~ | ~~RBAC y roles~~ | ~~US-005, US-006~~ | — | Consolidado en CH-005 |
 | **2** | CH-020 | Categorías jerárquicas | US-007, US-008, US-009, US-010 | Catalog | CH-004 |
 | | CH-021 | Ingredientes y alérgenos | US-011, US-012, US-013, US-014 | Catalog | CH-020 |
 | | CH-022 | Productos CRUD | US-015, US-016, US-017, US-020, US-022 | Catalog | CH-021 |
@@ -56,13 +60,9 @@ CH-000 (scaffolding)
   │    └→ CH-002 (BD + Alembic + seed)
   │         ↓
   │         └→ CH-004 (BaseRepo, UoW, dependencias)
-  │              ├→ CH-010 (registro)
+  │              ├→ **CH-005 (Auth completo)** 🔥 ← consolida CH-010/011/012
   │              │    ↓
-  │              │    └→ CH-011 (login JWT)
-  │              │         ↓
-  │              │         └→ CH-012 (RBAC roles)
-  │              │              ↓
-  │              │              └→ CH-030 (direcciones entrega)
+  │              │    └→ CH-030 (direcciones entrega)
   │              │
   │              ├→ CH-020 (categorías)
   │              │    ↓
@@ -86,7 +86,7 @@ CH-000 (scaffolding)
        ↓
        └→ CH-004 (stores Zustand)
             ↓
-            ├→ CH-010, CH-011, CH-012, CH-023, CH-031, CH-032, CH-033, CH-040, CH-041
+            └→ **CH-005**, CH-023, CH-031, CH-032, CH-033, CH-040, CH-041
 ```
 
 ---
@@ -253,9 +253,88 @@ CH-000 (scaffolding)
 
 ### 🟡 SPRINT 1 — AUTENTICACIÓN Y AUTORIZACIÓN
 
+> ⚠️ **Nota**: Los cambios CH-010, CH-011 y CH-012 del plan original se consolidaron en un único **CH-005 (Auth completo)** para agilizar el desarrollo. Ver detalle abajo.
+
 ---
 
-### **CH-010: Registro de Cliente**
+### **CH-005: Sistema Completo de Autenticación (Auth)**
+
+**Nombre en kebab-case**: `ch-005-auth`
+
+**Funcionalidad que cubre**:
+- Backend: 4 endpoints REST para auth (register, login, refresh, logout) con rate limiting
+- Frontend: LoginForm, RegisterForm, interceptor Axios con refresh automático, route guards, sesión persistente
+- Seguridad: JWT access token (30 min), refresh token con rotación y detección de replay, bcrypt, rate limiting (5/15min)
+
+**Historias de usuario que implementa**:
+- **US-001**: Registro de cliente
+- **US-002**: Inicio de sesión
+- **US-003**: Refresh de token con rotación
+- **US-004**: Cierre de sesión (logout con revocación)
+- **US-005**: Protección de rutas por rol (frontend + backend)
+- **US-006**: Roles y autorización granular (RBAC)
+- **US-066**: Manejo de token expirado en frontend (refresh automático)
+- **US-073**: Rate limiting en login (5 intentos / 15 min por IP)
+
+**De qué otros changes depende**:
+- ✅ CH-002 (BD — modelos Usuario, Rol, UsuarioRol, RefreshToken)
+- ✅ CH-004 (patrones — BaseRepository, UnitOfWork, get_current_user, require_role)
+
+**Por qué depende**:
+- Necesita los modelos SQLModel ya creados (Usuario, RefreshToken)
+- Necesita BaseRepository, UoW, RFC 7807, y las dependencias FastAPI
+
+**Criterios de aceptación clave**:
+- [x] POST /api/v1/auth/register crea usuario con rol CLIENT y retorna token pair
+- [x] POST /api/v1/auth/login valida credenciales; error 401 genérico (no revela existencia)
+- [x] Rate limiting en login: 5 intentos/15min por IP, HTTP 429 al exceder
+- [x] POST /api/v1/auth/refresh con rotación + detección de replay (revoca todos si detecta)
+- [x] POST /api/v1/auth/logout revoca refresh token (idempotente, 204)
+- [x] Access token JWT con claims: sub, email, roles; exp 30 min
+- [x] Refresh token UUID v4 opaco, hash SHA-256 en BD, exp 7 días
+- [x] Frontend: Axios interceptor attacha Bearer token + refresh automático en 401
+- [x] Frontend: ProtectedRoute redirige a /login si no auth; 403 si rol insuficiente
+- [x] Frontend: LoginForm + RegisterForm funcionales conectados a API real
+- [x] Frontend: Sesión persistente (Zustand + localStorage)
+- [x] Frontend: PublicRoute redirige a / si ya autenticado
+
+**Arquitectura**:
+
+Backend (`backend/auth/`):
+```
+router.py   → schemas.py → service.py → repository.py (hereda de BaseRepository[Usuario])
+              (Pydantic)    (AuthService)  (find_by_email, refresh token CRUD)
+```
+
+Frontend (`frontend/src/`):
+```
+features/auth/
+├── store.ts                    ← Zustand persist (accessToken, refreshToken, user)
+├── hooks/useAuth.ts            ← Hook con login/register/logout contra API
+├── components/
+│   ├── LoginForm.tsx           ← Formulario funcional con validación
+│   ├── RegisterForm.tsx        ← Formulario registro con confirmación password
+│   ├── AuthProvider.tsx        ← Inicialización de sesión al cargar app
+│   ├── ProtectedRoute.tsx      ← Route guard por auth + roles
+│   └── PublicRoute.tsx          ← Redirect si ya autenticado
+
+shared/api/
+├── axiosClient.ts              ← Interceptor request (JWT) + response (refresh queue)
+└── endpoints.ts                ← Constantes con paths de API
+
+pages/
+├── LoginPage.tsx               ← Página login con diseño
+├── RegisterPage.tsx            ← Página registro con diseño
+└── UnauthorizedPage.tsx        ← Página 403
+
+app/
+├── App.tsx                     ← BrowserRouter + AuthProvider
+└── Router.tsx                  ← React Router v6 con rutas públicas/protegidas
+```
+
+---
+
+### **CH-010: Registro de Cliente** _(consolidado en CH-005)_
 
 **Nombre en kebab-case**: `auth-user-registration`
 

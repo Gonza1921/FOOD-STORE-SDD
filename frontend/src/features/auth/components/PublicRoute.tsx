@@ -1,0 +1,30 @@
+import { type ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuthStore } from '../store';
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface PublicRouteProps {
+  children: ReactNode;
+  /** Path to redirect authenticated users (default: /) */
+  redirectTo?: string;
+}
+
+// ---------------------------------------------------------------------------
+// PublicRoute — redirects authenticated users away from login/register pages
+// ---------------------------------------------------------------------------
+
+export default function PublicRoute({
+  children,
+  redirectTo = '/',
+}: PublicRouteProps) {
+  const { accessToken, user } = useAuthStore();
+
+  if (accessToken && user) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
+  return <>{children}</>;
+}

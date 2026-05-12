@@ -4,9 +4,10 @@
  */
 export const API = {
   AUTH: {
+    REGISTER: '/auth/register',
     LOGIN: '/auth/login',
+    REFRESH: '/auth/refresh',
     LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh-token',
     ME: '/auth/me',
   },
   PRODUCTS: {
