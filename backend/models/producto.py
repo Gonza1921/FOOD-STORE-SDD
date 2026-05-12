@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class Ingrediente(SQLModel, table=True):
@@ -17,6 +17,7 @@ class Ingrediente(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
+    deleted_at: Optional[datetime] = Field(default=None, index=True)
 
 
 class ProductoIngrediente(SQLModel, table=True):
@@ -26,6 +27,9 @@ class ProductoIngrediente(SQLModel, table=True):
     producto_id: int = Field(foreign_key="producto.id", index=True)
     ingrediente_id: int = Field(foreign_key="ingrediente.id", index=True)
     es_removible: bool = Field(default=False)  # Allows customization
+    
+    # Relationship back to Producto
+    producto: Optional["Producto"] = Relationship(back_populates="ingredientes")
 
 
 class ProductoCategoria(SQLModel, table=True):
@@ -34,6 +38,9 @@ class ProductoCategoria(SQLModel, table=True):
     producto_id: int = Field(foreign_key="producto.id", primary_key=True)
     categoria_id: int = Field(foreign_key="categoria.id", primary_key=True)
     es_principal: bool = Field(default=False)
+    
+    # Relationship back to Producto
+    producto: Optional["Producto"] = Relationship(back_populates="categorias")
 
 
 class Producto(SQLModel, table=True):
@@ -48,6 +55,10 @@ class Producto(SQLModel, table=True):
     
     # FK to primary category (can have multiple via ProductoCategoria)
     categoria_id: int = Field(foreign_key="categoria.id", index=True)
+    
+    # Relations (lazy-loaded by default, use selectinload in queries)
+    categorias: list["ProductoCategoria"] = Relationship(back_populates="producto")
+    ingredientes: list["ProductoIngrediente"] = Relationship(back_populates="producto")
     
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
