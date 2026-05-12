@@ -29,6 +29,16 @@ export const API = {
   },
   CATEGORIES: {
     LIST: '/categorias',
-    DETAIL: (id: string): string => `/categorias/${id}`,
+    DETAIL: (id: number): string => `/categorias/${id}`,
+    CREATE: '/categorias',
+    UPDATE: (id: number): string => `/categorias/${id}`,
+    DELETE: (id: number): string => `/categorias/${id}`,
+  },
+  INGREDIENTS: {
+    LIST: '/ingredientes',
+    DETAIL: (id: number): string => `/ingredientes/${id}`,
+    CREATE: '/ingredientes',
+    UPDATE: (id: number): string => `/ingredientes/${id}`,
+    DELETE: (id: number): string => `/ingredientes/${id}`,
   },
 } as const;

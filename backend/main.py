@@ -15,6 +15,8 @@ from backend.core.database import check_database_health
 from backend.core.exceptions import APIError
 from backend.core.rate_limit import limiter
 from backend.auth.router import router as auth_router
+from backend.categorias.router import router as categorias_router
+from backend.ingredientes.router import router as ingredientes_router
 from backend.routers import health
 
 # Configure logging
@@ -175,6 +177,8 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 # Register routers
 app.include_router(health.router, tags=["health"])
 app.include_router(auth_router)
+app.include_router(categorias_router)
+app.include_router(ingredientes_router)
 
 
 # Root endpoint

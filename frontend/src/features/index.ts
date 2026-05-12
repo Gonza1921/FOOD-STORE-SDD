@@ -14,6 +14,14 @@ export type { CartSummaryProps, UseCartReturn, CartStore } from './cart';
 export { usePaymentStore } from './payment';
 export type { PaymentStore, CheckoutStep, PaymentStatus } from './payment';
 
+// Categories
+export { useCategories, CategoryForm, CategoryList, CategoriesAdminPage } from './categories';
+export type { CategoryFormData } from './categories';
+
+// Ingredients
+export { useIngredients, IngredientForm, IngredientList, IngredientsAdminPage } from './ingredients';
+export type { IngredientFormData } from './ingredients';
+
 // UI
 export { useUiStore } from './ui';
 export type { UiStore, Theme, Toast } from './ui';

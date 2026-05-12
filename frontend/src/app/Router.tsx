@@ -4,6 +4,8 @@ import {
   RegisterPage,
   UnauthorizedPage,
   DashboardPage,
+  CategoriesAdminPage,
+  IngredientsAdminPage,
 } from '@/pages/index';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 
@@ -29,6 +31,24 @@ export default function Router() {
         element={
           <ProtectedRoute>
             <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── New Admin routes ── */}
+      <Route
+        path="/admin/categorias"
+        element={
+          <ProtectedRoute roles={["ADMIN"]}>
+            <CategoriesAdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/ingredientes"
+        element={
+          <ProtectedRoute roles={["ADMIN"]}>
+            <IngredientsAdminPage />
           </ProtectedRoute>
         }
       />
