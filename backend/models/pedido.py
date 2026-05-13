@@ -9,6 +9,7 @@ from sqlmodel import SQLModel, Field
 class FormaPago(SQLModel, table=True):
     """Payment method catalog - fixed values"""
     
+    __table_args__ = {"extend_existing": True}
     codigo: str = Field(primary_key=True, max_length=20)
     descripcion: str = Field(max_length=200)
     habilitado: bool = Field(default=True)
@@ -17,6 +18,7 @@ class FormaPago(SQLModel, table=True):
 class EstadoPedido(SQLModel, table=True):
     """Order state catalog - FSM states"""
     
+    __table_args__ = {"extend_existing": True}
     codigo: str = Field(primary_key=True, max_length=20)
     descripcion: str = Field(max_length=200)
     orden: int  # Visual order: 1-6
@@ -26,6 +28,7 @@ class EstadoPedido(SQLModel, table=True):
 class Pedido(SQLModel, table=True):
     """Order entity - central domain with snapshots and immutable totals"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id", index=True)
     estado_codigo: str = Field(foreign_key="estado_pedido.codigo", index=True)
@@ -53,6 +56,7 @@ class Pedido(SQLModel, table=True):
 class DetallePedido(SQLModel, table=True):
     """Order detail with product snapshots - immutable"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", index=True)
     producto_id: int = Field(foreign_key="producto.id")  # Historical reference
@@ -74,6 +78,7 @@ class DetallePedido(SQLModel, table=True):
 class HistorialEstadoPedido(SQLModel, table=True):
     """Order state transition history - append-only audit trail"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", index=True)
     
@@ -96,6 +101,7 @@ class HistorialEstadoPedido(SQLModel, table=True):
 class Pago(SQLModel, table=True):
     """Payment entity - MercadoPago integration"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", unique=True, index=True)
     

@@ -40,7 +40,9 @@ class UnitOfWork:
     and the exception propagates to the caller.
     """
 
-    def __init__(self, session_factory=AsyncSessionLocal):
+    def __init__(self, session_factory=None):
+        if session_factory is None:
+            session_factory = AsyncSessionLocal
         """
         Args:
             session_factory: A callable that returns a new ``AsyncSession``.

@@ -9,6 +9,7 @@ from sqlmodel import SQLModel, Field, Relationship
 class Ingrediente(SQLModel, table=True):
     """Food ingredients for products and allergen tracking"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(unique=True, max_length=100, index=True)
     descripcion: Optional[str] = Field(default=None, max_length=200)
@@ -23,6 +24,7 @@ class Ingrediente(SQLModel, table=True):
 class ProductoIngrediente(SQLModel, table=True):
     """M:N relationship: Products and Ingredients"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     producto_id: int = Field(foreign_key="producto.id", index=True)
     ingrediente_id: int = Field(foreign_key="ingrediente.id", index=True)
@@ -32,6 +34,7 @@ class ProductoIngrediente(SQLModel, table=True):
 class ProductoCategoria(SQLModel, table=True):
     """M:N relationship: Products and Categories"""
     
+    __table_args__ = {"extend_existing": True}
     producto_id: int = Field(foreign_key="producto.id", primary_key=True)
     categoria_id: int = Field(foreign_key="categoria.id", primary_key=True)
     es_principal: bool = Field(default=False)
@@ -40,6 +43,7 @@ class ProductoCategoria(SQLModel, table=True):
 class Producto(SQLModel, table=True):
     """Product entity with stock management and ingredient composition"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=200, index=True)
     descripcion: Optional[str] = Field(default=None)

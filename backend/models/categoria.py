@@ -8,6 +8,7 @@ from sqlmodel import SQLModel, Field
 class Categoria(SQLModel, table=True):
     """Product categories with hierarchical structure (self-referencing)"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=100, index=True)
     descripcion: Optional[str] = Field(default=None, max_length=200)

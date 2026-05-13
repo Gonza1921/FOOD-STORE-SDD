@@ -9,6 +9,7 @@ from pydantic import EmailStr
 class Rol(SQLModel, table=True):
     """Role catalog - fixed 4 roles for RBAC"""
     
+    __table_args__ = {"extend_existing": True}
     codigo: str = Field(primary_key=True, max_length=20)  # ADMIN, STOCK, PEDIDOS, CLIENT
     nombre: str = Field(max_length=50)
     descripcion: Optional[str] = Field(default=None, max_length=200)
@@ -17,6 +18,7 @@ class Rol(SQLModel, table=True):
 class UsuarioRol(SQLModel, table=True):
     """M:N relationship between Usuario and Rol"""
     
+    __table_args__ = {"extend_existing": True}
     usuario_id: int = Field(foreign_key="usuario.id", primary_key=True)
     rol_codigo: str = Field(foreign_key="rol.codigo", primary_key=True)
     asignado_en: datetime = Field(default_factory=datetime.utcnow)
@@ -26,6 +28,7 @@ class UsuarioRol(SQLModel, table=True):
 class RefreshToken(SQLModel, table=True):
     """Refresh tokens for JWT rotation and secure logout"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     token_hash: str = Field(unique=True, max_length=64, index=True)  # SHA-256
@@ -37,6 +40,7 @@ class RefreshToken(SQLModel, table=True):
 class Usuario(SQLModel, table=True):
     """User entity with soft delete and RBAC"""
     
+    __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     email: EmailStr = Field(unique=True, max_length=254, index=True)
     password_hash: str = Field(max_length=60)  # bcrypt cost ≥ 12
