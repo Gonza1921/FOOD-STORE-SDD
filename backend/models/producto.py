@@ -2,8 +2,13 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from backend.models.categoria import Categoria
 
 
 class Ingrediente(SQLModel, table=True):
@@ -56,8 +61,8 @@ class Producto(SQLModel, table=True):
     
     # M2M via link_model: producto.categorias returns Categoria[] directly
     # (not ProductoCategoria association objects)
-    categorias: list["Categoria"] = Relationship(link_model=ProductoCategoria)
-    ingredientes: list["Ingrediente"] = Relationship(link_model=ProductoIngrediente)
+    categorias: Mapped[list["Categoria"]] = Relationship(link_model=ProductoCategoria)
+    ingredientes: Mapped[list["Ingrediente"]] = Relationship(link_model=ProductoIngrediente)
     
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)

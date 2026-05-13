@@ -34,7 +34,7 @@ def run_alembic_migrations():
         from alembic.config import Config
         from alembic.command import upgrade
         
-        alembic_cfg = Config("backend/alembic/alembic.ini")
+        alembic_cfg = Config("backend/alembic.ini")
         upgrade(alembic_cfg, "head")
         logger.info("✓ Alembic migrations applied successfully")
         return True

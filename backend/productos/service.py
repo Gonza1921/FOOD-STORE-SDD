@@ -93,9 +93,7 @@ class ProductoService:
         """
         async with UnitOfWork() as uow:
             repo = uow.register("productos", ProductoRepository, Producto)
-            return await repo.get_public_paginated(
-                skip, limit, search, categoria_id
-            )
+            return await repo.get_public_paginated(skip, limit, search, categoria_id)
 
     # ========================================================================
     # Create with validations (categoria_id exists) and M2M associations
@@ -133,11 +131,14 @@ class ProductoService:
             ValueError: If validation fails (invalid input).
         """
         async with UnitOfWork() as uow:
-            repo = uow.register("productos", ProductoRepository, Producto)
 
             # ---- Validations (BEFORE any DB mutation) ----
 
-            nombre = producto_data.get("nombre", "").strip() if producto_data.get("nombre") else ""
+            nombre = (
+                producto_data.get("nombre", "").strip()
+                if producto_data.get("nombre")
+                else ""
+            )
             if not nombre:
                 raise ValidationError("El nombre es requerido")
             if len(nombre) > 200:
@@ -193,12 +194,10 @@ class ProductoService:
             # Validate ingredientes[] (if provided)
             if ingredientes:
                 for ing_id in ingredientes:
-                    stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
-                    result = await uow.session.execute(stmt)
-                    if not result.scalar_one_or_none():
-                        raise ConflictError(
-                            f"El ingrediente {ing_id} no existe"
-                        )
+                    ing_stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
+                    ing_result = await uow.session.execute(ing_stmt)
+                    if not ing_result.scalar_one_or_none():
+                        raise ConflictError(f"El ingrediente {ing_id} no existe")
 
             # ---- DB Operations (atomic via UoW commit/rollback) ----
 
@@ -292,7 +291,9 @@ class ProductoService:
             if "descripcion" in producto_data:
                 desc = producto_data.get("descripcion")
                 if desc and len(desc) > 500:
-                    raise ValidationError("La descripción debe tener máximo 500 caracteres")
+                    raise ValidationError(
+                        "La descripción debe tener máximo 500 caracteres"
+                    )
                 producto.descripcion = desc
 
             if "precio_base" in producto_data:
@@ -349,12 +350,10 @@ class ProductoService:
                 await ing_repo.delete_by_producto(producto_id)
 
                 for ing_id in ingredientes:
-                    stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
-                    result = await uow.session.execute(stmt)
-                    if not result.scalar_one_or_none():
-                        raise ConflictError(
-                            f"El ingrediente {ing_id} no existe"
-                        )
+                    ing_stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
+                    ing_result = await uow.session.execute(ing_stmt)
+                    if not ing_result.scalar_one_or_none():
+                        raise ConflictError(f"El ingrediente {ing_id} no existe")
 
                     prod_ing = ProductoIngrediente(
                         producto_id=producto_id,
@@ -466,5 +465,3 @@ class ProductoService:
 
             await repo.delete(producto_id)
             return True
-
-

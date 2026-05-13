@@ -6,10 +6,10 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-
 # ============================================================================
 # Reference Models (for M2M relationships)
 # ============================================================================
+
 
 class CategoriaRef(BaseModel):
     """Reference to a Categoria (for M2M relationships)"""
@@ -28,6 +28,7 @@ class IngredienteRef(BaseModel):
 # ============================================================================
 # Task 4.1: ProductoCreate Schema
 # ============================================================================
+
 
 class ProductoCreate(BaseModel):
     """Request schema for POST /api/v1/productos"""
@@ -103,6 +104,7 @@ class ProductoCreate(BaseModel):
 # Task 4.2: ProductoUpdate Schema
 # ============================================================================
 
+
 class ProductoUpdate(BaseModel):
     """Request schema for PUT /api/v1/productos/{id}"""
 
@@ -161,6 +163,7 @@ class ProductoUpdate(BaseModel):
 # Task 4.3: ProductoOut Schema (Admin Response)
 # ============================================================================
 
+
 class ProductoOut(BaseModel):
     """Response schema for GET /api/v1/productos/{id} (admin)"""
 
@@ -182,6 +185,7 @@ class ProductoOut(BaseModel):
 # ============================================================================
 # Task 4.4: ProductoOutList Schema (Paginated)
 # ============================================================================
+
 
 class ProductoOutList(BaseModel):
     """Response schema for GET /api/v1/productos (paginated list)"""
@@ -206,6 +210,7 @@ class ProductoOutList(BaseModel):
 # Task 4.5: ProductoOutPublic Schema (Public Catalog)
 # ============================================================================
 
+
 class ProductoOutPublic(BaseModel):
     """Response schema for GET /api/v1/productos/publico/catalogo (no auth)"""
 
@@ -226,6 +231,7 @@ class ProductoOutPublic(BaseModel):
 # ============================================================================
 # Task 4.6: PatchStockRequest Schema
 # ============================================================================
+
 
 class PatchStockRequest(BaseModel):
     """Request schema for PATCH /api/v1/productos/{id}/stock"""

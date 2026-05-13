@@ -20,7 +20,7 @@ Architecture: Router → Service (no DI, no session param)
 Matches patterns used in: categorias, ingredientes
 """
 
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Query, Path, Body, status
 
@@ -213,7 +213,7 @@ async def update_producto(
     service = ProductoService()
 
     # Preparar dict con solo campos presentes
-    producto_dict = {}
+    producto_dict: dict[str, Any] = {}
     if producto_data.nombre is not None:
         producto_dict["nombre"] = producto_data.nombre
     if producto_data.descripcion is not None:

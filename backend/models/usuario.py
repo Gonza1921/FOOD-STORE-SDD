@@ -18,6 +18,7 @@ class Rol(SQLModel, table=True):
 class UsuarioRol(SQLModel, table=True):
     """M:N relationship between Usuario and Rol"""
     
+    __tablename__ = "usuario_rol"
     __table_args__ = {"extend_existing": True}
     usuario_id: int = Field(foreign_key="usuario.id", primary_key=True)
     rol_codigo: str = Field(foreign_key="rol.codigo", primary_key=True)
@@ -28,6 +29,7 @@ class UsuarioRol(SQLModel, table=True):
 class RefreshToken(SQLModel, table=True):
     """Refresh tokens for JWT rotation and secure logout"""
     
+    __tablename__ = "refresh_token"
     __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     usuario_id: int = Field(foreign_key="usuario.id")
