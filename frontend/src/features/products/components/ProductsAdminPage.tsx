@@ -3,7 +3,7 @@
  * Phase 7.6: Assembles ProductList + ProductForm (modal or panel), handles CRUD flows
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ProductList } from './ProductList';
 import { ProductForm } from './ProductForm';
 import { type Producto, useProductDetail } from '../hooks';
@@ -46,11 +46,11 @@ export function ProductsAdminPage() {
   };
 
   // Update selectedProduct when detail loads
-  useState(() => {
+  useEffect(() => {
     if (productDetail && editingProductId) {
       setSelectedProduct(productDetail);
     }
-  });
+  }, [productDetail, editingProductId]);
 
   return (
     <div className="min-h-screen bg-gray-50">

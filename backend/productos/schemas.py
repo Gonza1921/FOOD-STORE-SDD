@@ -34,7 +34,7 @@ class ProductoCreate(BaseModel):
 
     nombre: str = Field(..., min_length=1, max_length=200, description="Product name")
     descripcion: Optional[str] = Field(
-        default=None, max_length=1000, description="Product description"
+        default=None, max_length=500, description="Product description"
     )
     precio_base: Decimal = Field(
         ..., gt=0, decimal_places=2, description="Price in ARS, always > 0"
@@ -107,7 +107,7 @@ class ProductoUpdate(BaseModel):
     """Request schema for PUT /api/v1/productos/{id}"""
 
     nombre: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    descripcion: Optional[str] = Field(default=None, max_length=1000)
+    descripcion: Optional[str] = Field(default=None, max_length=500)
     precio_base: Optional[Decimal] = Field(default=None, gt=0, decimal_places=2)
     disponible: Optional[bool] = Field(default=None)
     categorias: Optional[list[int]] = Field(
@@ -221,6 +221,16 @@ class ProductoOutPublic(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================================================
+# Task 4.6: PatchStockRequest Schema
+# ============================================================================
+
+class PatchStockRequest(BaseModel):
+    """Request schema for PATCH /api/v1/productos/{id}/stock"""
+
+    nueva_cantidad: int = Field(..., ge=0, description="New stock quantity >= 0")
 
 
 class ProductoOutPublicList(BaseModel):

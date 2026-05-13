@@ -2,9 +2,9 @@
 
 > **Change**: CH-007  
 > **Phase**: TASKS (post-DESIGN)  
-> **Status**: 🟢 **ARCHIVED** — Implementation Complete, Verified  
+> **Status**: 🟡 **IN PROGRESS** — Backend + Frontend Implementation Complete, Tests Pending  
 > **Total Estimate**: ~23h across 8 phases  
-> **Actual Time**: ~21h (completed in 11 commits)  
+> **Actual Time**: ~21h (completed in 11 commits for Phases 1–8)  
 
 ---
 

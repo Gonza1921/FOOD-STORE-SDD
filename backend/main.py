@@ -180,7 +180,7 @@ app.include_router(health.router, tags=["health"])
 app.include_router(auth_router)
 app.include_router(categorias_router)
 app.include_router(ingredientes_router)
-app.include_router(productos_router, prefix="/api/v1", tags=["Productos"])
+app.include_router(productos_router)
 
 
 # Root endpoint
