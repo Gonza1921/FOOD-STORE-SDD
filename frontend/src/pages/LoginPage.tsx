@@ -9,12 +9,8 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           {/* ── Header ── */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-              Food Store
-            </h1>
-            <h2 className="mt-2 text-lg font-medium text-gray-600">
-              Iniciar Sesión
-            </h2>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Food Store</h1>
+            <h2 className="mt-2 text-lg font-medium text-gray-600">Iniciar Sesión</h2>
             <p className="mt-1 text-sm text-gray-500">
               Ingresá tus credenciales para acceder a tu cuenta
             </p>
@@ -28,10 +24,7 @@ export default function LoginPage() {
           {/* ── Footer link ── */}
           <p className="text-center text-sm text-gray-500">
             ¿No tenés cuenta?{' '}
-            <Link
-              to="/registro"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
+            <Link to="/registro" className="font-medium text-blue-600 hover:text-blue-500">
               Registrate
             </Link>
           </p>

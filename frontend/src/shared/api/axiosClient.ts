@@ -51,7 +51,7 @@ axiosClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // ---------------------------------------------------------------------------
@@ -66,8 +66,7 @@ axiosClient.interceptors.response.use(
     };
 
     // Don't intercept auth endpoints (login, register, refresh — they must reach the server)
-    const isAuthEndpoint =
-      originalRequest.url?.startsWith('/auth/') ?? false;
+    const isAuthEndpoint = originalRequest.url?.startsWith('/auth/') ?? false;
 
     if (error.response?.status !== 401 || originalRequest._retry || isAuthEndpoint) {
       return Promise.reject(error);
@@ -122,7 +121,7 @@ axiosClient.interceptors.response.use(
     } finally {
       isRefreshing = false;
     }
-  },
+  }
 );
 
 export default axiosClient;

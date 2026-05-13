@@ -57,9 +57,7 @@ export function IngredientsSelector({
 
     // Also update removable list - add by default as false, remove if unselected
     if (showRemovable && !value.includes(ingredientId)) {
-      onRemovableChange?.(
-        removableIds.filter((id) => id !== ingredientId)
-      );
+      onRemovableChange?.(removableIds.filter((id) => id !== ingredientId));
     }
   };
 
@@ -77,11 +75,7 @@ export function IngredientsSelector({
     return (
       <div className="p-4 border border-red-300 rounded bg-red-50">
         <p className="text-red-600 text-sm">Error al cargar ingredientes</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="text-blue-600 text-sm underline"
-        >
+        <button type="button" onClick={() => refetch()} className="text-blue-600 text-sm underline">
           Reintentar
         </button>
       </div>
@@ -155,9 +149,7 @@ export function IngredientsSelector({
             );
           })}
           {localIngredients.length === 0 && (
-            <p className="text-gray-500 text-sm py-2">
-              No hay ingredientes disponibles
-            </p>
+            <p className="text-gray-500 text-sm py-2">No hay ingredientes disponibles</p>
           )}
         </div>
       )}

@@ -61,10 +61,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* ── Email ── */}
       <div>
-        <label
-          htmlFor="login-email"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="login-email" className="block text-sm font-medium text-gray-700">
           Email
         </label>
         <input
@@ -78,17 +75,12 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
           placeholder="tu@email.com"
           autoComplete="email"
         />
-        {fieldErrors.email && (
-          <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
-        )}
+        {fieldErrors.email && <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>}
       </div>
 
       {/* ── Password ── */}
       <div>
-        <label
-          htmlFor="login-password"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
           Contraseña
         </label>
         <input

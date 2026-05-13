@@ -99,10 +99,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* ── Nombre ── */}
       <div>
-        <label
-          htmlFor="reg-nombre"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="reg-nombre" className="block text-sm font-medium text-gray-700">
           Nombre
         </label>
         <input
@@ -114,17 +111,12 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder="Juan"
           autoComplete="given-name"
         />
-        {fieldErrors.nombre && (
-          <p className="mt-1 text-sm text-red-600">{fieldErrors.nombre}</p>
-        )}
+        {fieldErrors.nombre && <p className="mt-1 text-sm text-red-600">{fieldErrors.nombre}</p>}
       </div>
 
       {/* ── Apellido ── */}
       <div>
-        <label
-          htmlFor="reg-apellido"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="reg-apellido" className="block text-sm font-medium text-gray-700">
           Apellido
         </label>
         <input
@@ -143,10 +135,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* ── Email ── */}
       <div>
-        <label
-          htmlFor="reg-email"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
           Email
         </label>
         <input
@@ -158,17 +147,12 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           placeholder="tu@email.com"
           autoComplete="email"
         />
-        {fieldErrors.email && (
-          <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>
-        )}
+        {fieldErrors.email && <p className="mt-1 text-sm text-red-600">{fieldErrors.email}</p>}
       </div>
 
       {/* ── Password ── */}
       <div>
-        <label
-          htmlFor="reg-password"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
           Contraseña
         </label>
         <input
@@ -187,10 +171,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {/* ── Confirmar Password ── */}
       <div>
-        <label
-          htmlFor="reg-confirm-password"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="reg-confirm-password" className="block text-sm font-medium text-gray-700">
           Confirmar Contraseña
         </label>
         <input
@@ -203,9 +184,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
           autoComplete="new-password"
         />
         {fieldErrors.confirmPassword && (
-          <p className="mt-1 text-sm text-red-600">
-            {fieldErrors.confirmPassword}
-          </p>
+          <p className="mt-1 text-sm text-red-600">{fieldErrors.confirmPassword}</p>
         )}
       </div>
 

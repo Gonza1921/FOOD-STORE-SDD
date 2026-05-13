@@ -36,11 +36,12 @@ function TreeNode({
   return (
     <>
       <tr className="border-b border-gray-100 transition-colors hover:bg-gray-50">
-        <td className="px-4 py-3 text-sm text-gray-800" style={{ paddingLeft: `${16 + depth * 24}px` }}>
+        <td
+          className="px-4 py-3 text-sm text-gray-800"
+          style={{ paddingLeft: `${16 + depth * 24}px` }}
+        >
           <span className="flex items-center gap-2">
-            {depth > 0 && (
-              <span className="text-xs text-gray-400">└─</span>
-            )}
+            {depth > 0 && <span className="text-xs text-gray-400">└─</span>}
             <span className="font-medium">{node.nombre}</span>
           </span>
         </td>
@@ -63,7 +64,13 @@ function TreeNode({
         </td>
       </tr>
       {node.children?.map((child) => (
-        <TreeNode key={child.id} node={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
+        <TreeNode
+          key={child.id}
+          node={child}
+          depth={depth + 1}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </>
   );

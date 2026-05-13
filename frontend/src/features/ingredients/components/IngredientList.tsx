@@ -36,7 +36,10 @@ export function IngredientList({ ingredients, onEdit, onDelete }: IngredientList
         </thead>
         <tbody>
           {ingredients.map((ing) => (
-            <tr key={ing.id} className="border-b border-gray-100 transition-colors hover:bg-gray-50">
+            <tr
+              key={ing.id}
+              className="border-b border-gray-100 transition-colors hover:bg-gray-50"
+            >
               <td className="px-4 py-3 text-sm font-medium text-gray-800">{ing.nombre}</td>
               <td className="px-4 py-3 text-sm text-gray-500">{ing.descripcion ?? '—'}</td>
               <td className="px-4 py-3 text-sm">

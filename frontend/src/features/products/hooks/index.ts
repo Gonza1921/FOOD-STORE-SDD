@@ -24,20 +24,11 @@ export type {
 } from '../api/endpoints';
 
 // Query types
-export type {
-  UseProductsReturn,
-  UseProductsParams,
-} from './useProducts';
+export type { UseProductsReturn, UseProductsParams } from './useProducts';
 
-export type {
-  UseProductDetailReturn,
-  UseProductDetailParams,
-} from './useProductDetail';
+export type { UseProductDetailReturn, UseProductDetailParams } from './useProductDetail';
 
-export type {
-  UsePublicCatalogReturn,
-  UsePublicCatalogParams,
-} from './usePublicCatalog';
+export type { UsePublicCatalogReturn, UsePublicCatalogParams } from './usePublicCatalog';
 
 // Mutation types
 export type {

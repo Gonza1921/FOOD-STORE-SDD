@@ -62,8 +62,7 @@ export const useUiStore = create<UiStore>()(
 
       setTheme: (theme: Theme) => set({ theme }),
 
-      toggleSidebar: () =>
-        set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 
       setSidebarOpen: (open: boolean) => set({ sidebarOpen: open }),
 
@@ -103,6 +102,6 @@ export const useUiStore = create<UiStore>()(
       partialize: (state) => ({
         theme: state.theme,
       }),
-    },
-  ),
+    }
+  )
 );

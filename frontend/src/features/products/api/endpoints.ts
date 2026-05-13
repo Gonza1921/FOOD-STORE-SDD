@@ -97,8 +97,12 @@ export const PRODUCT_QUERY_KEYS = {
   details: () => [...PRODUCT_QUERY_KEYS.all, 'detail'] as const,
   detail: (id: number) => [...PRODUCT_QUERY_KEYS.details(), id] as const,
   public: () => [...PRODUCT_QUERY_KEYS.all, 'public'] as const,
-  publicCatalog: (params: { skip?: number; limit?: number; search?: string; categoria_id?: number }) =>
-    [...PRODUCT_QUERY_KEYS.public(), 'catalog', params] as const,
+  publicCatalog: (params: {
+    skip?: number;
+    limit?: number;
+    search?: string;
+    categoria_id?: number;
+  }) => [...PRODUCT_QUERY_KEYS.public(), 'catalog', params] as const,
 } as const;
 
 // ============================================================================
@@ -154,10 +158,9 @@ export async function deleteProduct(id: number): Promise<void> {
  * Update product stock (requires STOCK or ADMIN role)
  */
 export async function updateProductStock(id: number, nueva_cantidad: number): Promise<Producto> {
-  const response = await axiosClient.patch<Producto>(
-    API.PRODUCTS.UPDATE_STOCK(id),
-    { nueva_cantidad }
-  );
+  const response = await axiosClient.patch<Producto>(API.PRODUCTS.UPDATE_STOCK(id), {
+    nueva_cantidad,
+  });
   return response.data;
 }
 

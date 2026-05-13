@@ -90,8 +90,7 @@ export function useProductUpdate({
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ProductoUpdate }) =>
-      updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: number; data: ProductoUpdate }) => updateProduct(id, data),
     onSuccess: (product) => {
       // Invalidate detail and list
       queryClient.invalidateQueries({

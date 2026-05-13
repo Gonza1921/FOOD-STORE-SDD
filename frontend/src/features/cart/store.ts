@@ -44,16 +44,14 @@ export const useCartStore = create<CartStore>()(
 
       addItem: (item) =>
         set((state) => {
-          const existing = state.items.find(
-            (i) => i.productoId === item.productoId,
-          );
+          const existing = state.items.find((i) => i.productoId === item.productoId);
           if (existing) {
             // Increment quantity if product already in cart
             return {
               items: state.items.map((i) =>
                 i.productoId === item.productoId
                   ? { ...i, cantidad: i.cantidad + (item.cantidad ?? 1) }
-                  : i,
+                  : i
               ),
             };
           }
@@ -86,9 +84,7 @@ export const useCartStore = create<CartStore>()(
             };
           }
           return {
-            items: state.items.map((i) =>
-              i.productoId === productoId ? { ...i, cantidad } : i,
-            ),
+            items: state.items.map((i) => (i.productoId === productoId ? { ...i, cantidad } : i)),
           };
         }),
 
@@ -96,8 +92,7 @@ export const useCartStore = create<CartStore>()(
 
       // ---- Selectors ----
 
-      totalItems: (): number =>
-        get().items.reduce((sum, item) => sum + item.cantidad, 0),
+      totalItems: (): number => get().items.reduce((sum, item) => sum + item.cantidad, 0),
 
       totalPrice: (): number =>
         get().items.reduce((sum, item) => sum + item.precio * item.cantidad, 0),
@@ -107,6 +102,6 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: 'food-store-cart',
-    },
-  ),
+    }
+  )
 );

@@ -73,7 +73,15 @@ export function CategoriesAdminPage() {
           <CategoryForm
             key={editing?.id ?? 'create'}
             onSubmit={editing ? handleUpdate : handleCreate}
-            initial={editing ? { nombre: editing.nombre, descripcion: editing.descripcion, parent_id: editing.parent_id } : undefined}
+            initial={
+              editing
+                ? {
+                    nombre: editing.nombre,
+                    descripcion: editing.descripcion,
+                    parent_id: editing.parent_id,
+                  }
+                : undefined
+            }
             categories={categories}
             isLoading={isLoading}
           />

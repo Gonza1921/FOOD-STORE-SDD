@@ -105,19 +105,27 @@ export function ProductList({ onEdit, onNew }: ProductListProps) {
         {isLoading ? (
           <div className="p-8 text-center text-gray-500">
             <svg className="animate-spin h-8 w-8 mx-auto mb-2" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
             </svg>
             Cargando productos...
           </div>
         ) : isError ? (
           <div className="p-8 text-center text-red-600">
             <p>Error al cargar productos</p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="mt-2 text-sm underline"
-            >
+            <button type="button" onClick={() => refetch()} className="mt-2 text-sm underline">
               Reintentar
             </button>
           </div>
@@ -157,9 +165,7 @@ export function ProductList({ onEdit, onNew }: ProductListProps) {
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-900">
-                    ${product.precio_base}
-                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-900">${product.precio_base}</td>
                   <td className="px-4 py-3 text-sm">
                     {editingStockId === product.id ? (
                       <StockManager

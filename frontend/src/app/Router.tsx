@@ -42,7 +42,7 @@ export default function Router() {
       <Route
         path="/admin/productos"
         element={
-          <ProtectedRoute roles={["ADMIN", "STOCK"]}>
+          <ProtectedRoute roles={['ADMIN', 'STOCK']}>
             <ProductsAdminPage />
           </ProtectedRoute>
         }
@@ -50,7 +50,7 @@ export default function Router() {
       <Route
         path="/admin/categorias"
         element={
-          <ProtectedRoute roles={["ADMIN"]}>
+          <ProtectedRoute roles={['ADMIN']}>
             <CategoriesAdminPage />
           </ProtectedRoute>
         }
@@ -58,7 +58,7 @@ export default function Router() {
       <Route
         path="/admin/ingredientes"
         element={
-          <ProtectedRoute roles={["ADMIN"]}>
+          <ProtectedRoute roles={['ADMIN']}>
             <IngredientsAdminPage />
           </ProtectedRoute>
         }

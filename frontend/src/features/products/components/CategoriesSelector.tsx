@@ -73,11 +73,7 @@ export function CategoriesSelector({
     return (
       <div className="p-4 border border-red-300 rounded bg-red-50">
         <p className="text-red-600 text-sm">Error al cargar categorías</p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="text-blue-600 text-sm underline"
-        >
+        <button type="button" onClick={() => refetch()} className="text-blue-600 text-sm underline">
           Reintentar
         </button>
       </div>
@@ -151,9 +147,7 @@ export function CategoriesSelector({
             );
           })}
           {localCategories.length === 0 && (
-            <p className="text-gray-500 text-sm py-2">
-              No hay categorías disponibles
-            </p>
+            <p className="text-gray-500 text-sm py-2">No hay categorías disponibles</p>
           )}
         </div>
       )}

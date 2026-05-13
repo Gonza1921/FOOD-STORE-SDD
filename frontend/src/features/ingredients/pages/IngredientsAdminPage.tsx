@@ -73,7 +73,15 @@ export function IngredientsAdminPage() {
           <IngredientForm
             key={editing?.id ?? 'create'}
             onSubmit={editing ? handleUpdate : handleCreate}
-            initial={editing ? { nombre: editing.nombre, descripcion: editing.descripcion, es_alergeno: editing.es_alergeno } : undefined}
+            initial={
+              editing
+                ? {
+                    nombre: editing.nombre,
+                    descripcion: editing.descripcion,
+                    es_alergeno: editing.es_alergeno,
+                  }
+                : undefined
+            }
             isLoading={isLoading}
           />
           {editing && (
