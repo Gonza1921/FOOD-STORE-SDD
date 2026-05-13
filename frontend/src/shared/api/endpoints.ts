@@ -12,9 +12,14 @@ export const API = {
   },
   PRODUCTS: {
     LIST: '/productos',
-    DETAIL: (id: string): string => `/productos/${id}`,
+    DETAIL: (id: number): string => `/productos/${id}`,
+    CREATE: '/productos',
+    UPDATE: (id: number): string => `/productos/${id}`,
+    DELETE: (id: number): string => `/productos/${id}`,
+    UPDATE_STOCK: (id: number): string => `/productos/${id}/stock`,
     SEARCH: '/productos/search',
     BY_CATEGORY: (categoryId: string): string => `/productos/category/${categoryId}`,
+    PUBLIC_CATALOG: '/productos/publico/catalogo',
   },
   ORDERS: {
     LIST: '/pedidos',
