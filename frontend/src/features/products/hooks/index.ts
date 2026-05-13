@@ -11,7 +11,19 @@ export {
   useProductStockUpdate,
 } from './useProductMutations';
 
-// Types
+// Types (re-export from API)
+export type {
+  Producto,
+  ProductoCreate,
+  ProductoUpdate,
+  ProductoPublic,
+  ProductoListResponse,
+  ProductoPublicListResponse,
+  CategoriaRef,
+  IngredienteRef,
+} from '../api/endpoints';
+
+// Query types
 export type {
   UseProductsReturn,
   UseProductsParams,
@@ -27,6 +39,7 @@ export type {
   UsePublicCatalogParams,
 } from './usePublicCatalog';
 
+// Mutation types
 export type {
   UseProductCreateReturn,
   UseProductCreateParams,

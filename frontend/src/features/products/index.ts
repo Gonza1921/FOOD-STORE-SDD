@@ -2,8 +2,7 @@
 export * from './api/endpoints';
 
 // Components
-export { ProductList } from './components';
-export type { ProductListProps } from './components';
+export * from './components';
 
 // Hooks
 export * from './hooks';
