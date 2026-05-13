@@ -78,6 +78,7 @@ export function ProductForm({
   });
 
   // Populate form when editing
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (product) {
       setFormData({
@@ -309,7 +310,7 @@ export function ProductForm({
 
       {/* Categorías Adicionales */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="categorias-adicionales" className="block text-sm font-medium text-gray-700 mb-2">
           Categorías Adicionales
         </label>
         <CategoriesSelector
@@ -324,7 +325,7 @@ export function ProductForm({
 
       {/* Ingredientes */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="ingredientes" className="block text-sm font-medium text-gray-700 mb-2">
           Ingredientes
         </label>
         <IngredientsSelector

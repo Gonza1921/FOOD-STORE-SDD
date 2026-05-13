@@ -2,28 +2,29 @@
 
 > **Change**: CH-007  
 > **Phase**: TASKS (post-DESIGN)  
-> **Status**: 🟢 READY FOR APPLY  
+> **Status**: 🟢 **ARCHIVED** — Implementation Complete, Verified  
 > **Total Estimate**: ~23h across 8 phases  
+> **Actual Time**: ~21h (completed in 11 commits)  
 
 ---
 
 ## Phase 1: Setup & Infrastructure (1h)
 
-- [ ] 1.1 Create backend/productos module structure: `__init__.py`, `repository.py`, `schemas.py`, `service.py`, `router.py`
-- [ ] 1.2 Create frontend/src/features/products structure: `api/`, `hooks/`, `components/`, `pages/`, `stores/`, `index.ts`
-- [ ] 1.3 Register ProductRouter in backend/main.py with prefix `/api/v1` and tags `["Productos"]`
+- [x] 1.1 Create backend/productos module structure: `__init__.py`, `repository.py`, `schemas.py`, `service.py`, `router.py`
+- [x] 1.2 Create frontend/src/features/products structure: `api/`, `hooks/`, `components/`, `pages/`, `stores/`, `index.ts`
+- [x] 1.3 Register ProductRouter in backend/main.py with prefix `/api/v1` and tags `["Productos"]`
 
 ---
 
 ## Phase 2: Backend Repository Layer (3.5h)
 
-- [ ] 2.1 Implement `ProductoRepository` extending `BaseRepository[Producto]` with inherited CRUD (get_all, get_by_id, create, update, delete)
-- [ ] 2.2 Add `get_all_paginated(skip, limit, include_deleted)` → `tuple[list[Producto], int]` with soft delete filtering and eager load relations
-- [ ] 2.3 Add `get_by_nombre(nombre)` → `Optional[Producto]` with case-insensitive ILIKE search
-- [ ] 2.4 Add `get_con_asociaciones(producto_id)` → `Optional[Producto]` with selectinload(categorias, ingredientes)
-- [ ] 2.5 Implement `ProductoCategoriaRepository` extending `BaseRepository[ProductoCategoria]` with delete_by_producto() and get_by_producto() methods
-- [ ] 2.6 Implement `ProductoIngredienteRepository` extending `BaseRepository[ProductoIngrediente]` with delete_by_producto() and get_by_producto() methods
-- [ ] 2.7 Add `get_public_paginated(skip, limit, search, categoria_id)` to ProductoRepository filtering by disponible=true + soft delete + optional category/search
+- [x] 2.1 Implement `ProductoRepository` extending `BaseRepository[Producto]` with inherited CRUD (get_all, get_by_id, create, update, delete)
+- [x] 2.2 Add `get_all_paginated(skip, limit, include_deleted)` → `tuple[list[Producto], int]` with soft delete filtering and eager load relations
+- [x] 2.3 Add `get_by_nombre(nombre)` → `Optional[Producto]` with case-insensitive ILIKE search
+- [x] 2.4 Add `get_con_asociaciones(producto_id)` → `Optional[Producto]` with selectinload(categorias, ingredientes)
+- [x] 2.5 Implement `ProductoCategoriaRepository` extending `BaseRepository[ProductoCategoria]` with delete_by_producto() and get_by_producto() methods
+- [x] 2.6 Implement `ProductoIngredienteRepository` extending `BaseRepository[ProductoIngrediente]` with delete_by_producto() and get_by_producto() methods
+- [x] 2.7 Add `get_public_paginated(skip, limit, search, categoria_id)` to ProductoRepository filtering by disponible=true + soft delete + optional category/search
 
 ---
 
@@ -34,62 +35,63 @@
 - [x] 3.3 Implement `ProductoService.actualizar_stock()` with pessimistic validation: nuevo_stock >= 0 (400 if < 0), atomic update
 - [x] 3.4 Implement `ProductoService.obtener_producto()` → ProductoOut or 404
 - [x] 3.5 Implement `ProductoService.listar_productos(page, limit, include_deleted)` → {items, total, page, limit}
-- [ ] 3.6 Implement `ProductoService.obtener_catalogo_publico()` filtering disponible=true + soft delete + optional categoria/search
-- [ ] 3.7 Implement `ProductoService.eliminar_producto()` soft delete via UoW
+- [x] 3.6 Implement `ProductoService.obtener_catalogo_publico()` filtering disponible=true + soft delete + optional categoria/search
+- [x] 3.7 Implement `ProductoService.eliminar_producto()` soft delete via UoW
 
 ---
 
 ## Phase 4: Backend Schemas & Validation (1h)
 
-- [ ] 4.1 Create Pydantic schemas: ProductoCreate, ProductoUpdate, PatchStockRequest with field validators (precio >= 0, stock >= 0, nombre required, descripcion max 500)
-- [ ] 4.2 Create response schemas: ProductoOut (admin), ProductoOutPublic (client), nested IngredienteAssociation + CategoriaAssociation
-- [ ] 4.3 Define query key constants (PRODUCTS_KEYS) for TanStack Query in schemas or separate file
+- [x] 4.1 Create Pydantic schemas: ProductoCreate, ProductoUpdate, PatchStockRequest with field validators (precio >= 0, stock >= 0, nombre required, descripcion max 500)
+- [x] 4.2 Create response schemas: ProductoOut (admin), ProductoOutPublic (client), nested IngredienteAssociation + CategoriaAssociation
+- [x] 4.3 Define query key constants (PRODUCTS_KEYS) for TanStack Query in schemas or separate file
 
 ---
 
 ## Phase 5: Backend Router Endpoints (1.5h)
 
-- [ ] 5.1 Implement `POST /api/v1/productos` with @require_role(["STOCK", "ADMIN"]), validate input, return 201 ProductoOut
-- [ ] 5.2 Implement `GET /api/v1/productos` with @require_role(["STOCK", "ADMIN"]), pagination, soft delete filter, return {items, total, page, limit}
-- [ ] 5.3 Implement `GET /api/v1/productos/{id}` with @require_role(["STOCK", "ADMIN"]), return 200 ProductoOut or 404
-- [ ] 5.4 Implement `PUT /api/v1/productos/{id}` with @require_role(["STOCK", "ADMIN"]), M2M Replace All, return 200 ProductoOut or 404
-- [ ] 5.5 Implement `PATCH /api/v1/productos/{id}/stock` with @require_role(["STOCK", "ADMIN"]), validate stock >= 0 (400 if < 0), return 200 ProductoOut
-- [ ] 5.6 Implement `DELETE /api/v1/productos/{id}` with @require_role(["STOCK", "ADMIN"]), soft delete, return 200 {message}
-- [ ] 5.7 Implement `GET /api/v1/productos/publico` (NO AUTH) filtering disponible=true + soft delete, support categoria_id + search (q param), return ProductoOutPublic[]
+- [x] 5.1 Implement `POST /api/v1/productos` with @require_role(["STOCK", "ADMIN"]), validate input, return 201 ProductoOut
+- [x] 5.2 Implement `GET /api/v1/productos` with @require_role(["STOCK", "ADMIN"]), pagination, soft delete filter, return {items, total, page, limit}
+- [x] 5.3 Implement `GET /api/v1/productos/{id}` with @require_role(["STOCK", "ADMIN"]), return 200 ProductoOut or 404
+- [x] 5.4 Implement `PUT /api/v1/productos/{id}` with @require_role(["STOCK", "ADMIN"]), M2M Replace All, return 200 ProductoOut or 404
+- [x] 5.5 Implement `PATCH /api/v1/productos/{id}/stock` with @require_role(["STOCK", "ADMIN"]), validate stock >= 0 (400 if < 0), return 200 ProductoOut
+- [x] 5.6 Implement `DELETE /api/v1/productos/{id}` with @require_role(["ADMIN"]), soft delete, return 204 No Content
+- [x] 5.7 Implement `GET /api/v1/productos/publico/catalogo` (NO AUTH) filtering disponible=true + soft delete, support categoria_id + search, return ProductoOutPublicList
 
 ---
 
 ## Phase 6: Frontend API & Hooks (2.5h)
 
-- [ ] 6.1 Create endpoints.ts with productAPI client: createProduct, listProducts, getProduct, updateProduct, updateStock, deleteProduct, getPublicCatalog
-- [ ] 6.2 Create useProducts hook (TanStack Query) with pagination, staleTime 5m, invalidation on create/update/delete
-- [ ] 6.3 Create useProductDetail hook (TanStack Query) with staleTime 10m, enabled flag, eager load relations
-- [ ] 6.4 Create usePublicCatalog hook with category/search filters, staleTime 30m
-- [ ] 6.5 Create useProductCreate mutation with optimistic invalidation of list queryKey
-- [ ] 6.6 Create useProductUpdate mutation with invalidation of detail + list queryKeys
-- [ ] 6.7 Create useProductDelete mutation with soft delete + cache invalidation
-- [ ] 6.8 Create useStockUpdate mutation with optimistic UI + rollback on error
-- [ ] 6.9 Export all hooks from index.ts (barrel export)
+- [x] 6.1 Create endpoints.ts with productAPI client: createProduct, listProducts, getProduct, updateProduct, updateStock, deleteProduct, getPublicCatalog
+- [x] 6.2 Create useProducts hook (TanStack Query) with pagination, staleTime 5m, invalidation on create/update/delete
+- [x] 6.3 Create useProductDetail hook (TanStack Query) with staleTime 10m, enabled flag, eager load relations
+- [x] 6.4 Create usePublicCatalog hook with category/search filters, staleTime 30m
+- [x] 6.5 Create useProductCreate mutation with optimistic invalidation of list queryKey
+- [x] 6.6 Create useProductUpdate mutation with invalidation of detail + list queryKeys
+- [x] 6.7 Create useProductDelete mutation with soft delete + cache invalidation
+- [x] 6.8 Create useStockUpdate mutation with optimistic UI + rollback on error
+- [x] 6.9 Export all hooks from index.ts (barrel export)
 
 ---
 
 ## Phase 7: Frontend Components (3.5h)
 
-- [ ] 7.1 Create ProductForm.tsx: form with fields (nombre, descripcion, precio_base, stock_cantidad, disponible, categoria_id), TanStack Form validation, submit (create/update)
-- [ ] 7.2 Create CategoriesSelector.tsx: multi-select component with checkboxes, es_principal toggle, eager loads from useCategories hook
-- [ ] 7.3 Create IngredientsSelector.tsx: multi-select component with checkboxes, es_removible toggle, eager loads from useIngredientes hook
-- [ ] 7.4 Create ProductList.tsx: table with pagination, columns (id, nombre, precio, stock, disponible, actions), delete/edit/stock buttons, loading/error states
-- [ ] 7.5 Create StockManager.tsx: input (min=0), +/- buttons, save button, validates stock >= 0, triggers useStockUpdate
-- [ ] 7.6 Create ProductsAdminPage.tsx: assembles ProductList + ProductForm (modal or panel), handle CRUD flows, Zustand state integration
-- [ ] 7.7 Create productStore.ts (Zustand): UI state (filters, selectedProductId, formOpen, editingProduct), actions (setPage, selectProduct, openForm, closeForm)
+- [x] 7.1 Create ProductForm.tsx: form with fields (nombre, descripcion, precio_base, stock_cantidad, disponible, categoria_id), TanStack Form validation, submit (create/update)
+- [x] 7.2 Create CategoriesSelector.tsx: multi-select component with checkboxes, es_principal toggle, eager loads from useCategories hook
+- [x] 7.3 Create IngredientsSelector.tsx: multi-select component with checkboxes, es_removible toggle, eager loads from useIngredientes hook
+- [x] 7.4 Create ProductList.tsx: table with pagination, columns (id, nombre, precio, stock, disponible, actions), delete/edit/stock buttons, loading/error states
+- [x] 7.5 Create StockManager.tsx: input (min=0), +/- buttons, save button, validates stock >= 0, triggers useStockUpdate
+- [x] 7.6 Create ProductsAdminPage.tsx: assembles ProductList + ProductForm (modal or panel), handle CRUD flows, Zustand state integration
+- [x] 7.7 Create productStore.ts (Zustand): UI state (filters, selectedProductId, formOpen, editingProduct), actions (setPage, selectProduct, openForm, closeForm)
 
 ---
 
 ## Phase 8: Frontend Routing & Integration (1.5h)
 
-- [ ] 8.1 Add route `/admin/productos` → ProductsAdminPage in frontend/src/app/Router.tsx or routing config
-- [ ] 8.2 Add ProductsAdminPage to sidebar/menu navigation (if applicable)
-- [ ] 8.3 Import ProductRouter module in frontend main app; verify endpoint URLs match backend prefix
+- [x] 8.1 Add route `/admin/productos` → ProductsAdminPage in frontend/src/app/Router.tsx or routing config
+- [x] 8.2 Add ProductsAdminPage to sidebar/menu navigation (if applicable)
+- [x] 8.3 Add public catalog route `/catalogo` → PublicCatalogPage (no auth)
+- [x] 8.4 Import ProductRouter module in frontend main app; verify endpoint URLs match backend prefix
 
 ---
 
