@@ -9,7 +9,7 @@ Task 11.1-11.4:
 Uses unittest.mock to isolate AuthService from database and UnitOfWork.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -252,7 +252,7 @@ class TestRefresh:
         # Existing valid token
         stored_token = MagicMock(
             revoked_at=None,
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+            expires_at=datetime.utcnow() + timedelta(days=7),
             usuario_id=1,
         )
         mock_repo.find_refresh_token.return_value = stored_token
@@ -287,8 +287,8 @@ class TestRefresh:
 
         # Token already revoked (replay attack)
         stored_token = MagicMock(
-            revoked_at=datetime.now(timezone.utc) - timedelta(hours=1),
-            expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+            revoked_at=datetime.utcnow() - timedelta(hours=1),
+            expires_at=datetime.utcnow() + timedelta(days=7),
             usuario_id=1,
         )
         mock_repo.find_refresh_token.return_value = stored_token
@@ -316,7 +316,7 @@ class TestRefresh:
         # Expired token
         stored_token = MagicMock(
             revoked_at=None,
-            expires_at=datetime.now(timezone.utc) - timedelta(hours=1),
+            expires_at=datetime.utcnow() - timedelta(hours=1),
             usuario_id=1,
         )
         mock_repo.find_refresh_token.return_value = stored_token
@@ -387,7 +387,7 @@ class TestLogout:
         mock_uow_class.return_value = mock_uow_instance
 
         # Token already revoked
-        stored_token = MagicMock(revoked_at=datetime.now(timezone.utc))
+        stored_token = MagicMock(revoked_at=datetime.utcnow())
         mock_repo.find_refresh_token.return_value = stored_token
 
         with patch("backend.auth.service.hash_token", return_value="hashed"):

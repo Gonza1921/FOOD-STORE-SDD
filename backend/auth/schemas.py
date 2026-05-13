@@ -7,7 +7,6 @@ Response schemas use ``serialization_alias`` to emit camelCase in JSON
 
 from pydantic import BaseModel, EmailStr, Field
 
-
 # ---------------------------------------------------------------------------
 # Request schemas
 # ---------------------------------------------------------------------------
@@ -32,13 +31,17 @@ class LoginRequest(BaseModel):
 class RefreshRequest(BaseModel):
     """Payload for ``POST /api/v1/auth/refresh``."""
 
-    refresh_token: str = Field(..., min_length=1)
+    refresh_token: str = Field(..., min_length=1, alias="refreshToken")
+
+    model_config = {"populate_by_name": True}
 
 
 class LogoutRequest(BaseModel):
     """Payload for ``POST /api/v1/auth/logout``."""
 
-    refresh_token: str = Field(..., min_length=1)
+    refresh_token: str = Field(..., min_length=1, alias="refreshToken")
+
+    model_config = {"populate_by_name": True}
 
 
 # ---------------------------------------------------------------------------

@@ -142,8 +142,7 @@ class AuthService:
                 await repo.revoke_all_user_tokens(stored.usuario_id)
                 raise APIError(
                     message=(
-                        "Sesión comprometida. "
-                        "Todos los tokens han sido revocados."
+                        "Sesión comprometida. " "Todos los tokens han sido revocados."
                     ),
                     status_code=401,
                     error_code="SESSION_COMPROMISED",
