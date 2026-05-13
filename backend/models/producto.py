@@ -3,7 +3,7 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class Ingrediente(SQLModel, table=True):
@@ -17,6 +17,7 @@ class Ingrediente(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
+    deleted_at: Optional[datetime] = Field(default=None, index=True)
 
 
 class ProductoIngrediente(SQLModel, table=True):
@@ -48,6 +49,11 @@ class Producto(SQLModel, table=True):
     
     # FK to primary category (can have multiple via ProductoCategoria)
     categoria_id: int = Field(foreign_key="categoria.id", index=True)
+    
+    # M2M via link_model: producto.categorias returns Categoria[] directly
+    # (not ProductoCategoria association objects)
+    categorias: list["Categoria"] = Relationship(link_model=ProductoCategoria)
+    ingredientes: list["Ingrediente"] = Relationship(link_model=ProductoIngrediente)
     
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)

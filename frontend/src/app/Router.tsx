@@ -6,6 +6,8 @@ import {
   DashboardPage,
   CategoriesAdminPage,
   IngredientsAdminPage,
+  ProductsAdminPage,
+  PublicCatalogPage,
 } from '@/pages/index';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 
@@ -16,6 +18,7 @@ export default function Router() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegisterPage />} />
       <Route path="/acceso-denegado" element={<UnauthorizedPage />} />
+      <Route path="/catalogo" element={<PublicCatalogPage />} />
 
       {/* ── Protected routes ── */}
       <Route
@@ -35,7 +38,15 @@ export default function Router() {
         }
       />
 
-      {/* ── New Admin routes ── */}
+      {/* ── Admin routes (ADMIN or STOCK roles) ── */}
+      <Route
+        path="/admin/productos"
+        element={
+          <ProtectedRoute roles={["ADMIN", "STOCK"]}>
+            <ProductsAdminPage />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/admin/categorias"
         element={

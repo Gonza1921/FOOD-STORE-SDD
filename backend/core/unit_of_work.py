@@ -88,7 +88,7 @@ class UnitOfWork:
         name: str,
         repo_class: type[BaseRepository],
         model_class: type,
-    ) -> "UnitOfWork":
+    ) -> BaseRepository:
         """Register a repository class for a given domain model.
 
         The repository will be instantiated on ``__aenter__`` with the
@@ -100,15 +100,22 @@ class UnitOfWork:
             model_class: The SQLModel class this repository manages.
 
         Returns:
-            ``self`` for chaining::
+            The instantiated repository instance.
 
-                uow.register("a", AR, A).register("b", BR, B)
+        NOTE: Must be called **inside** ``async with UnitOfWork() as uow:``
+        so the session is already available. All service code follows this
+        pattern (register inside the context block).
         """
         self._repo_classes[name] = (repo_class, model_class)
         # If we are already inside the context, instantiate immediately
         if self.session is not None:
-            self._repos[name] = repo_class(self.session, model_class)  # type: ignore[arg-type]
-        return self
+            repo = repo_class(self.session, model_class)  # type: ignore[arg-type]
+            self._repos[name] = repo
+            return repo
+        raise RuntimeError(
+            "UnitOfWork.register() must be called inside the async context "
+            "manager (after 'async with UnitOfWork() as uow:')"
+        )
 
     # ------------------------------------------------------------------
     # Dynamic repository access

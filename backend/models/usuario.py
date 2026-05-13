@@ -46,7 +46,10 @@ class Usuario(SQLModel, table=True):
     # Relationships
     roles: list["Rol"] = Relationship(
         link_model=UsuarioRol,
-        sa_relationship_kwargs={"lazy": "selectin"},
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "foreign_keys": [UsuarioRol.usuario_id, UsuarioRol.rol_codigo],
+        },
     )
     
     # Audit
