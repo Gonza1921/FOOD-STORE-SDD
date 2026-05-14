@@ -10,3 +10,4 @@ export { IngredientsAdminPage } from '@/features/ingredients';
 export { ProductsAdminPage } from '@/features/products';
 
 export { OrdersPage, OrderDetailPage, AdminOrdersPage } from '@/features/pedidos';
+export { DireccionesListPage } from '@/features/direcciones';
