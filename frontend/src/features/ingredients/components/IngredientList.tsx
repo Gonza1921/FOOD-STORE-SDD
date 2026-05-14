@@ -23,7 +23,6 @@ export function IngredientList({ ingredients, onEdit, onDelete }: IngredientList
   }
 
   return (
-<<<<<<< HEAD
     <div className="elevated-card overflow-hidden !p-0 animate-fade-in-up">
       <div className="divide-y divide-outline-variant/10">
         {ingredients.map((ing, i) => (
@@ -46,59 +45,6 @@ export function IngredientList({ ingredients, onEdit, onDelete }: IngredientList
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-on-surface truncate">{ing.nombre}</p>
                   {ing.es_alergeno && <Badge variant="error" size="sm" dot>Alérgeno</Badge>}
-=======
-    <div className="overflow-hidden rounded-lg bg-white shadow">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Nombre
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Descripción
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Alérgeno
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {ingredients.map((ing) => (
-            <tr
-              key={ing.id}
-              className="border-b border-gray-100 transition-colors hover:bg-gray-50"
-            >
-              <td className="px-4 py-3 text-sm font-medium text-gray-800">{ing.nombre}</td>
-              <td className="px-4 py-3 text-sm text-gray-500">{ing.descripcion ?? '—'}</td>
-              <td className="px-4 py-3 text-sm">
-                {ing.es_alergeno ? (
-                  <span className="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
-                    Sí
-                  </span>
-                ) : (
-                  <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                    No
-                  </span>
-                )}
-              </td>
-              <td className="px-4 py-3 text-sm">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => onEdit(ing)}
-                    className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
-                  >
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => onDelete(ing.id)}
-                    className="rounded bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
-                  >
-                    Eliminar
-                  </button>
->>>>>>> origin/main
                 </div>
                 {ing.descripcion && (
                   <p className="text-xs text-on-surface-variant/70 truncate">{ing.descripcion}</p>

@@ -6,7 +6,7 @@
  */
 
 import { useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import {
   listAllPedidos,
   PEDIDO_QUERY_KEYS,
@@ -79,7 +79,6 @@ function EstadoTransitionSelect({
 // ============================================================================
 
 export function AdminOrdersPage() {
-  const queryClient = useQueryClient();
   const [skip, setSkip] = useState(0);
   const [estadoFilter, setEstadoFilter] = useState<string>('');
 

@@ -11,6 +11,7 @@ import {
   OrdersPage,
   OrderDetailPage,
   AdminOrdersPage,
+  CheckoutPage,
 } from '@/pages/index';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
@@ -65,6 +66,16 @@ export default function Router() {
           element={
             <ProtectedRoute roles={['ADMIN']}>
               <IngredientsAdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Checkout route */}
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
             </ProtectedRoute>
           }
         />

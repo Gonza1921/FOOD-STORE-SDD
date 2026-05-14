@@ -4,7 +4,7 @@
  * Phase 7.6: Assembles ProductList + ProductForm (modal/panel), handles CRUD flows.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductList } from './ProductList';
 import { ProductForm } from './ProductForm';
 import { ProductSearch } from './ProductSearch';
