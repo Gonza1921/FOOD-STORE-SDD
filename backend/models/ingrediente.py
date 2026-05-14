@@ -9,6 +9,8 @@ from sqlmodel import SQLModel, Field, Relationship
 if TYPE_CHECKING:
     from .producto import Producto
 
+from .producto_ingrediente import ProductoIngrediente  # noqa: E402 — needed at runtime for link_model
+
 
 class Ingrediente(SQLModel, table=True):
     """Food ingredients for product composition and nutritional tracking"""
@@ -30,5 +32,5 @@ class Ingrediente(SQLModel, table=True):
     # M2M via link_model — returns Producto[] directly
     productos: Mapped[list["Producto"]] = Relationship(
         back_populates="ingredientes",
-        link_model="ProductoIngrediente",
+        link_model=ProductoIngrediente,
     )

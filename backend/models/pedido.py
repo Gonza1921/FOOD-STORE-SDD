@@ -2,13 +2,10 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
-from sqlalchemy.orm import Mapped, relationship
-from sqlmodel import SQLModel, Field
-
-if TYPE_CHECKING:
-    from backend.models.pedido import DetallePedido
+from sqlalchemy.orm import Mapped
+from sqlmodel import SQLModel, Field, Relationship
 
 
 class FormaPago(SQLModel, table=True):
@@ -49,8 +46,8 @@ class Pedido(SQLModel, table=True):
     direccion_id: Optional[int] = Field(default=None, foreign_key="direccion_entrega.id")
 
     # Relationships
-    detalles: Mapped[list["DetallePedido"]] = relationship(
-        "DetallePedido", back_populates="pedido", cascade="all, delete-orphan"
+    detalles: Mapped[list["DetallePedido"]] = Relationship(
+        back_populates="pedido",
     )
 
     # Audit
@@ -80,7 +77,7 @@ class DetallePedido(SQLModel, table=True):
     personalizacion: Optional[str] = Field(default=None)  # JSON: ["id1", "id2"]
 
     # Relationship
-    pedido: Mapped["Pedido"] = relationship("Pedido", back_populates="detalles")
+    pedido: Optional["Pedido"] = Relationship(back_populates="detalles")
 
     @property
     def subtotal(self) -> Decimal:
