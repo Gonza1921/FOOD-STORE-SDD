@@ -1,6 +1,7 @@
 /**
- * StockManager - Component for updating product stock
+ * StockManager — Component for inline product stock editing in card view.
  * Phase 7.5: Input (min=0), +/- buttons, save button, validates stock >= 0, triggers useStockUpdate
+ * Stitch-inspired styling.
  */
 
 import { useState, useEffect } from 'react';
@@ -82,64 +83,71 @@ export function StockManager({
 
   const isLoading = stockMutation.isPending;
 
-  if (isEditing) {
-    return (
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={handleDecrement}
-          disabled={isLoading || stockValue <= 0}
-          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          -
-        </button>
-        <input
-          type="number"
-          value={stockValue}
-          onChange={handleInputChange}
-          disabled={isLoading}
-          min="0"
-          className="w-20 text-center border border-gray-300 rounded py-1 px-2 focus:border-blue-500 focus:ring-blue-500"
-        />
-        <button
-          type="button"
-          onClick={handleIncrement}
-          disabled={isLoading}
-          className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50"
-        >
-          +
-        </button>
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={isLoading || stockValue === currentStock}
-          className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isLoading ? '...' : 'Guardar'}
-        </button>
-        <button
-          type="button"
-          onClick={handleCancel}
-          disabled={isLoading}
-          className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
-        >
-          Cancelar
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm font-medium text-gray-900">{currentStock}</span>
-      <button
-        type="button"
-        onClick={() => setIsEditing(true)}
-        disabled={disabled}
-        className="text-sm text-blue-600 hover:text-blue-800 disabled:opacity-50"
-      >
-        Editar
-      </button>
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {isEditing ? (
+        <>
+          <button
+            type="button"
+            onClick={handleDecrement}
+            disabled={isLoading || stockValue <= 0}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-outline-variant/40 bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            value={stockValue}
+            onChange={handleInputChange}
+            disabled={isLoading}
+            min="0"
+            className="w-16 text-center rounded-lg border border-outline-variant/40 bg-surface-container-lowest py-1 px-1.5 text-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600"
+          />
+          <button
+            type="button"
+            onClick={handleIncrement}
+            disabled={isLoading}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-outline-variant/40 bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-40 transition-colors text-sm font-medium"
+          >
+            +
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={isLoading || stockValue === currentStock}
+            className="px-2.5 py-1 text-xs font-medium bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50 transition-colors"
+          >
+            {isLoading ? (
+              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              'Guardar'
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={isLoading}
+            className="px-2 py-1 text-xs text-on-surface-variant hover:text-on-surface transition-colors"
+          >
+            Cancelar
+          </button>
+        </>
+      ) : (
+        <>
+          <span className="text-sm font-medium text-on-surface">{currentStock}</span>
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+            disabled={disabled}
+            className="text-xs text-brand-600 hover:text-brand-700 underline disabled:opacity-50 transition-colors"
+          >
+            Editar
+          </button>
+        </>
+      )}
     </div>
   );
 }

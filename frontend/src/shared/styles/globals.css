@@ -2,20 +2,201 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global resets */
-* {
-  @apply box-border;
+/* ════════════════════════════════════════════════════════════════
+   SAAS PREMIUM — Design System Foundation
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── CSS Custom Properties (for dark mode theming) ────────────── */
+
+@layer base {
+  :root {
+    --color-bg: 248 249 255;       /* surface */
+    --color-bg-card: 255 255 255;  /* surface-container-lowest */
+    --color-bg-container: 229 238 255;
+    --color-text: 11 28 48;
+    --color-text-muted: 87 66 59;
+    --color-border: 222 192 183;
+    --color-brand: 165 60 23;
+    --color-brand-light: 232 93 42;
+    --color-error: 186 26 26;
+    --color-success: 46 125 50;
+  }
+
+  .dark {
+    --color-bg: 15 18 28;
+    --color-bg-card: 22 26 38;
+    --color-bg-container: 28 33 48;
+    --color-text: 230 232 240;
+    --color-text-muted: 160 155 150;
+    --color-border: 60 55 52;
+    --color-brand: 232 93 42;
+    --color-brand-light: 239 116 72;
+    --color-error: 255 180 171;
+    --color-success: 129 199 132;
+  }
 }
 
-html,
-body {
-  @apply h-full w-full m-0 p-0;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+
+  .dark body {
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text));
+  }
+
+  #root {
+    @apply h-full w-full;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-600/40 ring-offset-2 ring-offset-surface;
+  }
 }
 
-body {
-  @apply bg-white text-gray-900 font-sans;
-}
+/* ════════════════════════════════════════════════════════════════
+   COMPONENT LAYER — Reusable Utility Classes
+   ════════════════════════════════════════════════════════════════ */
 
-#root {
-  @apply h-full w-full;
+@layer components {
+  /* ── Page containers ── */
+  .page-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8;
+  }
+
+  /* ── Section Card (default) ── */
+  .section-card {
+    @apply rounded-xl border border-outline-variant/30 bg-surface-container-lowest shadow-sm p-4 sm:p-6;
+  }
+
+  /* ── Glass Card (premium blur effect) ── */
+  .glass-card {
+    @apply rounded-xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-glass;
+  }
+
+  .dark .glass-card {
+    background-color: rgba(22, 26, 38, 0.7);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ── Elevated Card (premium shadow) ── */
+  .elevated-card {
+    @apply rounded-xl bg-surface-container-lowest shadow-premium border border-outline-variant/10;
+  }
+
+  /* ── Gradient Cards ── */
+  .gradient-brand {
+    @apply bg-gradient-to-br from-brand-600 to-brand-800 text-white;
+  }
+
+  .gradient-brand-subtle {
+    @apply bg-gradient-to-br from-brand-50 to-brand-100/80 text-brand-700;
+  }
+
+  .gradient-surface {
+    @apply bg-gradient-to-br from-surface to-surface-container;
+  }
+
+  .gradient-hero {
+    @apply bg-gradient-to-br from-surface via-surface-container-low to-surface-container;
+  }
+
+  /* ── Text with gradient ── */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-brand-400;
+  }
+
+  /* ── Typography ── */
+  .page-heading {
+    @apply text-[24px] leading-[32px] font-semibold text-on-surface;
+  }
+
+  .page-subtitle {
+    @apply text-[14px] leading-[20px] text-on-surface-variant mt-0.5;
+  }
+
+  /* ── Feedback banners ── */
+  .feedback-banner {
+    @apply rounded-xl border px-4 py-3 text-sm;
+  }
+
+  .feedback-banner--success {
+    @apply feedback-banner border-success/30 bg-success-container text-success;
+  }
+
+  .feedback-banner--error {
+    @apply feedback-banner border-error/30 bg-error-container text-error;
+  }
+
+  /* ── Shimmer loading (skeleton) ── */
+  .shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.4) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .dark .shimmer::after {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* ── Staggered animation for lists ── */
+  .stagger-1 { animation-delay: 50ms; }
+  .stagger-2 { animation-delay: 100ms; }
+  .stagger-3 { animation-delay: 150ms; }
+  .stagger-4 { animation-delay: 200ms; }
+  .stagger-5 { animation-delay: 250ms; }
+  .stagger-6 { animation-delay: 300ms; }
+  .stagger-7 { animation-delay: 350ms; }
+  .stagger-8 { animation-delay: 400ms; }
+
+  /* ── Scrollbar styling ── */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-border) / 0.5) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-outline-variant/50;
+  }
 }

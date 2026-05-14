@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import type { IngredientFormData } from '../hooks/useIngredients';
+import { Button, Input } from '@/shared/ui';
 
 interface IngredientFormProps {
   onSubmit: (data: IngredientFormData) => Promise<void>;
@@ -43,65 +44,58 @@ export function IngredientForm({ onSubmit, initial, isLoading }: IngredientFormP
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg bg-white p-6 shadow">
-      <h3 className="mb-4 text-lg font-semibold text-gray-800">
-        {isEditing ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}
-      </h3>
-
-      {error && (
-        <div className="mb-4 rounded border border-red-400 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
+    <div className="elevated-card">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-brand-subtle">
+          <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: '"wght" 500' }}>
+            {isEditing ? 'edit' : 'add'}
+          </span>
         </div>
-      )}
-
-      <div className="mb-4">
-        <label htmlFor="nombre" className="mb-1 block text-sm font-medium text-gray-700">
-          Nombre <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="nombre"
-          type="text"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Nombre del ingrediente"
-          required
-        />
+        <h3 className="text-base font-semibold text-on-surface">
+          {isEditing ? 'Editar Ingrediente' : 'Nuevo Ingrediente'}
+        </h3>
       </div>
 
-      <div className="mb-4">
-        <label htmlFor="descripcion" className="mb-1 block text-sm font-medium text-gray-700">
-          Descripción
-        </label>
-        <textarea
-          id="descripcion"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          placeholder="Descripción opcional"
-          rows={3}
-        />
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="feedback-banner--error">
+            <span className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"wght" 500' }}>
+                error
+              </span>
+              {error}
+            </span>
+          </div>
+        )}
 
-      <div className="mb-4">
-        <label className="flex items-center gap-2">
+        <Input id="ing-nombre" label="Nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre del ingrediente" required />
+
+        <div>
+          <label htmlFor="ing-descripcion" className="mb-1.5 block text-sm font-medium text-on-surface">Descripción</label>
+          <textarea
+            id="ing-descripcion"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            className="block w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:border-brand-600 focus:ring-brand-600/20 transition-all shadow-sm"
+            placeholder="Descripción opcional"
+            rows={3}
+          />
+        </div>
+
+        <label className="flex items-center gap-3 cursor-pointer select-none">
           <input
             type="checkbox"
             checked={esAlergeno}
             onChange={(e) => setEsAlergeno(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="h-5 w-5 rounded-lg border-outline-variant text-brand-600 focus:ring-brand-600/20 focus:ring-2 focus:ring-offset-0 transition-colors"
           />
-          <span className="text-sm font-medium text-gray-700">Es alérgeno</span>
+          <span className="text-sm font-medium text-on-surface">Es alérgeno</span>
         </label>
-      </div>
 
-      <button
-        type="submit"
-        disabled={submitting || isLoading}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {submitting ? 'Guardando...' : isEditing ? 'Actualizar' : 'Crear'}
-      </button>
-    </form>
+        <Button type="submit" variant="premium" size="md" className="w-full" disabled={submitting || isLoading} isLoading={submitting}>
+          {isEditing ? 'Actualizar' : 'Crear'}
+        </Button>
+      </form>
+    </div>
   );
 }

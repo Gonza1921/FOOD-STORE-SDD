@@ -1,11 +1,14 @@
 import { useMemo, type ReactNode } from 'react';
 import type { Category } from '../hooks/useCategories';
+import { Button, Badge } from '@/shared/ui';
 
 interface CategoryListProps {
   categories: Category[];
   onEdit: (cat: Category) => void;
   onDelete: (id: number) => void;
 }
+
+// ── Tree building ──
 
 function buildCategoryTree(flat: Category[]): Category[] {
   const map = new Map<number, Category>();
@@ -22,6 +25,8 @@ function buildCategoryTree(flat: Category[]): Category[] {
   return roots;
 }
 
+// ── Tree node ──
+
 function TreeNode({
   node,
   depth,
@@ -35,33 +40,54 @@ function TreeNode({
 }): ReactNode {
   return (
     <>
-      <tr className="border-b border-gray-100 transition-colors hover:bg-gray-50">
-        <td className="px-4 py-3 text-sm text-gray-800" style={{ paddingLeft: `${16 + depth * 24}px` }}>
-          <span className="flex items-center gap-2">
-            {depth > 0 && (
-              <span className="text-xs text-gray-400">└─</span>
-            )}
-            <span className="font-medium">{node.nombre}</span>
-          </span>
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-500">{node.descripcion ?? '—'}</td>
-        <td className="px-4 py-3 text-sm">
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(node)}
-              className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => onDelete(node.id)}
-              className="rounded bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
-            >
-              Eliminar
-            </button>
+      <div
+        className="flex items-center justify-between px-4 py-3 border-b border-outline-variant/10 hover:bg-surface-container/30 transition-colors"
+        style={{ paddingLeft: `${16 + depth * 28}px` }}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          {depth > 0 && (
+            <span className="text-outline-variant/40 select-none text-xs">└─</span>
+          )}
+          <div
+            className={`flex h-8 w-8 items-center justify-center rounded-lg shrink-0 ${
+              depth === 0
+                ? 'gradient-brand-subtle'
+                : 'bg-surface-container text-on-surface-variant'
+            }`}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', fontVariationSettings: '"wght" 500' }}>
+              {depth === 0 ? 'category' : 'subdirectory_arrow_right'}
+            </span>
           </div>
-        </td>
-      </tr>
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-on-surface truncate">{node.nombre}</p>
+            {node.descripcion && (
+              <p className="text-xs text-on-surface-variant/70 truncate">{node.descripcion}</p>
+            )}
+          </div>
+          {node.children && node.children.length > 0 && (
+            <Badge variant="neutral" size="sm">
+              {node.children.length}
+            </Badge>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          <Button variant="ghost" size="sm" icon="edit" onClick={() => onEdit(node)} aria-label={`Editar ${node.nombre}`}>
+            Editar
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="delete"
+            onClick={() => onDelete(node.id)}
+            aria-label={`Eliminar ${node.nombre}`}
+            className="text-error hover:text-error hover:bg-error-container/50"
+          >
+            Eliminar
+          </Button>
+        </div>
+      </div>
       {node.children?.map((child) => (
         <TreeNode key={child.id} node={child} depth={depth + 1} onEdit={onEdit} onDelete={onDelete} />
       ))}
@@ -69,39 +95,34 @@ function TreeNode({
   );
 }
 
+// ── Main ──
+
 export function CategoryList({ categories, onEdit, onDelete }: CategoryListProps) {
   const tree = useMemo(() => buildCategoryTree(categories), [categories]);
 
   if (categories.length === 0) {
     return (
-      <div className="rounded-lg bg-white p-8 text-center shadow">
-        <p className="text-gray-500">No hay categorías registradas.</p>
+      <div className="elevated-card flex flex-col items-center justify-center py-14 animate-fade-in">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface-container mb-4">
+          <span className="material-symbols-outlined text-outline-variant" style={{ fontSize: '32px', fontVariationSettings: '"wght" 300' }}>
+            category
+          </span>
+        </div>
+        <p className="text-sm font-medium text-on-surface mb-1">Sin categorías</p>
+        <p className="text-xs text-on-surface-variant/70">Creá tu primera categoría usando el formulario</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg bg-white shadow">
-      <table className="w-full">
-        <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Nombre
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Descripción
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {tree.map((node) => (
-            <TreeNode key={node.id} node={node} depth={0} onEdit={onEdit} onDelete={onDelete} />
-          ))}
-        </tbody>
-      </table>
+    <div className="elevated-card overflow-hidden !p-0 animate-fade-in-up">
+      <div className="divide-y divide-outline-variant/10">
+        {tree.map((node, i) => (
+          <div key={node.id} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+            <TreeNode node={node} depth={0} onEdit={onEdit} onDelete={onDelete} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
