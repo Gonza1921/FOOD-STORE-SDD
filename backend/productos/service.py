@@ -15,11 +15,9 @@ from sqlmodel import select
 
 from backend.core.unit_of_work import UnitOfWork
 from backend.core.exceptions import NotFoundError
-from backend.models.producto import (
-    Producto,
-    ProductoCategoria,
-    ProductoIngrediente,
-)
+from backend.models.producto import Producto
+from backend.models.producto_categoria import ProductoCategoria
+from backend.models.producto_ingrediente import ProductoIngrediente
 from backend.models.categoria import Categoria
 from backend.models.ingrediente import Ingrediente
 from .repository import (

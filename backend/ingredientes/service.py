@@ -8,7 +8,7 @@ from backend.ingredientes.schemas import (
     IngredienteOut,
     IngredienteUpdate,
 )
-from backend.models.producto import Ingrediente
+from backend.models.ingrediente import Ingrediente
 
 
 class IngredienteService:

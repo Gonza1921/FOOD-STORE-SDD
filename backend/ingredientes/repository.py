@@ -3,7 +3,8 @@ from typing import Optional
 from sqlmodel import select
 
 from backend.core.repository import BaseRepository
-from backend.models.producto import Ingrediente, ProductoIngrediente
+from backend.models.ingrediente import Ingrediente
+from backend.models.producto_ingrediente import ProductoIngrediente
 
 
 class IngredienteRepository(BaseRepository[Ingrediente]):

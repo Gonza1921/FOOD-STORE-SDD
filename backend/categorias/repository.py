@@ -5,7 +5,7 @@ from sqlmodel import select
 
 from backend.core.repository import BaseRepository
 from backend.models.categoria import Categoria
-from backend.models.producto import ProductoCategoria
+from backend.models.producto_categoria import ProductoCategoria
 
 
 class CategoriaRepository(BaseRepository[Categoria]):
