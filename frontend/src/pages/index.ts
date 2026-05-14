@@ -7,3 +7,5 @@ export { default as PublicCatalogPage } from './PublicCatalogPage';
 export { CategoriesAdminPage } from '@/features/categories';
 export { IngredientsAdminPage } from '@/features/ingredients';
 export { ProductsAdminPage } from '@/features/products';
+
+export { OrdersPage, OrderDetailPage, AdminOrdersPage } from '@/features/pedidos';

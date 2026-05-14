@@ -27,6 +27,16 @@ export {
 } from './ingredients';
 export type { IngredientFormData } from './ingredients';
 
+// Pedidos
+export { OrdersPage, OrderDetailPage, AdminOrdersPage } from './pedidos';
+export {
+  usePedidos,
+  usePedidoDetail,
+  useCreatePedido,
+  useConfirmPedido,
+  useUpdatePedidoEstado,
+} from './pedidos';
+
 // UI
 export { useUiStore } from './ui';
 export type { UiStore, Theme, Toast } from './ui';

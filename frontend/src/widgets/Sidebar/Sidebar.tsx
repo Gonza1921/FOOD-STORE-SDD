@@ -29,9 +29,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: 'dashboard', roles: [] },
+  { path: '/mis-pedidos', label: 'Mis Pedidos', icon: 'receipt_long', roles: [] },
   { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
   { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
   { path: '/admin/ingredientes', label: 'Ingredientes', icon: 'nutrition', roles: ['ADMIN'] },
+  { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
 ];
 
 // ---------------------------------------------------------------------------

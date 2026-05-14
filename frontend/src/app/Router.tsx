@@ -8,6 +8,9 @@ import {
   IngredientsAdminPage,
   ProductsAdminPage,
   PublicCatalogPage,
+  OrdersPage,
+  OrderDetailPage,
+  AdminOrdersPage,
 } from '@/pages/index';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
@@ -62,6 +65,34 @@ export default function Router() {
           element={
             <ProtectedRoute roles={['ADMIN']}>
               <IngredientsAdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* User order routes */}
+        <Route
+          path="/mis-pedidos"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mis-pedidos/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin order routes */}
+        <Route
+          path="/admin/pedidos"
+          element={
+            <ProtectedRoute roles={['ADMIN', 'PEDIDOS']}>
+              <AdminOrdersPage />
             </ProtectedRoute>
           }
         />
