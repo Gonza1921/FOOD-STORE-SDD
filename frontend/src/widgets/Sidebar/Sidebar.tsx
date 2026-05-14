@@ -1,110 +1,206 @@
 /**
- * Sidebar - Admin navigation sidebar with role-based menu items
- * Phase 8.1-8.2: Navigation for Products, Categories, Ingredients based on user role
+ * Sidebar — Premium SaaS sidebar with glass effect and role-based navigation.
+ * Responsive: desktop glass sidebar, mobile slide-out drawer.
  */
 
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/store';
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 export interface SidebarProps {
-  /** Optional additional className */
   className?: string;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
-const navItems = [
-  {
-    path: '/admin/productos',
-    label: 'Productos',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-        />
-      </svg>
-    ),
-    roles: ['ADMIN', 'STOCK'],
-  },
-  {
-    path: '/admin/categorias',
-    label: 'Categorías',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-        />
-      </svg>
-    ),
-    roles: ['ADMIN'],
-  },
-  {
-    path: '/admin/ingredientes',
-    label: 'Ingredientes',
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.414 1.414.586 3.828 0 5.172V20"
-        />
-      </svg>
-    ),
-    roles: ['ADMIN'],
-  },
+// ---------------------------------------------------------------------------
+// Navigation items
+// ---------------------------------------------------------------------------
+
+interface NavItem {
+  path: string;
+  label: string;
+  icon: string;
+  roles: string[];
+}
+
+const navItems: NavItem[] = [
+  { path: '/', label: 'Dashboard', icon: 'dashboard', roles: [] },
+  { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
+  { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
+  { path: '/admin/ingredientes', label: 'Ingredientes', icon: 'nutrition', roles: ['ADMIN'] },
 ];
 
-export function Sidebar({ className = '' }: SidebarProps) {
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function NavLinkItem({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+  const navLinkClass = ({ isActive }: { isActive: boolean }) => {
+    const base =
+      'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-250 relative';
+
+    if (isActive) {
+      return (
+        base +
+        ' bg-brand-50 text-brand-700 shadow-sm ' +
+        'after:absolute after:left-0 after:top-1/2 after:-translate-y-1/2 after:h-5 after:w-1 after:rounded-full after:bg-brand-600'
+      );
+    }
+
+    return (
+      base +
+      ' text-on-surface-variant hover:bg-surface-container hover:text-on-surface ' +
+      'hover:translate-x-0.5'
+    );
+  };
+
+  return (
+    <li>
+      <NavLink to={item.path} className={navLinkClass} onClick={onClick}>
+        <span
+          className="material-symbols-outlined flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container/80 text-[18px]"
+          style={{ fontVariationSettings: '"wght" 400' }}
+        >
+          {item.icon}
+        </span>
+        {item.label}
+      </NavLink>
+    </li>
+  );
+}
+
+function BrandSection() {
+  return (
+    <div className="flex items-center gap-3 px-5 py-6">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl gradient-brand shadow-glow-sm">
+        <span
+          className="material-symbols-outlined"
+          style={{ fontSize: '22px', fontVariationSettings: '"wght" 600' }}
+        >
+          store
+        </span>
+      </div>
+      <div>
+        <h1 className="text-base font-semibold text-on-surface leading-tight">Food Store</h1>
+        <p className="text-xs text-on-surface-variant/70 leading-tight">Admin Panel</p>
+      </div>
+    </div>
+  );
+}
+
+function UserSection() {
+  const { user } = useAuthStore();
+  const userRoles = user?.roles || [];
+  const initials = user?.nombre?.charAt(0)?.toUpperCase() || '?';
+
+  return (
+    <div className="px-5 py-4 border-t border-outline-variant/10">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-brand text-white text-sm font-semibold shadow-sm shrink-0">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-on-surface truncate">
+            {user?.nombre || 'Usuario'}
+          </p>
+          <p className="text-[11px] text-on-surface-variant/60 truncate">
+            {userRoles.join(' · ') || 'Sin roles'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NavSection() {
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
 
-  // Filter nav items based on user role
   const visibleItems = navItems.filter(
-    (item) => item.roles.length === 0 || item.roles.some((role) => userRoles.includes(role))
+    (item) => item.roles.length === 0 || item.roles.some((role) => userRoles.includes(role)),
   );
 
   return (
-    <aside className={`w-64 bg-white border-r border-gray-200 min-h-screen ${className}`}>
-      <div className="p-4">
-        <h1 className="text-xl font-bold text-gray-900">Food Store</h1>
-        <p className="text-sm text-gray-500">Admin Panel</p>
-      </div>
-
-      <nav className="mt-4">
-        <ul className="space-y-1">
-          {visibleItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`
-                }
-              >
-                <span className="w-5 h-5">{item.icon}</span>
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200">
-        <div className="text-xs text-gray-500">
-          <p>Usuario: {user?.nombre || 'N/A'}</p>
-          <p>Roles: {userRoles.join(', ') || 'N/A'}</p>
-        </div>
-      </div>
-    </aside>
+    <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-thin">
+      <p className="px-4 pb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/40">
+        Navegación
+      </p>
+      <ul className="space-y-1">
+        {visibleItems.map((item) => (
+          <NavLinkItem key={item.path} item={item} />
+        ))}
+      </ul>
+    </nav>
   );
 }
 
+<<<<<<< HEAD
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
+export function Sidebar({ className = '', isOpen, onClose }: SidebarProps) {
+  // ── Desktop sidebar ──
+  const desktopSidebar = (
+    <aside
+      className={`hidden lg:flex lg:flex-col w-64 min-h-screen bg-surface-container-lowest/80 backdrop-blur-xl border-r border-outline-variant/10 shadow-soft ${className}`}
+    >
+      <BrandSection />
+      <NavSection />
+      <UserSection />
+    </aside>
+  );
+
+  // ── Mobile overlay ──
+  const mobileOverlay = isOpen && (
+    <div
+      className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden animate-fade-in"
+      onClick={onClose}
+      role="presentation"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose?.();
+      }}
+    />
+  );
+
+  // ── Mobile drawer ──
+  const mobileDrawer = (
+    <aside
+      className={`fixed inset-y-0 left-0 z-50 w-72 bg-surface-container-lowest/95 backdrop-blur-xl border-r border-outline-variant/10 shadow-premium-lg transform transition-transform duration-300 ease-out lg:hidden ${
+        isOpen ? 'translate-x-0 animate-slide-in-right' : '-translate-x-full'
+      } ${className}`}
+    >
+      <div className="flex items-center justify-between px-5 py-6 border-b border-outline-variant/10">
+        <BrandSection />
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
+          aria-label="Cerrar menú"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '20px', fontVariationSettings: '"wght" 500' }}>
+            close
+          </span>
+        </button>
+      </div>
+      <NavSection />
+      <UserSection />
+    </aside>
+  );
+
+  return (
+    <>
+      {desktopSidebar}
+      {mobileOverlay}
+      {mobileDrawer}
+    </>
+  );
+}
+
+=======
+>>>>>>> origin/main
 export default Sidebar;

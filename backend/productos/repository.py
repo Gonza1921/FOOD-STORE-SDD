@@ -18,12 +18,10 @@ from sqlmodel import select
 
 from backend.core.repository import BaseRepository
 from backend.models.categoria import Categoria
-from backend.models.producto import (
-    Producto,
-    ProductoCategoria,
-    ProductoIngrediente,
-    Ingrediente,
-)
+from backend.models.ingrediente import Ingrediente
+from backend.models.producto import Producto
+from backend.models.producto_categoria import ProductoCategoria
+from backend.models.producto_ingrediente import ProductoIngrediente
 
 
 class ProductoRepository(BaseRepository[Producto]):

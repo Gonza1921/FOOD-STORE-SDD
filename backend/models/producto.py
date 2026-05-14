@@ -1,74 +1,52 @@
-"""Product catalog models with ingredients and categorization"""
+"""Product model with stock management and M2M associations
+
+Ingrediente → extracted to .ingrediente
+ProductoIngrediente → extracted to .producto_ingrediente
+ProductoCategoria → extracted to .producto_categoria
+"""
 
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
 
-if TYPE_CHECKING:
-    from backend.models.categoria import Categoria
-
-
-class Ingrediente(SQLModel, table=True):
-    """Food ingredients for products and allergen tracking"""
-    
-    __table_args__ = {"extend_existing": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
-    nombre: str = Field(unique=True, max_length=100, index=True)
-    descripcion: Optional[str] = Field(default=None, max_length=200)
-    es_alergeno: bool = Field(default=False)
-    
-    # Audit
-    creado_en: datetime = Field(default_factory=datetime.utcnow)
-    actualizado_en: datetime = Field(default_factory=datetime.utcnow)
-    deleted_at: Optional[datetime] = Field(default=None, index=True)
-
-
-class ProductoIngrediente(SQLModel, table=True):
-    """M:N relationship: Products and Ingredients"""
-    
-    __table_args__ = {"extend_existing": True}
-    id: Optional[int] = Field(default=None, primary_key=True)
-    producto_id: int = Field(foreign_key="producto.id", index=True)
-    ingrediente_id: int = Field(foreign_key="ingrediente.id", index=True)
-    es_removible: bool = Field(default=False)  # Allows customization
-
-
-class ProductoCategoria(SQLModel, table=True):
-    """M:N relationship: Products and Categories"""
-    
-    __table_args__ = {"extend_existing": True}
-    producto_id: int = Field(foreign_key="producto.id", primary_key=True)
-    categoria_id: int = Field(foreign_key="categoria.id", primary_key=True)
-    es_principal: bool = Field(default=False)
+from .producto_categoria import ProductoCategoria
+from .producto_ingrediente import ProductoIngrediente
 
 
 class Producto(SQLModel, table=True):
-    """Product entity with stock management and ingredient composition"""
-    
+    """Product entity with stock management and category/ingredient composition"""
+
+    __tablename__ = "producto"
     __table_args__ = {"extend_existing": True}
+
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=200, index=True)
     descripcion: Optional[str] = Field(default=None)
-    precio_base: Decimal = Field(max_digits=10, decimal_places=2)  # CHECK >= 0
-    stock_cantidad: int = Field(default=0, ge=0)  # CHECK >= 0
-    disponible: bool = Field(default=True)  # Manual toggle independent of stock
-    
-    # FK to primary category (can have multiple via ProductoCategoria)
+    precio_base: Decimal = Field(max_digits=10, decimal_places=2)
+    stock_cantidad: int = Field(default=0, ge=0)
+    disponible: bool = Field(default=True)
+
+    # FK to primary category (can have multiple via M2M)
     categoria_id: int = Field(foreign_key="categoria.id", index=True)
-    
-    # M2M via link_model: producto.categorias returns Categoria[] directly
-    # (not ProductoCategoria association objects)
-    categorias: Mapped[list["Categoria"]] = Relationship(link_model=ProductoCategoria)
-    ingredientes: Mapped[list["Ingrediente"]] = Relationship(link_model=ProductoIngrediente)
-    
+
+    # M2M via link_model — returns Categoria[] / Ingrediente[] directly
+    categorias: Mapped[list["Categoria"]] = Relationship(
+        back_populates="productos",
+        link_model=ProductoCategoria,
+    )
+    ingredientes: Mapped[list["Ingrediente"]] = Relationship(
+        back_populates="productos",
+        link_model=ProductoIngrediente,
+    )
+
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
-    
+
     @property
     def precio_formateado(self) -> str:
         """Format price for display"""

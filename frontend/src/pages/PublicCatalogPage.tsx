@@ -1,26 +1,23 @@
 /**
- * PublicCatalogPage - Public product catalog (no auth required)
- * Phase 8.6: Validar catálogo público
- * Uses usePublicCatalog hook with filters: search, categoria_id, pagination
+ * PublicCatalogPage — Public product catalog (no auth required).
+ * Premium SaaS styling with gradient hero, glass cards, and staggered animations.
  */
 
 import { useState } from 'react';
 import { usePublicCatalog } from '@/features/products';
+import { Button, Badge, Skeleton } from '@/shared/ui';
 
 export default function PublicCatalogPage() {
-  // Filter state
   const [search, setSearch] = useState('');
   const [skip, setSkip] = useState(0);
   const limit = 12;
 
-  // Fetch data
   const { data, isLoading, isError, refetch, total } = usePublicCatalog({
     skip,
     limit,
     search: search || undefined,
   });
 
-  // Calculate pagination
   const currentPage = Math.floor(skip / limit) + 1;
   const totalPages = total ? Math.ceil(total / limit) : 0;
   const hasNext = skip + limit < (total || 0);
@@ -40,37 +37,78 @@ export default function PublicCatalogPage() {
     refetch();
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Catálogo de Productos</h1>
+  // ── Loading skeleton grid ──
+  const renderSkeletons = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-premium overflow-hidden animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
+          <Skeleton variant="rectangular" height="h-40" rounded="rounded-none" />
+          <div className="p-4 space-y-3">
+            <Skeleton variant="text" width="w-3/4" />
+            <Skeleton variant="text" width="w-full" height="h-3" />
+            <div className="flex justify-between items-center pt-2">
+              <Skeleton variant="text" width="w-16" height="h-5" />
+              <Skeleton variant="text" width="w-20" height="h-5" rounded="rounded-full" />
+            </div>
+          </div>
         </div>
-      </header>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-surface">
+      {/* ── Hero section ── */}
+      <div className="relative overflow-hidden gradient-hero border-b border-outline-variant/10">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[25rem] w-[25rem] rounded-full bg-brand-500/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-32 -bottom-20 h-[20rem] w-[20rem] rounded-full bg-brand-400/5 blur-3xl" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+          <div className="flex items-center gap-3 mb-1 animate-fade-in-up">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl gradient-brand text-white shadow-sm">
+              <span className="material-symbols-outlined" style={{ fontSize: '22px', fontVariationSettings: '"wght" 600' }}>
+                store
+              </span>
+            </div>
+            <div>
+              <h1 className="text-[24px] sm:text-[28px] font-bold text-on-surface leading-tight">
+                Catálogo de Productos
+              </h1>
+              <p className="text-sm text-on-surface-variant">Explorá nuestros productos disponibles</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <form onSubmit={handleSearchSubmit} className="flex gap-4">
-            <div className="flex-1">
+        {/* ── Search ── */}
+        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+          <form onSubmit={handleSearchSubmit} className="flex gap-3">
+            <div className="flex-1 relative">
+              <span
+                className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant/50 pointer-events-none"
+                style={{ fontSize: '20px', fontVariationSettings: '"wght" 400' }}
+              >
+                search
+              </span>
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar productos..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest px-4 py-3 pl-10 text-sm text-on-surface placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:border-brand-600 focus:ring-brand-600/20 transition-all shadow-sm"
               />
             </div>
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
+            <Button type="submit" variant="premium" icon="search">
               Buscar
-            </button>
+            </Button>
           </form>
         </div>
 
+<<<<<<< HEAD
+        {/* ── Loading ── */}
+        {isLoading && renderSkeletons()}
+=======
         {/* Loading State */}
         {isLoading && (
           <div className="flex justify-center py-12">
@@ -92,65 +130,85 @@ export default function PublicCatalogPage() {
             </svg>
           </div>
         )}
+>>>>>>> origin/main
 
-        {/* Error State */}
+        {/* ── Error ── */}
         {isError && (
-          <div className="text-center py-12">
-            <p className="text-red-600">Error al cargar productos</p>
-            <button
-              type="button"
-              onClick={() => refetch()}
-              className="mt-2 text-blue-600 underline"
-            >
+          <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-error-container mb-5">
+              <span className="material-symbols-outlined text-error" style={{ fontSize: '36px', fontVariationSettings: '"wght" 500' }}>
+                error
+              </span>
+            </div>
+            <p className="text-sm text-on-surface-variant">Error al cargar productos</p>
+            <Button variant="outline" size="sm" className="mt-5" onClick={() => refetch()} icon="refresh">
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
 
-        {/* Products Grid */}
+        {/* ── Content ── */}
         {!isLoading && !isError && (
           <>
             {data?.items.length === 0 ? (
+<<<<<<< HEAD
+              /* Empty state */
+              <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface-container mb-5">
+                  <span className="material-symbols-outlined text-outline-variant" style={{ fontSize: '48px', fontVariationSettings: '"wght" 300' }}>
+                    search_off
+                  </span>
+                </div>
+                <p className="text-base font-medium text-on-surface mb-1">Sin resultados</p>
+                <p className="text-sm text-on-surface-variant">
+                  No se encontraron productos para tu búsqueda
+                </p>
+              </div>
+=======
               <div className="text-center py-12 text-gray-500">No se encontraron productos</div>
+>>>>>>> origin/main
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {data?.items.map((product) => (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {data?.items.map((product, i) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                    className="group rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-premium overflow-hidden 
+                               transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1 active:scale-[0.99] animate-fade-in-up"
+                    style={{ animationDelay: `${i * 60}ms` }}
                   >
+                    {/* Image area */}
+                    <div className="h-40 bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="material-symbols-outlined text-outline-variant/50" style={{ fontSize: '48px', fontVariationSettings: '"wght" 300' }}>
+                        image
+                      </span>
+                    </div>
+
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      <h3 className="text-sm font-semibold text-on-surface truncate group-hover:text-brand-600 transition-colors">
                         {product.nombre}
                       </h3>
                       {product.descripcion && (
-                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                        <p className="mt-1 text-xs text-on-surface-variant/70 line-clamp-2 leading-relaxed">
                           {product.descripcion}
                         </p>
                       )}
+
                       <div className="mt-4 flex items-center justify-between">
-                        <span className="text-xl font-bold text-green-600">
-                          ${product.precio_base}
+                        <span className="text-lg font-bold text-brand-600">
+                          ${Number(product.precio_base).toFixed(2)}
                         </span>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            product.disponible
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
+                        <Badge variant={product.disponible ? 'success' : 'neutral'} size="sm" dot>
                           {product.disponible ? 'Disponible' : 'No disponible'}
-                        </span>
+                        </Badge>
                       </div>
-                      {product.categorias.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1">
+
+                      {product.categorias && product.categorias.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
                           {product.categorias.map((cat) => (
-                            <span
-                              key={cat.id}
-                              className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded"
-                            >
+                            <Badge key={cat.id} variant="info" size="sm">
                               {cat.nombre}
-                            </span>
+                            </Badge>
                           ))}
                         </div>
                       )}
@@ -160,32 +218,24 @@ export default function PublicCatalogPage() {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* ── Pagination ── */}
             {total !== undefined && total > 0 && (
-              <div className="mt-8 flex items-center justify-between">
-                <div className="text-sm text-gray-700">
-                  Mostrando {skip + 1} - {Math.min(skip + limit, total)} de {total}
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in">
+                <div className="text-sm text-on-surface-variant/70 order-2 sm:order-1">
+                  Mostrando <span className="font-medium text-on-surface">{skip + 1}</span> –{' '}
+                  <span className="font-medium text-on-surface">{Math.min(skip + limit, total)}</span> de{' '}
+                  <span className="font-medium text-on-surface">{total}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handlePrevPage}
-                    disabled={!hasPrev}
-                    className="px-4 py-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                <div className="flex items-center gap-3 order-1 sm:order-2">
+                  <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={!hasPrev} icon="chevron_left">
                     Anterior
-                  </button>
-                  <span className="text-sm text-gray-600">
-                    Página {currentPage} de {totalPages}
+                  </Button>
+                  <span className="text-xs text-on-surface-variant tabular-nums px-2">
+                    {currentPage} / {totalPages}
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleNextPage}
-                    disabled={!hasNext}
-                    className="px-4 py-2 border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                  <Button variant="outline" size="sm" onClick={handleNextPage} disabled={!hasNext} icon="chevron_right">
                     Siguiente
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}
