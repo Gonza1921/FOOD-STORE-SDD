@@ -5,6 +5,7 @@
 
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/store';
+import { useCartStore } from '@/features/cart/store';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -25,10 +26,12 @@ interface NavItem {
   label: string;
   icon: string;
   roles: string[];
+  badge?: 'cart';
 }
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: 'dashboard', roles: [] },
+  { path: '/checkout', label: 'Carrito', icon: 'shopping_cart', roles: [], badge: 'cart' },
   { path: '/mis-pedidos', label: 'Mis Pedidos', icon: 'receipt_long', roles: [] },
   { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
   { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
@@ -41,6 +44,8 @@ const navItems: NavItem[] = [
 // ---------------------------------------------------------------------------
 
 function NavLinkItem({ item, onClick }: { item: NavItem; onClick?: () => void }) {
+  const totalItems = item.badge === 'cart' ? useCartStore((s) => s.totalItems()) : 0;
+
   const navLinkClass = ({ isActive }: { isActive: boolean }) => {
     const base =
       'flex items-center gap-3 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-250 relative';
@@ -69,7 +74,12 @@ function NavLinkItem({ item, onClick }: { item: NavItem; onClick?: () => void })
         >
           {item.icon}
         </span>
-        {item.label}
+        <span className="flex-1">{item.label}</span>
+        {item.badge === 'cart' && totalItems > 0 && (
+          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white px-1.5 leading-none shadow-sm">
+            {totalItems > 99 ? '99+' : totalItems}
+          </span>
+        )}
       </NavLink>
     </li>
   );
