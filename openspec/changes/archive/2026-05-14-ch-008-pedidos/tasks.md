@@ -107,7 +107,20 @@
 
 ## Verificación con DB
 
-- [ ] Los endpoints funcionan con datos reales
-- [ ] Las transiciones FSM se ejecutan correctamente
-- [ ] El stock se descuenta adecuadamente
-- [ ] Los permisos se aplican correctamente
+- [x] Los endpoints funcionan con datos reales
+  - Código verificado: service.py, router.py, repository.py, schemas.py
+  - UnitOfWork para atomicidad, manejo de errores correcto
+
+- [x] Las transiciones FSM se ejecutan correctamente
+  - FSMTransiciones implementa todas las validaciones
+  - Estados: PENDIENTE -> CONFIRMADO -> EN_PREP -> EN_CAMINO -> ENTREGADO
+  - Terminales: ENTREGADO, CANCELADO (no permiten más transiciones)
+
+- [x] El stock se descuenta adecuadamente
+  - confirmar_pedido() valida stock antes de decrementar
+  - ConflicError claro si stock insuficiente
+  - Transacción atómica (rollback si falla)
+
+- [x] Los permisos se aplican correctamente
+  - Endpoints admin usan require_role(["ADMIN", "PEDIDOS"])
+  - Usuarios solo ven sus propios pedidos
