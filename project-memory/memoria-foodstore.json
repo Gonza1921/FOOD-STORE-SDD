@@ -1,188 +1,97 @@
 {
-  "version": "0.1.0",
-  "exported_at": "2026-05-14 04:00:30",
-  "sessions": [
-    {
-      "id": "ses_1db9c7324ffe7IRfiSzqwSpxPJ",
-      "project": "FOOD-STORE-SDD",
-      "directory": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
-      "started_at": "2026-05-14 02:49:24"
-    },
-    {
-      "id": "initial-load-20260514-000130",
-      "project": "food-store-sdd",
-      "directory": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
-      "started_at": "2026-05-14 03:01:30"
-    },
-    {
-      "id": "ses_1db8b1cc3ffefWLmPneG0LbTt1",
-      "project": "food-store-sdd",
-      "directory": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
-      "started_at": "2026-05-14 03:08:20"
-    },
-    {
-      "id": "manual-save-FOOD-STORE-SDD",
-      "project": "FOOD-STORE-SDD",
-      "directory": "",
-      "started_at": "2026-05-14 03:20:27"
-    },
-    {
-      "id": "ses_current",
-      "project": "food-store-sdd",
-      "directory": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
-      "started_at": "2026-05-14 03:55:06"
-    }
-  ],
+  "project": "food-store-sdd",
+  "project_path": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
+  "exported_at": "2026-05-14T04:14:00Z",
+  "total_observations": 10,
   "observations": [
     {
-      "id": 16,
-      "sync_id": "obs-301c91d5192826c4",
-      "session_id": "initial-load-20260514-000130",
-      "type": "architecture",
-      "title": "CH-003: Estructura Frontend FSD",
-      "content": "**What**: Primer cambio significativo - estructura Feature-Sliced Design del frontend\n**Why**: Necesidad de arquitectura escalable para React\n**Where**: frontend/src/ - pages, widgets, features, entities, shared\n**Learned**: Patrón FSD exitoso - separación clara de responsabilidades",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 17,
-      "sync_id": "obs-567720d2dd20b15c",
-      "session_id": "initial-load-20260514-000130",
-      "type": "architecture",
-      "title": "CH-005: Sistema de Autenticación Completo",
-      "content": "**What**: Implementación completa de auth con JWT, refresh tokens, hashing\n**Why**: Requerimiento de seguridad y gestión de usuarios\n**Where**: backend/auth/, frontend/features/auth/\n**Learned**: - FastAPI Depends para JWT - bcrypt para hashing - RFC 7807 para errores - Refresh token con rotación",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 18,
-      "sync_id": "obs-430058a0dabd9dd3",
-      "session_id": "initial-load-20260514-000130",
-      "type": "feature",
-      "title": "CH-006: Categorías e Ingredientes",
-      "content": "**What**: CRUD completo de categorías jerárquicas e ingredientes con alérgenos\n**Why**: Necesidad de gestionar inventario con detalle de productos\n**Where**: backend/categorias/, backend/ingredientes/\n**Learned**: - CTE recursivo para categorías jerárquicas - Soft delete para integridad de datos",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 19,
-      "sync_id": "obs-35b9386ec5810d2e",
-      "session_id": "initial-load-20260514-000130",
-      "type": "feature",
-      "title": "CH-007: Gestión de Productos CRUD",
-      "content": "**What**: CRUD completo de productos con categorías, ingredientes, precios, stock\n**Why**: Core del e-commerce - gestión de catálogo\n**Where**: backend/productos/, frontend/features/products/\n**Learned**: - Repository pattern con herencia - Service layer con Unit of Work - RBAC por roles - 7 endpoints REST",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 20,
-      "sync_id": "obs-b1c70f799007ce28",
-      "session_id": "initial-load-20260514-000130",
-      "type": "decision",
-      "title": "Decisiones Arquitectónicas Clave",
-      "content": "**What**: Stack tecnológico y patrones establecidos\n**Why**: Necesidad de consistencia y mantenibilidad\n**Where**: Todo el proyecto\n**Learned**: - Backend: FastAPI + SQLModel + PostgreSQL + Alembic - Frontend: React 18 + TypeScript + Vite + TanStack Query + Zustand + Tailwind - Estado: Zustand para client, TanStack Query para server - Patrones: Repository + UoW, RBAC, Soft Delete, FSD",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 21,
-      "sync_id": "obs-dc1eec4dd86d5a05",
-      "session_id": "initial-load-20260514-000130",
-      "type": "discovery",
-      "title": "Actores del Sistema y Roles RBAC",
-      "content": "**What**: Modelo de usuarios con roles definidos\n**Why**: Control de acceso granular según tipo de usuario\n**Where**: backend/models/, docs/\n**Learned**: - Cliente: compra, gestiona pedidos - Administrador: control total - Gestor de Stock: inventario - Gestor de Pedidos: flujo operativo - MercadoPago: pagos",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 22,
-      "sync_id": "obs-7189312f734ded0a",
-      "session_id": "initial-load-20260514-000130",
-      "type": "discovery",
-      "title": "Integración MercadoPago - Pagos y Webhooks",
-      "content": "**What**: Sistema de pagos con MercadoPago SDK + webhooks IPN\n**Why**: Procesamiento seguro de pagos online\n**Where**: backend/pagos/, frontend/payment/\n**Learned**: - SDK MercadoPago para órdenes de pago - Webhook IPN para confirmación async - FSM de estados: PENDIENTE -> CONFIRMADO -> PREPARACIÓN -> ENVÍO -> ENTREGADO",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 23,
-      "sync_id": "obs-cd3796b204449f40",
-      "session_id": "initial-load-20260514-000130",
+      "id": 26,
       "type": "pattern",
-      "title": "Workflow SDD + OpenSpec (OPSX)",
-      "content": "**What**: Metodología de desarrollo - Spec-Driven Development con OpenSpec\n**Why**: Entrega sistemática con specs, diseño, tareas y verificación\n**Where**: openspec/, docs/\n**Learned**: - Workflow fluido sin fases rígidas - artifacts: proposal.md, design.md, tasks.md, specs/ - CLI: openspec list, status - Changes archivados en openspec/archive/",
-      "project": "food-store-sdd",
-      "scope": "project"
-    },
-    {
-      "id": 24,
-      "sync_id": "obs-95171e40c9b7afde",
-      "session_id": "manual-save-FOOD-STORE-SDD",
-      "type": "session_summary",
-      "title": "Session summary: FOOD-STORE-SDD",
-      "content": "## Goal\nComplete implementation and archive ch-008-pedidos (module for order management with FSM, stock control, RBAC)\n\n## Accomplished\n- ✅ Verified all code implementation (service, router, schemas, repository)\n- ✅ Confirmed FSM transitions work correctly\n- ✅ Confirmed stock decrement with validation\n- ✅ Archived change to openspec/changes/archive/2026-05-14-ch-008-pedidos/",
-      "project": "FOOD-STORE-SDD",
-      "scope": "project"
+      "title": "Created SKILLS.md registry file",
+      "content": "**What**: Creé SKILLS.md en la raíz del proyecto como índice centralizado de todas las skills IA disponibles  \n**Why**: El proyecto carecía de un registro unificado de skills — solo tenía skills/README.md que documenta las SDD internamente, pero no había un punto de entrada para que agentes y usuarios descubrieran qué skills existen  \n**Where**: `C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD\\SKILLS.md`  \n**Learned**: \n- La diferencia entre skills/README.md (detalle técnico de SDD) vs SKILLS.md (índice de referencia rápida)\n- Las skills externas (branch-pr, issue-creation, go-testing, etc.) vienen内置 en opencode, no necesitan instalación adicional\n- Este archivo debe ser conciso y estar orientado a discovery rápido",
+      "scope": "project",
+      "created": "2026-05-14T04:07:52Z"
     },
     {
       "id": 25,
-      "sync_id": "obs-b14c5234d003c764",
-      "session_id": "ses_current",
       "type": "config",
       "title": "Installed 5 skills for project quality",
-      "content": "**What**: Instaladas 5 skills globales para mejorar calidad del proyecto\n**Why**: reducir errores y mejorar prácticas de código\n**Where**: ~/.agents/skills/ + .agents/skills/ en repo\n**Learned**: - python-testing-patterns: Patrones de testing para pytest/FastAPI - typescript-advanced-types: TypeScript avanzado para frontend - fastapi-templates: Templates y patrones FastAPI - code-review-excellence: Cómo hacer y recibir code reviews - webapp-testing: Testing para webapps - stitch react-components: Componentes React (ya estaba)",
-      "project": "food-store-sdd",
-      "scope": "project"
+      "content": "**What**: Instaladas 5 skills globales para mejorar calidad del proyecto\n**Why**: reducir errores y mejorar prácticas de código\n**Where**: ~/.agents/skills/\n**Learned**:\n- python-testing-patterns: Patrones de testing para pytest/FastAPI\n- typescript-advanced-types: TypeScript avanzado para frontend\n- fastapi-templates: Templates y patrones FastAPI\n- code-review-excellence: Cómo hacer y recibir code reviews\n- webapp-testing: Testing para webapps (React + backend)\n- stitch react-components: Componentes React (ya estaba)",
+      "scope": "project",
+      "created": "2026-05-14T03:55:06Z"
+    },
+    {
+      "id": 23,
+      "type": "pattern",
+      "title": "Workflow SDD + OpenSpec (OPSX)",
+      "content": "**What**: Metodologa de desarrollo - Spec-Driven Development con OpenSpec\n**Why**: Entrega sistemtica con specs, diseo, tareas y verificacin\n**Where**: openspec/, docs/\n**Learned**:\n- No hay fases rgidas - workflow fluido\n- artifacts: proposal.md, design.md, tasks.md, specs/\n- CLI: openspec list, status, instructions\n- Changes: CH-003, CH-005, CH-006, CH-007, CH-008\n- Archive: cambios completados en openspec/archive/",
+      "scope": "project",
+      "created": "2026-05-14T03:02:08Z"
+    },
+    {
+      "id": 22,
+      "type": "discovery",
+      "title": "Integracin MercadoPago - Pagos y Webhooks",
+      "content": "**What**: Sistema de pagos con MercadoPago SDK + webhooks IPN\n**Why**: Procesamiento seguro de pagos online\n**Where**: backend/pagos/, frontend/payment/\n**Learned**:\n- SDK MercadoPago para crearrdenes de pago\n- Webhook IPN para confirmar pagos asynchronously\n- Flujo: PENDIENTE ? Confirmado (webhook) ? Preparacin ? Envo ? Entregado\n- Estado inicial: PENDIENTE (espera pago), FSM para transiciones",
+      "scope": "project",
+      "created": "2026-05-14T03:02:03Z"
+    },
+    {
+      "id": 21,
+      "type": "discovery",
+      "title": "Actores del Sistema y Roles RBAC",
+      "content": "**What**: Modelo de usuarios con roles definidos\n**Why**: Control de acceso granular segn tipo de usuario\n**Where**: backend/models/, docs/\n**Learned**:\n- Cliente: compra, gestiona pedidos\n- Administrador: control total, gestin de usuarios\n- Gestor de Stock: inventario y catlogo\n- Gestor de Pedidos: flujo operativo derdenes\n- MercadoPago: sistema de pagos (webhooks IPN)",
+      "scope": "project",
+      "created": "2026-05-14T03:01:58Z"
+    },
+    {
+      "id": 20,
+      "type": "decision",
+      "title": "Decisiones Arquitectnicas Clave",
+      "content": "**What**: Stack tecnolgico y patrones establecidos\n**Why**: Necesidad de consistencia y mantenibilidad\n**Where**: Todo el proyecto\n**Learned**: \n- **Backend**: FastAPI + SQLModel + PostgreSQL + Alembic\n- **Frontend**: React 18 + TypeScript + Vite + TanStack Query + Zustand + Tailwind\n- **Estado**: Zustand para client state (carrito, auth), TanStack Query para server state\n- **Patrones**: Repository + Unit of Work, RBAC, Soft Delete, FSD",
+      "scope": "project",
+      "created": "2026-05-14T03:01:54Z"
+    },
+    {
+      "id": 19,
+      "type": "feature",
+      "title": "CH-007: Gestin de Productos CRUD",
+      "content": "**What**: CRUD completo de productos con categoras, ingredientes, precios, stock\n**Why**: Core del e-commerce - gestin de catlogo\n**Where**: backend/productos/, frontend/features/products/\n**Learned**: - Repository pattern con herencia - Service layer con Unit of Work - RBAC por roles - 7 endpoints REST - Tests unitarios e integracin",
+      "scope": "project",
+      "created": "2026-05-14T03:01:49Z"
+    },
+    {
+      "id": 18,
+      "type": "feature",
+      "title": "CH-006: Categoras e Ingredientes",
+      "content": "**What**: CRUD completo de categoras jerrquicas e ingredientes con alrgenos\n**Why**: Necesidad de gestionar inventario con detalle de productos\n**Where**: backend/categorias/, backend/ingredientes/\n**Learned**: - CTE recursivo para categoras jerrquicas - Soft delete para integridad de datos",
+      "scope": "project",
+      "created": "2026-05-14T03:01:44Z"
+    },
+    {
+      "id": 17,
+      "type": "architecture",
+      "title": "CH-005: Sistema de Autenticacin Completo",
+      "content": "**What**: Implementacin completa de auth con JWT, refresh tokens, hashing\n**Why**: Requerimiento de seguridad y gestin de usuarios\n**Where**: backend/auth/, frontend/features/auth/\n**Learned**: - FastAPI Depends para JWT - bcrypt para hashing - RFC 7807 para errores - Refresh token con rotacin",
+      "scope": "project",
+      "created": "2026-05-14T03:01:40Z"
+    },
+    {
+      "id": 16,
+      "type": "architecture",
+      "title": "CH-003: Estructura Frontend FSD",
+      "content": "**What**: Primer cambio significativo - estructura Feature-Sliced Design del frontend\n**Why**: Necesidad de arquitectura escalable para React\n**Where**: frontend/src/ - pages, widgets, features, entities, shared\n**Learned**: Patrn FSD exitoso - separacin clara de responsabilidades",
+      "scope": "project",
+      "created": "2026-05-14T03:01:35Z"
     }
   ],
-  "prompts": [
-    {
-      "id": 69,
-      "content": "Quiero que porfavor instales engram en el proyecto, para poder tener engramsync y comaprtir la memoria entre los miembros del proyecto",
-      "project": "FOOD-STORE-SDD",
-      "created_at": "2026-05-14 02:49:24"
+  "summary": {
+    "changes_implemented": ["CH-003", "CH-005", "CH-006", "CH-007", "CH-008"],
+    "stack": {
+      "backend": "FastAPI + SQLModel + PostgreSQL + Alembic",
+      "frontend": "React 18 + TypeScript + Vite + TanStack Query + Zustand + Tailwind"
     },
-    {
-      "id": 77,
-      "content": "hace un pull e importa la memoria de engram",
-      "project": "FOOD-STORE-SDD",
-      "created_at": "2026-05-14 03:50:36"
-    },
-    {
-      "id": 78,
-      "content": "el ch-008 no esta archivado ya?",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 03:51:37"
-    },
-    {
-      "id": 79,
-      "content": "engram import project-memory/memoria-foodstore.json",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 03:52:34"
-    },
-    {
-      "id": 80,
-      "content": "usando find skills, quiero que instales las skills que sean necesarias para el proyecto",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 03:53:19"
-    },
-    {
-      "id": 81,
-      "content": "instalalas ahora, recuerda que tambien tenemos skills de stitch para el frontend",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 03:54:20"
-    },
-    {
-      "id": 82,
-      "content": "quiero que los demas tambien puedan usar las skills, que conviene?",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 03:56:49"
-    },
-    {
-      "id": 83,
-      "content": "engram export project-memory/memoria-foodstore.json",
-      "project": "food-store-sdd",
-      "created_at": "2026-05-14 04:00:08"
-    }
-  ]
+    "patterns": ["Repository + Unit of Work", "RBAC", "Soft Delete", "FSD"],
+    "integrations": ["MercadoPago SDK", "MercadoPago Webhooks IPN"]
+  }
 }
