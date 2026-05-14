@@ -9,6 +9,8 @@ from sqlmodel import SQLModel, Field, Relationship
 if TYPE_CHECKING:
     from .producto import Producto
 
+from .producto_categoria import ProductoCategoria  # noqa: E402 — needed at runtime for link_model
+
 
 class Categoria(SQLModel, table=True):
     """Product categories with hierarchical structure (self-referencing)"""
@@ -31,5 +33,5 @@ class Categoria(SQLModel, table=True):
     # Relationships (M2M via link_model — returns Categoria[] directly)
     productos: Mapped[list["Producto"]] = Relationship(
         back_populates="categorias",
-        link_model="ProductoCategoria",
+        link_model=ProductoCategoria,
     )
