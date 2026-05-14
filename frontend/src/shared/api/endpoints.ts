@@ -48,4 +48,12 @@ export const API = {
     UPDATE: (id: number): string => `/ingredientes/${id}`,
     DELETE: (id: number): string => `/ingredientes/${id}`,
   },
+  DIRECCIONES: {
+    LIST: '/direcciones',
+    DETAIL: (id: number): string => `/direcciones/${id}`,
+    CREATE: '/direcciones',
+    UPDATE: (id: number): string => `/direcciones/${id}`,
+    DELETE: (id: number): string => `/direcciones/${id}`,
+    SET_PRINCIPAL: (id: number): string => `/direcciones/${id}/principal`,
+  },
 } as const;

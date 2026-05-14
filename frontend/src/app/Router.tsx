@@ -12,6 +12,7 @@ import {
   OrderDetailPage,
   AdminOrdersPage,
   CheckoutPage,
+  DireccionesListPage,
 } from '@/pages/index';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
@@ -76,6 +77,16 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* User address routes */}
+        <Route
+          path="/mis-direcciones"
+          element={
+            <ProtectedRoute>
+              <DireccionesListPage />
             </ProtectedRoute>
           }
         />

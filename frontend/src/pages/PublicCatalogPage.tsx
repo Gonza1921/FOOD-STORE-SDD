@@ -4,9 +4,7 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { usePublicCatalog } from '@/features/products';
-import { useCartStore } from '@/features/cart/store';
 import { Button, Badge, Skeleton } from '@/shared/ui';
 
 export default function PublicCatalogPage() {
