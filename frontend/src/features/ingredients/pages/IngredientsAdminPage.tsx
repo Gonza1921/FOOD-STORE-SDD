@@ -108,15 +108,7 @@ export function IngredientsAdminPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
             initial={
               editing
-<<<<<<< HEAD
                 ? { nombre: editing.nombre, descripcion: editing.descripcion, es_alergeno: editing.es_alergeno }
-=======
-                ? {
-                    nombre: editing.nombre,
-                    descripcion: editing.descripcion,
-                    es_alergeno: editing.es_alergeno,
-                  }
->>>>>>> origin/main
                 : undefined
             }
             isLoading={isLoading}

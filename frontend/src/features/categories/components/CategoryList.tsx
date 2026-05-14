@@ -40,7 +40,6 @@ function TreeNode({
 }): ReactNode {
   return (
     <>
-<<<<<<< HEAD
       <div
         className="flex items-center justify-between px-4 py-3 border-b border-outline-variant/10 hover:bg-surface-container/30 transition-colors"
         style={{ paddingLeft: `${16 + depth * 28}px` }}
@@ -59,33 +58,6 @@ function TreeNode({
             <span className="material-symbols-outlined" style={{ fontSize: '16px', fontVariationSettings: '"wght" 500' }}>
               {depth === 0 ? 'category' : 'subdirectory_arrow_right'}
             </span>
-=======
-      <tr className="border-b border-gray-100 transition-colors hover:bg-gray-50">
-        <td
-          className="px-4 py-3 text-sm text-gray-800"
-          style={{ paddingLeft: `${16 + depth * 24}px` }}
-        >
-          <span className="flex items-center gap-2">
-            {depth > 0 && <span className="text-xs text-gray-400">└─</span>}
-            <span className="font-medium">{node.nombre}</span>
-          </span>
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-500">{node.descripcion ?? '—'}</td>
-        <td className="px-4 py-3 text-sm">
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEdit(node)}
-              className="rounded bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-200"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => onDelete(node.id)}
-              className="rounded bg-red-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-200"
-            >
-              Eliminar
-            </button>
->>>>>>> origin/main
           </div>
           <div className="min-w-0">
             <p className="text-sm font-medium text-on-surface truncate">{node.nombre}</p>

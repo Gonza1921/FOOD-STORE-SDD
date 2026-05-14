@@ -26,6 +26,8 @@ export const API = {
     DETAIL: (id: string): string => `/pedidos/${id}`,
     CREATE: '/pedidos',
     UPDATE_STATUS: (id: string): string => `/pedidos/${id}/estado`,
+    CONFIRM: (id: string): string => `/pedidos/${id}/confirmar`,
+    ADMIN_LIST: '/pedidos/admin/todos',
   },
   USERS: {
     ME: '/usuarios/me',

@@ -105,6 +105,81 @@
 - Historial avanzado de estados
 - Tests de integración con DB
 
+## ETAPA 3: Frontend (COMPLETADO)
+
+### API Layer
+
+- [x] **11.1** Crear `frontend/src/features/pedidos/api/endpoints.ts`
+  - Types: PedidoItemCreate, PedidoCreate, PedidoItemResponse, PedidoResponse, PedidoListResponse, PedidoEstadoUpdate, PedidoSummary
+  - Query keys: PEDIDO_QUERY_KEYS with all/list/list/details/detail/admin/adminList
+  - API functions: listPedidos, getPedidoDetail, createPedido, confirmPedido, updatePedidoEstado, listAllPedidos
+
+- [x] **11.2** Actualizar `frontend/src/shared/api/endpoints.ts`
+  - Added API.ORDERS.CONFIRM and API.ORDERS.ADMIN_LIST
+
+### Hooks Layer
+
+- [x] **12.1** Crear `frontend/src/features/pedidos/hooks/usePedidos.ts`
+  - Query hook for user's order list with pagination
+  - Returns: data, isLoading, isError, error, refetch, total, page, totalPages
+  - Pattern: matches useProducts exactly
+
+- [x] **12.2** Crear `frontend/src/features/pedidos/hooks/usePedidoDetail.ts`
+  - Query hook for single order detail
+  - Pattern: matches useProductDetail exactly
+
+- [x] **12.3** Crear `frontend/src/features/pedidos/hooks/usePedidoMutations.ts`
+  - useCreatePedido: invalidates lists + admin
+  - useConfirmPedido: invalidates detail(id) + lists + admin
+  - useUpdatePedidoEstado: invalidates detail(id) + lists + admin
+
+- [x] **12.4** Crear `frontend/src/features/pedidos/hooks/index.ts`
+  - Barrel exports for all hooks and types
+
+### Components Layer
+
+- [x] **13.1** Crear `frontend/src/features/pedidos/components/statusBadge.ts`
+  - Shared helpers: getStatusBadgeClasses, getStatusLabel
+  - Color-coded badges per estado (6 states)
+
+- [x] **13.2** Crear `frontend/src/features/pedidos/components/OrdersPage.tsx`
+  - User's order history (path: /mis-pedidos)
+  - States: Loading (skeleton), Empty (illustration + CTA), Error (retry), Data (card grid)
+  - Premium glass design with pagination (prev/next)
+
+- [x] **13.3** Crear `frontend/src/features/pedidos/components/OrderDetailPage.tsx`
+  - Single order detail (path: /mis-pedidos/:id)
+  - States: Loading (skeleton), Error (not found/forbidden with specific messages), Data
+  - Back button, order header with status badge, items table (desktop)/cards (mobile), total
+
+- [x] **13.4** Crear `frontend/src/features/pedidos/components/AdminOrdersPage.tsx`
+  - Admin order management (path: /admin/pedidos)
+  - States: Loading, Empty, Error, Data
+  - Features: status filter dropdown, paginated table (desktop)/cards (mobile)
+  - Actions: confirm PENDIENTE, estado transition dropdown for CONFIRMADO/EN_PREP/EN_CAMINO
+  - No actions for terminal states (ENTREGADO, CANCELADO)
+
+- [x] **13.5** Crear `frontend/src/features/pedidos/components/index.ts`
+  - Barrel exports for all page components + shared helpers
+
+### Integration
+
+- [x] **14.1** Crear `frontend/src/features/pedidos/index.ts`
+  - Feature barrel: exports API, components, hooks, types
+
+- [x] **14.2** Actualizar `frontend/src/pages/index.ts`
+  - Added exports for OrdersPage, OrderDetailPage, AdminOrdersPage
+
+- [x] **14.3** Actualizar `frontend/src/features/index.ts`
+  - Added exports for pedidos feature
+
+- [x] **14.4** Actualizar `frontend/src/app/Router.tsx`
+  - Added routes: /mis-pedidos, /mis-pedidos/:id (user), /admin/pedidos (admin)
+  - Routes inside AppLayout protected section, before catch-all
+
+- [x] **14.5** Actualizar `frontend/src/widgets/Sidebar/Sidebar.tsx`
+  - Added nav items: Mis Pedidos (receipt_long), Pedidos admin (assignment)
+
 ## Verificación con DB
 
 - [x] Los endpoints funcionan con datos reales
