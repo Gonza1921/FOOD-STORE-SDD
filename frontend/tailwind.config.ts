@@ -5,7 +5,6 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
-      // ── Color palette ──────────────────────────────────────────
       colors: {
         brand: {
           50: '#fef3ef',
@@ -52,8 +51,6 @@ export default {
         '2xl': '1rem',
         '3xl': '1.25rem',
       },
-
-      // ── Shadows ────────────────────────────────────────────────
       boxShadow: {
         soft: '0 2px 8px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)',
         glass: '0 4px 30px rgba(0,0,0,0.06)',
@@ -64,8 +61,6 @@ export default {
         'premium-lg':
           '0 2px 8px rgba(0,0,0,0.03), 0 8px 24px rgba(0,0,0,0.04), 0 24px 56px rgba(0,0,0,0.05)',
       },
-
-      // ── Animations ─────────────────────────────────────────────
       keyframes: {
         'fade-in': {
           '0%': { opacity: '0' },
@@ -115,15 +110,11 @@ export default {
         float: 'float 3s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 2s ease-in-out infinite',
       },
-
-      // ── Transition timing ──────────────────────────────────────
       transitionDuration: {
         250: '250ms',
         350: '350ms',
         400: '400ms',
       },
-
-      // ── Backdrop blur ──────────────────────────────────────────
       backdropBlur: {
         xs: '2px',
       },

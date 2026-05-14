@@ -6,10 +6,10 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-
 # ============================================================================
 # Reference Models (for M2M relationships)
 # ============================================================================
+
 
 class CategoriaRef(BaseModel):
     """Reference to a Categoria (for M2M relationships)"""
@@ -29,12 +29,13 @@ class IngredienteRef(BaseModel):
 # Task 4.1: ProductoCreate Schema
 # ============================================================================
 
+
 class ProductoCreate(BaseModel):
     """Request schema for POST /api/v1/productos"""
 
     nombre: str = Field(..., min_length=1, max_length=200, description="Product name")
     descripcion: Optional[str] = Field(
-        default=None, max_length=1000, description="Product description"
+        default=None, max_length=500, description="Product description"
     )
     precio_base: Decimal = Field(
         ..., gt=0, decimal_places=2, description="Price in ARS, always > 0"
@@ -103,11 +104,12 @@ class ProductoCreate(BaseModel):
 # Task 4.2: ProductoUpdate Schema
 # ============================================================================
 
+
 class ProductoUpdate(BaseModel):
     """Request schema for PUT /api/v1/productos/{id}"""
 
     nombre: Optional[str] = Field(default=None, min_length=1, max_length=200)
-    descripcion: Optional[str] = Field(default=None, max_length=1000)
+    descripcion: Optional[str] = Field(default=None, max_length=500)
     precio_base: Optional[Decimal] = Field(default=None, gt=0, decimal_places=2)
     disponible: Optional[bool] = Field(default=None)
     categorias: Optional[list[int]] = Field(
@@ -161,6 +163,7 @@ class ProductoUpdate(BaseModel):
 # Task 4.3: ProductoOut Schema (Admin Response)
 # ============================================================================
 
+
 class ProductoOut(BaseModel):
     """Response schema for GET /api/v1/productos/{id} (admin)"""
 
@@ -182,6 +185,7 @@ class ProductoOut(BaseModel):
 # ============================================================================
 # Task 4.4: ProductoOutList Schema (Paginated)
 # ============================================================================
+
 
 class ProductoOutList(BaseModel):
     """Response schema for GET /api/v1/productos (paginated list)"""
@@ -206,6 +210,7 @@ class ProductoOutList(BaseModel):
 # Task 4.5: ProductoOutPublic Schema (Public Catalog)
 # ============================================================================
 
+
 class ProductoOutPublic(BaseModel):
     """Response schema for GET /api/v1/productos/publico/catalogo (no auth)"""
 
@@ -221,6 +226,17 @@ class ProductoOutPublic(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ============================================================================
+# Task 4.6: PatchStockRequest Schema
+# ============================================================================
+
+
+class PatchStockRequest(BaseModel):
+    """Request schema for PATCH /api/v1/productos/{id}/stock"""
+
+    nueva_cantidad: int = Field(..., ge=0, description="New stock quantity >= 0")
 
 
 class ProductoOutPublicList(BaseModel):

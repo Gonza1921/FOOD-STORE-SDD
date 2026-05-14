@@ -33,6 +33,9 @@ Thumbs.db
 # Alembic
 *.pyc
 
+# Agent Skill Registry (auto-generated)
+.atl/
+
 # Logs
 *.log
 logs/

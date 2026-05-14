@@ -5,6 +5,7 @@ import RegisterForm from '@/features/auth/components/RegisterForm';
 export default function RegisterPage() {
   return (
     <PublicRoute>
+<<<<<<< HEAD
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-surface via-surface-container-low to-surface-container px-4 py-12">
         {/* ── Decorative background blobs ── */}
         <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand-500/5 blur-3xl" />
@@ -27,6 +28,15 @@ export default function RegisterPage() {
             <p className="mt-1.5 text-sm text-on-surface-variant">
               Creá tu cuenta para empezar
             </p>
+=======
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
+          {/* ── Header ── */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900">Food Store</h1>
+            <h2 className="mt-2 text-lg font-medium text-gray-600">Crear Cuenta</h2>
+            <p className="mt-1 text-sm text-gray-500">Completá tus datos para registrarte</p>
+>>>>>>> origin/main
           </div>
 
           {/* ── Glass form card ── */}
@@ -37,10 +47,14 @@ export default function RegisterPage() {
           {/* ── Footer link ── */}
           <p className="mt-8 text-center text-sm text-on-surface-variant">
             ¿Ya tenés cuenta?{' '}
+<<<<<<< HEAD
             <Link
               to="/login"
               className="font-semibold text-brand-600 hover:text-brand-700 transition-colors"
             >
+=======
+            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+>>>>>>> origin/main
               Iniciá sesión
             </Link>
           </p>

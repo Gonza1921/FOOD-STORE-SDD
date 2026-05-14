@@ -7,19 +7,20 @@ ProductoCategoria → extracted to .producto_categoria
 
 from datetime import datetime
 from decimal import Decimal
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
+from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
 
-if TYPE_CHECKING:
-    from .producto_categoria import ProductoCategoria
-    from .producto_ingrediente import ProductoIngrediente
+from .producto_categoria import ProductoCategoria
+from .producto_ingrediente import ProductoIngrediente
 
 
 class Producto(SQLModel, table=True):
     """Product entity with stock management and category/ingredient composition"""
 
     __tablename__ = "producto"
+    __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=200, index=True)
@@ -28,12 +29,18 @@ class Producto(SQLModel, table=True):
     stock_cantidad: int = Field(default=0, ge=0)
     disponible: bool = Field(default=True)
 
-    # FK to primary category (can have multiple via ProductoCategoria)
+    # FK to primary category (can have multiple via M2M)
     categoria_id: int = Field(foreign_key="categoria.id", index=True)
 
-    # Relations (lazy-loaded by default, use selectinload in queries)
-    categorias: list["ProductoCategoria"] = Relationship(back_populates="producto")
-    ingredientes: list["ProductoIngrediente"] = Relationship(back_populates="producto")
+    # M2M via link_model — returns Categoria[] / Ingrediente[] directly
+    categorias: Mapped[list["Categoria"]] = Relationship(
+        back_populates="productos",
+        link_model=ProductoCategoria,
+    )
+    ingredientes: Mapped[list["Ingrediente"]] = Relationship(
+        back_populates="productos",
+        link_model=ProductoIngrediente,
+    )
 
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)

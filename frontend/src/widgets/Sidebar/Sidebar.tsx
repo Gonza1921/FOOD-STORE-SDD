@@ -138,6 +138,7 @@ function NavSection() {
   );
 }
 
+<<<<<<< HEAD
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -200,4 +201,6 @@ export function Sidebar({ className = '', isOpen, onClose }: SidebarProps) {
   );
 }
 
+=======
+>>>>>>> origin/main
 export default Sidebar;

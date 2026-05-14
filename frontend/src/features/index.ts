@@ -19,7 +19,12 @@ export { useCategories, CategoryForm, CategoryList, CategoriesAdminPage } from '
 export type { CategoryFormData } from './categories';
 
 // Ingredients
-export { useIngredients, IngredientForm, IngredientList, IngredientsAdminPage } from './ingredients';
+export {
+  useIngredients,
+  IngredientForm,
+  IngredientList,
+  IngredientsAdminPage,
+} from './ingredients';
 export type { IngredientFormData } from './ingredients';
 
 // UI

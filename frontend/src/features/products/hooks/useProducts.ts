@@ -4,11 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  listProducts,
-  PRODUCT_QUERY_KEYS,
-  ProductoListResponse,
-} from '../api/endpoints';
+import { listProducts, PRODUCT_QUERY_KEYS, ProductoListResponse } from '../api/endpoints';
 
 export interface UseProductsParams {
   skip?: number;
@@ -23,7 +19,9 @@ export interface UseProductsReturn {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  refetch: () => Promise<import('@tanstack/react-query').QueryObserverResult<ProductoListResponse, Error>>;
+  refetch: () => Promise<
+    import('@tanstack/react-query').QueryObserverResult<ProductoListResponse, Error>
+  >;
   /** Total count of all products (without pagination) */
   total: number | undefined;
   /** Current page number (1-indexed) */

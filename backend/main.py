@@ -18,6 +18,7 @@ from backend.auth.router import router as auth_router
 from backend.categorias.router import router as categorias_router
 from backend.ingredientes.router import router as ingredientes_router
 from backend.productos.router import router as productos_router
+from backend.pedidos.router import router as pedidos_router
 from backend.routers import health
 
 # Configure logging
@@ -34,7 +35,7 @@ def run_alembic_migrations():
         from alembic.config import Config
         from alembic.command import upgrade
         
-        alembic_cfg = Config("backend/alembic/alembic.ini")
+        alembic_cfg = Config("backend/alembic.ini")
         upgrade(alembic_cfg, "head")
         logger.info("✓ Alembic migrations applied successfully")
         return True
@@ -180,7 +181,8 @@ app.include_router(health.router, tags=["health"])
 app.include_router(auth_router)
 app.include_router(categorias_router)
 app.include_router(ingredientes_router)
-app.include_router(productos_router, prefix="/api/v1", tags=["Productos"])
+app.include_router(productos_router)
+app.include_router(pedidos_router)
 
 
 # Root endpoint

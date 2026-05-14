@@ -1,0 +1,97 @@
+{
+  "project": "food-store-sdd",
+  "project_path": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
+  "exported_at": "2026-05-14T04:14:00Z",
+  "total_observations": 10,
+  "observations": [
+    {
+      "id": 26,
+      "type": "pattern",
+      "title": "Created SKILLS.md registry file",
+      "content": "**What**: Creé SKILLS.md en la raíz del proyecto como índice centralizado de todas las skills IA disponibles  \n**Why**: El proyecto carecía de un registro unificado de skills — solo tenía skills/README.md que documenta las SDD internamente, pero no había un punto de entrada para que agentes y usuarios descubrieran qué skills existen  \n**Where**: `C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD\\SKILLS.md`  \n**Learned**: \n- La diferencia entre skills/README.md (detalle técnico de SDD) vs SKILLS.md (índice de referencia rápida)\n- Las skills externas (branch-pr, issue-creation, go-testing, etc.) vienen内置 en opencode, no necesitan instalación adicional\n- Este archivo debe ser conciso y estar orientado a discovery rápido",
+      "scope": "project",
+      "created": "2026-05-14T04:07:52Z"
+    },
+    {
+      "id": 25,
+      "type": "config",
+      "title": "Installed 5 skills for project quality",
+      "content": "**What**: Instaladas 5 skills globales para mejorar calidad del proyecto\n**Why**: reducir errores y mejorar prácticas de código\n**Where**: ~/.agents/skills/\n**Learned**:\n- python-testing-patterns: Patrones de testing para pytest/FastAPI\n- typescript-advanced-types: TypeScript avanzado para frontend\n- fastapi-templates: Templates y patrones FastAPI\n- code-review-excellence: Cómo hacer y recibir code reviews\n- webapp-testing: Testing para webapps (React + backend)\n- stitch react-components: Componentes React (ya estaba)",
+      "scope": "project",
+      "created": "2026-05-14T03:55:06Z"
+    },
+    {
+      "id": 23,
+      "type": "pattern",
+      "title": "Workflow SDD + OpenSpec (OPSX)",
+      "content": "**What**: Metodologa de desarrollo - Spec-Driven Development con OpenSpec\n**Why**: Entrega sistemtica con specs, diseo, tareas y verificacin\n**Where**: openspec/, docs/\n**Learned**:\n- No hay fases rgidas - workflow fluido\n- artifacts: proposal.md, design.md, tasks.md, specs/\n- CLI: openspec list, status, instructions\n- Changes: CH-003, CH-005, CH-006, CH-007, CH-008\n- Archive: cambios completados en openspec/archive/",
+      "scope": "project",
+      "created": "2026-05-14T03:02:08Z"
+    },
+    {
+      "id": 22,
+      "type": "discovery",
+      "title": "Integracin MercadoPago - Pagos y Webhooks",
+      "content": "**What**: Sistema de pagos con MercadoPago SDK + webhooks IPN\n**Why**: Procesamiento seguro de pagos online\n**Where**: backend/pagos/, frontend/payment/\n**Learned**:\n- SDK MercadoPago para crearrdenes de pago\n- Webhook IPN para confirmar pagos asynchronously\n- Flujo: PENDIENTE ? Confirmado (webhook) ? Preparacin ? Envo ? Entregado\n- Estado inicial: PENDIENTE (espera pago), FSM para transiciones",
+      "scope": "project",
+      "created": "2026-05-14T03:02:03Z"
+    },
+    {
+      "id": 21,
+      "type": "discovery",
+      "title": "Actores del Sistema y Roles RBAC",
+      "content": "**What**: Modelo de usuarios con roles definidos\n**Why**: Control de acceso granular segn tipo de usuario\n**Where**: backend/models/, docs/\n**Learned**:\n- Cliente: compra, gestiona pedidos\n- Administrador: control total, gestin de usuarios\n- Gestor de Stock: inventario y catlogo\n- Gestor de Pedidos: flujo operativo derdenes\n- MercadoPago: sistema de pagos (webhooks IPN)",
+      "scope": "project",
+      "created": "2026-05-14T03:01:58Z"
+    },
+    {
+      "id": 20,
+      "type": "decision",
+      "title": "Decisiones Arquitectnicas Clave",
+      "content": "**What**: Stack tecnolgico y patrones establecidos\n**Why**: Necesidad de consistencia y mantenibilidad\n**Where**: Todo el proyecto\n**Learned**: \n- **Backend**: FastAPI + SQLModel + PostgreSQL + Alembic\n- **Frontend**: React 18 + TypeScript + Vite + TanStack Query + Zustand + Tailwind\n- **Estado**: Zustand para client state (carrito, auth), TanStack Query para server state\n- **Patrones**: Repository + Unit of Work, RBAC, Soft Delete, FSD",
+      "scope": "project",
+      "created": "2026-05-14T03:01:54Z"
+    },
+    {
+      "id": 19,
+      "type": "feature",
+      "title": "CH-007: Gestin de Productos CRUD",
+      "content": "**What**: CRUD completo de productos con categoras, ingredientes, precios, stock\n**Why**: Core del e-commerce - gestin de catlogo\n**Where**: backend/productos/, frontend/features/products/\n**Learned**: - Repository pattern con herencia - Service layer con Unit of Work - RBAC por roles - 7 endpoints REST - Tests unitarios e integracin",
+      "scope": "project",
+      "created": "2026-05-14T03:01:49Z"
+    },
+    {
+      "id": 18,
+      "type": "feature",
+      "title": "CH-006: Categoras e Ingredientes",
+      "content": "**What**: CRUD completo de categoras jerrquicas e ingredientes con alrgenos\n**Why**: Necesidad de gestionar inventario con detalle de productos\n**Where**: backend/categorias/, backend/ingredientes/\n**Learned**: - CTE recursivo para categoras jerrquicas - Soft delete para integridad de datos",
+      "scope": "project",
+      "created": "2026-05-14T03:01:44Z"
+    },
+    {
+      "id": 17,
+      "type": "architecture",
+      "title": "CH-005: Sistema de Autenticacin Completo",
+      "content": "**What**: Implementacin completa de auth con JWT, refresh tokens, hashing\n**Why**: Requerimiento de seguridad y gestin de usuarios\n**Where**: backend/auth/, frontend/features/auth/\n**Learned**: - FastAPI Depends para JWT - bcrypt para hashing - RFC 7807 para errores - Refresh token con rotacin",
+      "scope": "project",
+      "created": "2026-05-14T03:01:40Z"
+    },
+    {
+      "id": 16,
+      "type": "architecture",
+      "title": "CH-003: Estructura Frontend FSD",
+      "content": "**What**: Primer cambio significativo - estructura Feature-Sliced Design del frontend\n**Why**: Necesidad de arquitectura escalable para React\n**Where**: frontend/src/ - pages, widgets, features, entities, shared\n**Learned**: Patrn FSD exitoso - separacin clara de responsabilidades",
+      "scope": "project",
+      "created": "2026-05-14T03:01:35Z"
+    }
+  ],
+  "summary": {
+    "changes_implemented": ["CH-003", "CH-005", "CH-006", "CH-007", "CH-008"],
+    "stack": {
+      "backend": "FastAPI + SQLModel + PostgreSQL + Alembic",
+      "frontend": "React 18 + TypeScript + Vite + TanStack Query + Zustand + Tailwind"
+    },
+    "patterns": ["Repository + Unit of Work", "RBAC", "Soft Delete", "FSD"],
+    "integrations": ["MercadoPago SDK", "MercadoPago Webhooks IPN"]
+  }
+}

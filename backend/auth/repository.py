@@ -5,7 +5,7 @@ refresh-token-specific methods that operate on ``RefreshToken`` directly.
 All methods use ``flush()`` (never ``commit()``) for UnitOfWork compatibility.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import update
@@ -110,9 +110,7 @@ class AuthRepository(BaseRepository[Usuario]):
         Returns:
             The matching ``RefreshToken`` or ``None``.
         """
-        statement = select(RefreshToken).where(
-            RefreshToken.token_hash == token_hash
-        )
+        statement = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
         result = await self.session.execute(statement)
         return result.scalar_one_or_none()
 
@@ -124,7 +122,7 @@ class AuthRepository(BaseRepository[Usuario]):
         Args:
             token: The ``RefreshToken`` instance to revoke.
         """
-        token.revoked_at = datetime.now(timezone.utc)
+        token.revoked_at = datetime.utcnow()
         self.session.add(token)
         await self.session.flush()
 
@@ -143,7 +141,7 @@ class AuthRepository(BaseRepository[Usuario]):
                 RefreshToken.usuario_id == usuario_id,
                 RefreshToken.revoked_at.is_(None),
             )
-            .values(revoked_at=datetime.now(timezone.utc))
+            .values(revoked_at=datetime.utcnow())
         )
         await self.session.execute(statement)
         await self.session.flush()

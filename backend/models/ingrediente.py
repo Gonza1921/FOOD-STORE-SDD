@@ -1,15 +1,20 @@
 """Ingredient model for product composition and allergen tracking"""
 
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-from sqlmodel import SQLModel, Field
+from sqlalchemy.orm import Mapped
+from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from .producto import Producto
 
 
 class Ingrediente(SQLModel, table=True):
     """Food ingredients for product composition and nutritional tracking"""
 
-    __tablename__ = "ingrediente"  # Explicit table name for FK references
+    __tablename__ = "ingrediente"
+    __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(unique=True, max_length=100, index=True)
@@ -21,3 +26,9 @@ class Ingrediente(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
+
+    # M2M via link_model — returns Producto[] directly
+    productos: Mapped[list["Producto"]] = Relationship(
+        back_populates="ingredientes",
+        link_model="ProductoIngrediente",
+    )

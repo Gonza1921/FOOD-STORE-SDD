@@ -4,11 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  getProductDetail,
-  PRODUCT_QUERY_KEYS,
-  Producto,
-} from '../api/endpoints';
+import { getProductDetail, PRODUCT_QUERY_KEYS, Producto } from '../api/endpoints';
 
 export interface UseProductDetailParams {
   /** Product ID to fetch */

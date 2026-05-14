@@ -4,11 +4,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import {
-  getPublicCatalog,
-  PRODUCT_QUERY_KEYS,
-  ProductoPublicListResponse,
-} from '../api/endpoints';
+import { getPublicCatalog, PRODUCT_QUERY_KEYS, ProductoPublicListResponse } from '../api/endpoints';
 
 export interface UsePublicCatalogParams {
   skip?: number;
@@ -26,7 +22,9 @@ export interface UsePublicCatalogReturn {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  refetch: () => Promise<import('@tanstack/react-query').QueryObserverResult<ProductoPublicListResponse, Error>>;
+  refetch: () => Promise<
+    import('@tanstack/react-query').QueryObserverResult<ProductoPublicListResponse, Error>
+  >;
   /** Total count of all matching products */
   total: number | undefined;
   /** Current page number (1-indexed) */

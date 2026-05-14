@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function UnauthorizedPage() {
   return (
+<<<<<<< HEAD
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-surface via-surface-container-low to-surface-container px-4">
       {/* ── Decorative blobs ── */}
       <div className="pointer-events-none absolute -right-40 -top-40 h-[30rem] w-[30rem] rounded-full bg-error/5 blur-3xl" />
@@ -23,6 +24,13 @@ export default function UnauthorizedPage() {
           Acceso Denegado
         </h2>
         <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
+=======
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-gray-300">403</h1>
+        <h2 className="mt-4 text-2xl font-semibold text-gray-900">Acceso Denegado</h2>
+        <p className="mt-2 text-gray-600">
+>>>>>>> origin/main
           No tenés permisos suficientes para acceder a esta página.
         </p>
         <div className="mt-10">

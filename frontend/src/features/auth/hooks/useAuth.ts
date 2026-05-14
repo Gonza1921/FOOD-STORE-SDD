@@ -67,15 +67,14 @@ export function useAuth(): UseAuthReturn {
         storeLogin(tokens, userData);
       } catch (err: unknown) {
         const apiError = err as { response?: { data?: { detail?: string } } };
-        const message =
-          apiError.response?.data?.detail || 'Error al iniciar sesión';
+        const message = apiError.response?.data?.detail || 'Error al iniciar sesión';
         setError(message);
         throw new Error(message);
       } finally {
         setLoading(false);
       }
     },
-    [storeLogin, setLoading, setError],
+    [storeLogin, setLoading, setError]
   );
 
   // ---- Register ----
@@ -104,15 +103,14 @@ export function useAuth(): UseAuthReturn {
         storeLogin(tokens, userData);
       } catch (err: unknown) {
         const apiError = err as { response?: { data?: { detail?: string } } };
-        const message =
-          apiError.response?.data?.detail || 'Error al registrarse';
+        const message = apiError.response?.data?.detail || 'Error al registrarse';
         setError(message);
         throw new Error(message);
       } finally {
         setLoading(false);
       }
     },
-    [storeLogin, setLoading, setError],
+    [storeLogin, setLoading, setError]
   );
 
   // ---- Logout ----

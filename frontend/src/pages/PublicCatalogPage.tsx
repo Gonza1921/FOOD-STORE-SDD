@@ -105,8 +105,32 @@ export default function PublicCatalogPage() {
           </form>
         </div>
 
+<<<<<<< HEAD
         {/* ── Loading ── */}
         {isLoading && renderSkeletons()}
+=======
+        {/* Loading State */}
+        {isLoading && (
+          <div className="flex justify-center py-12">
+            <svg className="animate-spin h-12 w-12 text-blue-600" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+          </div>
+        )}
+>>>>>>> origin/main
 
         {/* ── Error ── */}
         {isError && (
@@ -127,6 +151,7 @@ export default function PublicCatalogPage() {
         {!isLoading && !isError && (
           <>
             {data?.items.length === 0 ? (
+<<<<<<< HEAD
               /* Empty state */
               <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
                 <div className="flex h-24 w-24 items-center justify-center rounded-full bg-surface-container mb-5">
@@ -139,6 +164,9 @@ export default function PublicCatalogPage() {
                   No se encontraron productos para tu búsqueda
                 </p>
               </div>
+=======
+              <div className="text-center py-12 text-gray-500">No se encontraron productos</div>
+>>>>>>> origin/main
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {data?.items.map((product, i) => (

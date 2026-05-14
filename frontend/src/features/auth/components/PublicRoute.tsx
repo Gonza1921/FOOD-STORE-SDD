@@ -16,10 +16,7 @@ interface PublicRouteProps {
 // PublicRoute — redirects authenticated users away from login/register pages
 // ---------------------------------------------------------------------------
 
-export default function PublicRoute({
-  children,
-  redirectTo = '/',
-}: PublicRouteProps) {
+export default function PublicRoute({ children, redirectTo = '/' }: PublicRouteProps) {
   const { accessToken, user } = useAuthStore();
 
   if (accessToken && user) {

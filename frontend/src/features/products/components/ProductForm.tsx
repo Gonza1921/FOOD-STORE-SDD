@@ -39,6 +39,7 @@ const initialFormData: Omit<ProductoCreate, 'categoria_id'> & { categoria_id: nu
   ingredientes: [],
 };
 
+<<<<<<< HEAD
 // ── Reusable input class builder ──
 
 const inputBase =
@@ -64,6 +65,9 @@ export function ProductForm({
   onCancel,
   externalLoading,
 }: ProductFormProps) {
+=======
+export function ProductForm({ product, onSuccess, onCancel, externalLoading }: ProductFormProps) {
+>>>>>>> origin/main
   const isEditMode = !!product;
 
   // Form state
@@ -110,7 +114,13 @@ export function ProductForm({
       });
       setSelectedCategorias(product.categorias.map((c: CategoriaRef) => c.id));
       setSelectedIngredientes(product.ingredientes.map((i: IngredienteRef) => i.id));
+<<<<<<< HEAD
       setPrincipalCategoria(product.categorias[0]?.id || null);
+=======
+      setPrincipalCategoria(
+        product.categorias.find((c: CategoriaRef) => c.id === formData.categoria_id)?.id || null
+      );
+>>>>>>> origin/main
     } else {
       setFormData(initialFormData);
       setSelectedCategorias([]);
@@ -161,7 +171,12 @@ export function ProductForm({
 
     setIsSubmitting(true);
 
-    const categoriasOrdenadas = [principalCategoria || formData.categoria_id, ...selectedCategorias.filter(id => id !== principalCategoria && id !== formData.categoria_id)].filter(Boolean) as number[];
+    const categoriasOrdenadas = [
+      principalCategoria || formData.categoria_id,
+      ...selectedCategorias.filter(
+        (id) => id !== principalCategoria && id !== formData.categoria_id
+      ),
+    ].filter(Boolean) as number[];
 
     if (isEditMode && product) {
       const updateData: ProductoUpdate = {
@@ -190,7 +205,8 @@ export function ProductForm({
     }
   };
 
-  const isLoading = isSubmitting || externalLoading || createMutation.isPending || updateMutation.isPending;
+  const isLoading =
+    isSubmitting || externalLoading || createMutation.isPending || updateMutation.isPending;
 
   const set = (field: string, value: unknown) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -237,7 +253,11 @@ export function ProductForm({
           placeholder="Ej: Pizza Margherita"
           className={`${inputBase} ${inputBorder(errors.nombre)}`}
         />
+<<<<<<< HEAD
         {errors.nombre && <p className={errorTextStyle}>{errors.nombre}</p>}
+=======
+        {errors.nombre && <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>}
+>>>>>>> origin/main
       </div>
 
       {/* Descripcion */}
@@ -255,7 +275,11 @@ export function ProductForm({
           placeholder="Descripción del producto..."
           className={`${inputBase} ${inputBorder(errors.descripcion)} resize-none`}
         />
+<<<<<<< HEAD
         {errors.descripcion && <p className={errorTextStyle}>{errors.descripcion}</p>}
+=======
+        {errors.descripcion && <p className="mt-1 text-sm text-red-600">{errors.descripcion}</p>}
+>>>>>>> origin/main
       </div>
 
       {/* Precio y Stock */}
@@ -264,6 +288,7 @@ export function ProductForm({
           <label htmlFor="precio_base" className={labelStyle}>
             Precio (ARS) <span className="text-error">*</span>
           </label>
+<<<<<<< HEAD
           <div className="relative mt-1">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <span className="text-on-surface-variant font-medium">$</span>
@@ -281,6 +306,22 @@ export function ProductForm({
             />
           </div>
           {errors.precio_base && <p className={errorTextStyle}>{errors.precio_base}</p>}
+=======
+          <input
+            type="number"
+            id="precio_base"
+            value={formData.precio_base}
+            onChange={(e) => setFormData({ ...formData, precio_base: e.target.value })}
+            disabled={isLoading}
+            step="0.01"
+            min="0.01"
+            placeholder="19.99"
+            className={`mt-1 block w-full rounded-md border ${
+              errors.precio_base ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-blue-500`}
+          />
+          {errors.precio_base && <p className="mt-1 text-sm text-red-600">{errors.precio_base}</p>}
+>>>>>>> origin/main
         </div>
 
         <div>
@@ -291,7 +332,13 @@ export function ProductForm({
             type="number"
             id="stock_cantidad"
             value={formData.stock_cantidad}
+<<<<<<< HEAD
             onChange={(e) => set('stock_cantidad', parseInt(e.target.value) || 0)}
+=======
+            onChange={(e) =>
+              setFormData({ ...formData, stock_cantidad: parseInt(e.target.value) || 0 })
+            }
+>>>>>>> origin/main
             disabled={isLoading}
             min="0"
             placeholder="0"
@@ -324,21 +371,44 @@ export function ProductForm({
         <select
           id="categoria_id"
           value={formData.categoria_id}
+<<<<<<< HEAD
           onChange={(e) => set('categoria_id', e.target.value ? parseInt(e.target.value) : '')}
+=======
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              categoria_id: e.target.value ? parseInt(e.target.value) : '',
+            })
+          }
+>>>>>>> origin/main
           disabled={isLoading}
           className={`${inputBase} ${inputBorder(errors.categoria_id)} appearance-none bg-no-repeat`}
           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%2712%27 fill=%27%2357423b%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M8 11L3 6h10l-5 5z%27/%3E%3C/svg%3E")', backgroundPosition: 'right 12px center', paddingRight: '36px' }}
         >
           <option value="">Seleccionar categoría</option>
+<<<<<<< HEAD
           {selectedCategorias.map((catId) => (
             <option key={catId} value={catId}>Categoría {catId}</option>
           ))}
         </select>
         {errors.categoria_id && <p className={errorTextStyle}>{errors.categoria_id}</p>}
+=======
+          {selectedCategorias.map((catId) => {
+            // We'll rely on the categories selector to populate this
+            return (
+              <option key={catId} value={catId}>
+                Categoría {catId}
+              </option>
+            );
+          })}
+        </select>
+        {errors.categoria_id && <p className="mt-1 text-sm text-red-600">{errors.categoria_id}</p>}
+>>>>>>> origin/main
       </div>
 
       {/* Categorías Adicionales */}
       <div>
+<<<<<<< HEAD
         <p className={labelStyle}>Categorías Adicionales</p>
         <div className="mt-1">
           <CategoriesSelector
@@ -350,6 +420,22 @@ export function ProductForm({
             onPrincipalChange={setPrincipalCategoria}
           />
         </div>
+=======
+        <label
+          htmlFor="categorias-adicionales"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Categorías Adicionales
+        </label>
+        <CategoriesSelector
+          value={selectedCategorias}
+          onChange={setSelectedCategorias}
+          disabled={isLoading}
+          showPrincipal={true}
+          principalId={principalCategoria}
+          onPrincipalChange={setPrincipalCategoria}
+        />
+>>>>>>> origin/main
       </div>
 
       {/* Ingredientes */}
@@ -389,12 +475,33 @@ export function ProductForm({
           {isLoading ? (
             <>
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
               </svg>
               Guardando...
+<<<<<<< HEAD
             </>
           ) : isEditMode ? 'Actualizar Producto' : 'Crear Producto'}
+=======
+            </span>
+          ) : isEditMode ? (
+            'Actualizar'
+          ) : (
+            'Crear'
+          )}
+>>>>>>> origin/main
         </button>
       </div>
     </form>

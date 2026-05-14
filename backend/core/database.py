@@ -34,19 +34,27 @@ SessionLocal = sessionmaker(
 # Asynchronous engine & session (for BaseRepository / async endpoints)
 # ---------------------------------------------------------------------------
 
-async_engine = create_async_engine(
-    settings.async_database_url,
-    echo=settings.environment == "development",
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,
-)
+async_engine = None
+AsyncSessionLocal = None
 
-AsyncSessionLocal = async_sessionmaker(
-    async_engine,
-    class_=AsyncSession,
-    expire_on_commit=False,
-)
+try:
+    import asyncpg  # noqa: F401 — verify driver availability
+
+    async_engine = create_async_engine(
+        settings.async_database_url,
+        echo=settings.environment == "development",
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+    )
+
+    AsyncSessionLocal = async_sessionmaker(
+        async_engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
+except ImportError:
+    logger.warning("asyncpg not installed — async database engine unavailable")
 
 
 def get_session() -> Session:

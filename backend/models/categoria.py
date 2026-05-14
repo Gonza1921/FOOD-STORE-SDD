@@ -3,16 +3,18 @@
 from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 
+from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
-    from .producto_categoria import ProductoCategoria
+    from .producto import Producto
 
 
 class Categoria(SQLModel, table=True):
     """Product categories with hierarchical structure (self-referencing)"""
 
     __tablename__ = "categoria"
+    __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=100, index=True)
@@ -26,5 +28,8 @@ class Categoria(SQLModel, table=True):
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
     deleted_at: Optional[datetime] = Field(default=None, index=True)
 
-    # Relationships
-    productos: list["ProductoCategoria"] = Relationship(back_populates="categoria")
+    # Relationships (M2M via link_model — returns Categoria[] directly)
+    productos: Mapped[list["Producto"]] = Relationship(
+        back_populates="categorias",
+        link_model="ProductoCategoria",
+    )

@@ -44,41 +44,50 @@ export function useIngredients(): UseIngredientsReturn {
     }
   }, []);
 
-  const create = useCallback(async (data: IngredientFormData) => {
-    setError(null);
-    try {
-      await axiosClient.post(API.INGREDIENTS.CREATE, data);
-      await refetch();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error al crear ingrediente';
-      setError(message);
-      throw err;
-    }
-  }, [refetch]);
+  const create = useCallback(
+    async (data: IngredientFormData) => {
+      setError(null);
+      try {
+        await axiosClient.post(API.INGREDIENTS.CREATE, data);
+        await refetch();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Error al crear ingrediente';
+        setError(message);
+        throw err;
+      }
+    },
+    [refetch]
+  );
 
-  const update = useCallback(async (id: number, data: IngredientFormData) => {
-    setError(null);
-    try {
-      await axiosClient.put(API.INGREDIENTS.UPDATE(id), data);
-      await refetch();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error al actualizar ingrediente';
-      setError(message);
-      throw err;
-    }
-  }, [refetch]);
+  const update = useCallback(
+    async (id: number, data: IngredientFormData) => {
+      setError(null);
+      try {
+        await axiosClient.put(API.INGREDIENTS.UPDATE(id), data);
+        await refetch();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Error al actualizar ingrediente';
+        setError(message);
+        throw err;
+      }
+    },
+    [refetch]
+  );
 
-  const remove = useCallback(async (id: number) => {
-    setError(null);
-    try {
-      await axiosClient.delete(API.INGREDIENTS.DELETE(id));
-      await refetch();
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error al eliminar ingrediente';
-      setError(message);
-      throw err;
-    }
-  }, [refetch]);
+  const remove = useCallback(
+    async (id: number) => {
+      setError(null);
+      try {
+        await axiosClient.delete(API.INGREDIENTS.DELETE(id));
+        await refetch();
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Error al eliminar ingrediente';
+        setError(message);
+        throw err;
+      }
+    },
+    [refetch]
+  );
 
   return { ingredients, isLoading, error, create, update, remove, refetch };
 }

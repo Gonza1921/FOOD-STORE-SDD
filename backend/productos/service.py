@@ -5,21 +5,23 @@ Encapsulates:
 - Stock management with pessimistic validation (>= 0 before update)
 - Atomicity via UnitOfWork context manager
 - Error handling and mapping to HTTP status codes
+
+Architecture: Router → Service → UnitOfWork → Repository → Model
+Matches patterns used in: auth, categorias, ingredientes
 """
 
-from typing import Optional
 from decimal import Decimal
+from typing import Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
+from backend.core.exceptions import ConflictError, NotFoundError, ValidationError
 from backend.core.unit_of_work import UnitOfWork
-from backend.core.exceptions import NotFoundError
+from backend.models.categoria import Categoria
+from backend.models.ingrediente import Ingrediente
 from backend.models.producto import Producto
 from backend.models.producto_categoria import ProductoCategoria
 from backend.models.producto_ingrediente import ProductoIngrediente
-from backend.models.categoria import Categoria
-from backend.models.ingrediente import Ingrediente
 from .repository import (
     ProductoRepository,
     ProductoCategoriaRepository,
@@ -28,21 +30,14 @@ from .repository import (
 
 
 class ProductoService:
-    """ProductoService — business logic for Producto CRUD with M2M and stock."""
+    """ProductoService — business logic for Producto CRUD with M2M and stock.
 
-    def __init__(self, session: AsyncSession):
-        """Initialize service with a session (will be used inside UoW context).
-
-        Args:
-            session: An active AsyncSession.
-        """
-        self.session = session
-        self.repo = ProductoRepository(session, Producto)
-        self.cat_repo = ProductoCategoriaRepository(session, ProductoCategoria)
-        self.ing_repo = ProductoIngredienteRepository(session, ProductoIngrediente)
+    All DB operations run inside UnitOfWork for atomicity.
+    No direct session access — always through repositories inside UoW.
+    """
 
     # ========================================================================
-    # TASK 3.1: Inherited CRUD methods (delegated to repository)
+    # Read operations (get_all_paginated, get_by_id, get_public_paginated)
     # ========================================================================
 
     async def get_all_paginated(
@@ -58,7 +53,9 @@ class ProductoService:
         Returns:
             Tuple of (list of Producto, total count of all matching records).
         """
-        return await self.repo.get_all_paginated(skip, limit, include_deleted)
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            return await repo.get_all_paginated(skip, limit, include_deleted)
 
     async def get_by_id(self, producto_id: int) -> Optional[Producto]:
         """Get producto by ID with eager-loaded associations.
@@ -67,9 +64,12 @@ class ProductoService:
             producto_id: Product ID.
 
         Returns:
-            Producto with categorias and ingredientes loaded, or None if not found/deleted.
+            Producto with categorias and ingredientes loaded,
+            or None if not found/deleted.
         """
-        return await self.repo.get_con_asociaciones(producto_id)
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            return await repo.get_con_asociaciones(producto_id)
 
     async def get_public_paginated(
         self,
@@ -78,7 +78,7 @@ class ProductoService:
         search: Optional[str] = None,
         categoria_id: Optional[int] = None,
     ) -> tuple[list[Producto], int]:
-        """Get public catalog (disponible=true, not deleted) with optional filters.
+        """Get public catalog (disponible=true, not deleted) with filters.
 
         Args:
             skip: Number of records to skip.
@@ -89,10 +89,12 @@ class ProductoService:
         Returns:
             Tuple of (list of Producto, total count).
         """
-        return await self.repo.get_public_paginated(skip, limit, search, categoria_id)
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            return await repo.get_public_paginated(skip, limit, search, categoria_id)
 
     # ========================================================================
-    # TASK 3.2: Create with validation (categoria_id exists) and M2M
+    # Create with validations (categoria_id exists) and M2M associations
     # ========================================================================
 
     async def create(
@@ -114,7 +116,7 @@ class ProductoService:
         M2M Strategy: Insert all associations atomically. If error → rollback.
 
         Args:
-            producto_data: Dict with producto fields {nombre, descripcion, precio_base, ...}
+            producto_data: Dict with producto fields.
             categorias: Optional list of categoria IDs to associate.
             ingredientes: Optional list of ingrediente IDs to associate.
 
@@ -122,114 +124,120 @@ class ProductoService:
             Created Producto with id and timestamps.
 
         Raises:
-            ValueError: If validation fails (400 Bad Request).
-            ValueError: If categoria/ingrediente not found (409 Conflict).
+            ConflictError: If categoria/ingrediente not found or nombre duplicado.
+            NotFoundError: If categoria/ingrediente does not exist.
+            ValueError: If validation fails (invalid input).
         """
-        # ===== Validations (BEFORE any DB operation) =====
+        async with UnitOfWork() as uow:
 
-        # Validate nombre
-        nombre = producto_data.get("nombre", "").strip() if producto_data.get("nombre") else ""
-        if not nombre:
-            raise ValueError("Nombre es requerido")
-        if len(nombre) > 200:
-            raise ValueError("Nombre debe ser <= 200 caracteres")
+            # ---- Validations (BEFORE any DB mutation) ----
 
-        # Validate precio_base
-        precio = producto_data.get("precio_base")
-        if precio is None:
-            raise ValueError("Precio base es requerido")
-        if not isinstance(precio, (int, float, Decimal)):
-            raise ValueError("Precio debe ser numérico")
-        precio = Decimal(str(precio))
-        if precio <= 0:
-            raise ValueError("Precio debe ser > 0")
+            nombre = (
+                producto_data.get("nombre", "").strip()
+                if producto_data.get("nombre")
+                else ""
+            )
+            if not nombre:
+                raise ValidationError("El nombre es requerido")
+            if len(nombre) > 200:
+                raise ValidationError("El nombre debe tener máximo 200 caracteres")
 
-        # Validate stock_cantidad
-        stock = producto_data.get("stock_cantidad", 0)
-        if not isinstance(stock, int):
-            raise ValueError("Stock debe ser entero")
-        if stock < 0:
-            raise ValueError("Stock no puede ser negativo")
+            precio = producto_data.get("precio_base")
+            if precio is None:
+                raise ValidationError("El precio base es requerido")
+            if not isinstance(precio, (int, float, Decimal)):
+                raise ValidationError("El precio debe ser un valor numérico")
+            precio = Decimal(str(precio))
+            if precio <= 0:
+                raise ValidationError("El precio debe ser mayor a 0")
 
-        # Validate descripcion
-        descripcion = producto_data.get("descripcion")
-        if descripcion and len(descripcion) > 500:
-            raise ValueError("Descripción debe ser <= 500 caracteres")
+            stock = producto_data.get("stock_cantidad", 0)
+            if not isinstance(stock, int):
+                raise ValidationError("El stock debe ser un número entero")
+            if stock < 0:
+                raise ValidationError("El stock no puede ser negativo")
 
-        # Validate categoria_id (FK, must exist and not deleted)
-        categoria_id = producto_data.get("categoria_id")
-        if not categoria_id:
-            raise ValueError("Categoría primaria es requerida")
+            descripcion = producto_data.get("descripcion")
+            if descripcion and len(descripcion) > 500:
+                raise ValidationError("La descripción debe tener máximo 500 caracteres")
 
-        cat_stmt = select(Categoria).where(
-            (Categoria.id == categoria_id) & (Categoria.deleted_at.is_(None))
-        )
-        cat_result = await self.session.execute(cat_stmt)
-        if not cat_result.scalar_one_or_none():
-            raise ValueError(f"Categoría {categoria_id} no existe o está eliminada")
+            categoria_id = producto_data.get("categoria_id")
+            if not categoria_id:
+                raise ValidationError("La categoría principal es requerida")
 
-        # Validate categorias[] (if provided)
-        if categorias:
-            for cat_id in categorias:
-                cat_stmt = select(Categoria).where(
-                    (Categoria.id == cat_id) & (Categoria.deleted_at.is_(None))
+            # Validate categoria_id exists
+            cat_stmt = select(Categoria).where(
+                Categoria.id == categoria_id,
+                Categoria.deleted_at.is_(None),
+            )
+            cat_result = await uow.session.execute(cat_stmt)
+            if not cat_result.scalar_one_or_none():
+                raise ConflictError(
+                    f"La categoría {categoria_id} no existe o está eliminada"
                 )
-                cat_result = await self.session.execute(cat_stmt)
-                if not cat_result.scalar_one_or_none():
-                    raise ValueError(f"Categoría {cat_id} no existe o está eliminada")
 
-        # Validate ingredientes[] (if provided)
-        if ingredientes:
-            for ing_id in ingredientes:
-                ing_stmt = select(Ingrediente).where(
-                    (Ingrediente.id == ing_id) & (Ingrediente.deleted_at.is_(None))
-                )
-                ing_result = await self.session.execute(ing_stmt)
-                if not ing_result.scalar_one_or_none():
-                    raise ValueError(f"Ingrediente {ing_id} no existe o está eliminada")
+            # Validate categorias[] (if provided)
+            if categorias:
+                for cat_id in categorias:
+                    stmt = select(Categoria).where(
+                        Categoria.id == cat_id,
+                        Categoria.deleted_at.is_(None),
+                    )
+                    result = await uow.session.execute(stmt)
+                    if not result.scalar_one_or_none():
+                        raise ConflictError(
+                            f"La categoría {cat_id} no existe o está eliminada"
+                        )
 
-        # ===== DB Operations (atomic via session) =====
+            # Validate ingredientes[] (if provided)
+            if ingredientes:
+                for ing_id in ingredientes:
+                    ing_stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
+                    ing_result = await uow.session.execute(ing_stmt)
+                    if not ing_result.scalar_one_or_none():
+                        raise ConflictError(f"El ingrediente {ing_id} no existe")
 
-        # Create Producto
-        producto = Producto(
-            nombre=nombre,
-            descripcion=descripcion,
-            precio_base=precio,
-            stock_cantidad=stock,
-            disponible=producto_data.get("disponible", True),
-            categoria_id=categoria_id,
-        )
-        self.session.add(producto)
-        await self.session.flush()  # Get the ID without commit
+            # ---- DB Operations (atomic via UoW commit/rollback) ----
 
-        # Associate categorias (Replace All: insert all provided)
-        if categorias:
-            for cat_id in categorias:
-                prod_cat = ProductoCategoria(
-                    producto_id=producto.id,
-                    categoria_id=cat_id,
-                    es_principal=(cat_id == categoria_id),  # Primary = the main one
-                )
-                self.session.add(prod_cat)
-            await self.session.flush()
+            # Create Producto
+            producto = Producto(
+                nombre=nombre,
+                descripcion=descripcion,
+                precio_base=precio,
+                stock_cantidad=stock,
+                disponible=producto_data.get("disponible", True),
+                categoria_id=categoria_id,
+            )
+            uow.session.add(producto)
+            await uow.session.flush()
 
-        # Associate ingredientes (Replace All: insert all provided)
-        if ingredientes:
-            for ing_id in ingredientes:
-                prod_ing = ProductoIngrediente(
-                    producto_id=producto.id,
-                    ingrediente_id=ing_id,
-                    es_removible=False,  # Default, can be set per-ingrediente in schema
-                )
-                self.session.add(prod_ing)
-            await self.session.flush()
+            # Associate categorias
+            if categorias:
+                for cat_id in categorias:
+                    prod_cat = ProductoCategoria(
+                        producto_id=producto.id,
+                        categoria_id=cat_id,
+                        es_principal=(cat_id == categoria_id),
+                    )
+                    uow.session.add(prod_cat)
+                await uow.session.flush()
 
-        # Refresh to load relations
-        await self.session.refresh(producto)
-        return producto
+            # Associate ingredientes
+            if ingredientes:
+                for ing_id in ingredientes:
+                    prod_ing = ProductoIngrediente(
+                        producto_id=producto.id,
+                        ingrediente_id=ing_id,
+                        es_removible=False,
+                    )
+                    uow.session.add(prod_ing)
+                await uow.session.flush()
+
+            await uow.session.refresh(producto)
+            return producto
 
     # ========================================================================
-    # TASK 3.3: Update with Replace All M2M strategy
+    # Update with Replace All M2M strategy
     # ========================================================================
 
     async def update(
@@ -239,138 +247,129 @@ class ProductoService:
         categorias: Optional[list[int]] = None,
         ingredientes: Optional[list[int]] = None,
     ) -> Producto:
-        """Update existing producto with optional M2M replacement.
-
-        Validations:
-        - producto_id must exist and not deleted
-        - precio_base: if provided, must be > 0
-        - categorias/ingredientes: if provided, must all exist
-
-        M2M Strategy: Replace All
-        - DELETE all old ProductoCategoria rows
-        - INSERT all new ProductoCategoria rows
-        - Same for ingredientes
-        - All atomic within session.
+        """Update existing producto with optional M2M replacement (atomic UoW).
 
         Args:
             producto_id: ID of producto to update.
-            producto_data: Dict with fields to update (nombre, descripcion, precio_base, disponible, categoria_id).
-            categorias: Optional list of categoria IDs to REPLACE the current ones.
-            ingredientes: Optional list of ingrediente IDs to REPLACE the current ones.
+            producto_data: Dict with fields to update.
+            categorias: Optional list of categoria IDs to REPLACE current ones.
+            ingredientes: Optional list of ingrediente IDs to REPLACE current ones.
 
         Returns:
             Updated Producto with refreshed relations.
 
         Raises:
-            ValueError: If producto not found or validations fail.
+            NotFoundError: If producto not found.
+            ConflictError: If categoria/ingrediente not found.
+            ValueError: If validation fails.
         """
-        # Fetch existing producto
-        producto = await self.repo.get_by_id(producto_id)
-        if not producto:
-            raise ValueError(f"Producto {producto_id} no existe")
-
-        # Validate and update simple fields
-        if "nombre" in producto_data:
-            nombre = str(producto_data["nombre"]).strip()
-            if not nombre:
-                raise ValueError("Nombre no puede estar vacío")
-            if len(nombre) > 200:
-                raise ValueError("Nombre debe ser <= 200 caracteres")
-            producto.nombre = nombre
-
-        if "descripcion" in producto_data:
-            desc = producto_data.get("descripcion")
-            if desc and len(desc) > 500:
-                raise ValueError("Descripción debe ser <= 500 caracteres")
-            producto.descripcion = desc
-
-        if "precio_base" in producto_data:
-            precio = Decimal(str(producto_data["precio_base"]))
-            if precio <= 0:
-                raise ValueError("Precio debe ser > 0")
-            producto.precio_base = precio
-
-        if "disponible" in producto_data:
-            producto.disponible = bool(producto_data["disponible"])
-
-        if "categoria_id" in producto_data:
-            categoria_id = producto_data["categoria_id"]
-            cat_stmt = select(Categoria).where(
-                (Categoria.id == categoria_id) & (Categoria.deleted_at.is_(None))
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            cat_repo = uow.register(
+                "prod_categorias", ProductoCategoriaRepository, ProductoCategoria
             )
-            cat_result = await self.session.execute(cat_stmt)
-            if not cat_result.scalar_one_or_none():
-                raise ValueError(f"Categoría {categoria_id} no existe o está eliminada")
-            producto.categoria_id = categoria_id
+            ing_repo = uow.register(
+                "prod_ingredientes", ProductoIngredienteRepository, ProductoIngrediente
+            )
 
-        # Update main record
-        self.session.add(producto)
-        await self.session.flush()
+            # Fetch existing producto
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
 
-        # Replace All: categorias
-        if categorias is not None:
-            # Delete old associations
-            await self.cat_repo.delete_by_producto(producto_id)
+            # Validate and update simple fields
+            if "nombre" in producto_data:
+                nombre = str(producto_data["nombre"]).strip()
+                if not nombre:
+                    raise ValidationError("El nombre no puede estar vacío")
+                if len(nombre) > 200:
+                    raise ValidationError("El nombre debe tener máximo 200 caracteres")
+                producto.nombre = nombre
 
-            # Validate new categorias exist
-            from sqlmodel import select
-            for cat_id in categorias:
-                cat_stmt = select(Categoria).where(
-                    (Categoria.id == cat_id) & (Categoria.deleted_at.is_(None))
+            if "descripcion" in producto_data:
+                desc = producto_data.get("descripcion")
+                if desc and len(desc) > 500:
+                    raise ValidationError(
+                        "La descripción debe tener máximo 500 caracteres"
+                    )
+                producto.descripcion = desc
+
+            if "precio_base" in producto_data:
+                precio = Decimal(str(producto_data["precio_base"]))
+                if precio <= 0:
+                    raise ValidationError("El precio debe ser mayor a 0")
+                producto.precio_base = precio
+
+            if "disponible" in producto_data:
+                producto.disponible = bool(producto_data["disponible"])
+
+            if "categoria_id" in producto_data:
+                cat_id_val = producto_data["categoria_id"]
+                stmt = select(Categoria).where(
+                    Categoria.id == cat_id_val,
+                    Categoria.deleted_at.is_(None),
                 )
-                cat_result = await self.session.execute(cat_stmt)
-                if not cat_result.scalar_one_or_none():
-                    raise ValueError(f"Categoría {cat_id} no existe o está eliminada")
+                result = await uow.session.execute(stmt)
+                if not result.scalar_one_or_none():
+                    raise ConflictError(
+                        f"La categoría {cat_id_val} no existe o está eliminada"
+                    )
+                producto.categoria_id = cat_id_val
 
-            # Insert new associations
-            for cat_id in categorias:
-                prod_cat = ProductoCategoria(
-                    producto_id=producto_id,
-                    categoria_id=cat_id,
-                    es_principal=(cat_id == producto.categoria_id),
-                )
-                self.session.add(prod_cat)
-            await self.session.flush()
+            # Flush main record changes
+            uow.session.add(producto)
+            await uow.session.flush()
 
-        # Replace All: ingredientes
-        if ingredientes is not None:
-            # Delete old associations
-            await self.ing_repo.delete_by_producto(producto_id)
+            # Replace All: categorias
+            if categorias is not None:
+                await cat_repo.delete_by_producto(producto_id)
 
-            # Validate new ingredientes exist
-            from sqlmodel import select
-            for ing_id in ingredientes:
-                ing_stmt = select(Ingrediente).where(
-                    (Ingrediente.id == ing_id) & (Ingrediente.deleted_at.is_(None))
-                )
-                ing_result = await self.session.execute(ing_stmt)
-                if not ing_result.scalar_one_or_none():
-                    raise ValueError(f"Ingrediente {ing_id} no existe o está eliminada")
+                for cat_id in categorias:
+                    stmt = select(Categoria).where(
+                        Categoria.id == cat_id,
+                        Categoria.deleted_at.is_(None),
+                    )
+                    result = await uow.session.execute(stmt)
+                    if not result.scalar_one_or_none():
+                        raise ConflictError(
+                            f"La categoría {cat_id} no existe o está eliminada"
+                        )
 
-            # Insert new associations
-            for ing_id in ingredientes:
-                prod_ing = ProductoIngrediente(
-                    producto_id=producto_id,
-                    ingrediente_id=ing_id,
-                    es_removible=False,
-                )
-                self.session.add(prod_ing)
-            await self.session.flush()
+                    prod_cat = ProductoCategoria(
+                        producto_id=producto_id,
+                        categoria_id=cat_id,
+                        es_principal=(cat_id == producto.categoria_id),
+                    )
+                    uow.session.add(prod_cat)
+                await uow.session.flush()
 
-        # Refresh to load updated relations
-        await self.session.refresh(producto)
-        return producto
+            # Replace All: ingredientes
+            if ingredientes is not None:
+                await ing_repo.delete_by_producto(producto_id)
+
+                for ing_id in ingredientes:
+                    ing_stmt = select(Ingrediente).where(Ingrediente.id == ing_id)
+                    ing_result = await uow.session.execute(ing_stmt)
+                    if not ing_result.scalar_one_or_none():
+                        raise ConflictError(f"El ingrediente {ing_id} no existe")
+
+                    prod_ing = ProductoIngrediente(
+                        producto_id=producto_id,
+                        ingrediente_id=ing_id,
+                        es_removible=False,
+                    )
+                    uow.session.add(prod_ing)
+                await uow.session.flush()
+
+            await uow.session.refresh(producto)
+            return producto
 
     # ========================================================================
-    # TASK 3.4: Update stock with pessimistic validation
+    # Stock operations (update_stock, decrement_stock)
     # ========================================================================
 
     async def update_stock(self, producto_id: int, nuevo_stock: int) -> Producto:
-        """Update producto stock with pessimistic validation.
-
-        Validations:
-        - Producto exists and not deleted
-        - nuevo_stock >= 0 (BEFORE update, pessimistic)
+        """Update producto stock with pessimistic validation (atomic UoW).
 
         Args:
             producto_id: Product ID.
@@ -380,32 +379,29 @@ class ProductoService:
             Updated Producto.
 
         Raises:
-            ValueError: If producto not found or nuevo_stock < 0.
+            NotFoundError: If producto not found.
+            ValueError: If nuevo_stock < 0.
         """
-        # Fetch existing producto
-        producto = await self.repo.get_by_id(producto_id)
-        if not producto:
-            raise ValueError(f"Producto {producto_id} no existe")
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
 
-        # Pessimistic validation: BEFORE update
-        if not isinstance(nuevo_stock, int):
-            raise ValueError("Stock debe ser entero")
-        if nuevo_stock < 0:
-            raise ValueError("Stock no puede ser negativo")
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
 
-        # Update
-        producto.stock_cantidad = nuevo_stock
-        self.session.add(producto)
-        await self.session.flush()
+            if not isinstance(nuevo_stock, int):
+                raise ValidationError("El stock debe ser un número entero")
+            if nuevo_stock < 0:
+                raise ValidationError("El stock no puede ser negativo")
 
-        return producto
+            producto.stock_cantidad = nuevo_stock
+            uow.session.add(producto)
+            await uow.session.flush()
+
+            return producto
 
     async def decrement_stock(self, producto_id: int, cantidad: int) -> bool:
         """Decrement stock (for order confirmation with pessimistic check).
-
-        Validations:
-        - Producto exists
-        - Current stock >= cantidad requested (pessimistic)
 
         Args:
             producto_id: Product ID.
@@ -415,42 +411,39 @@ class ProductoService:
             True if successful.
 
         Raises:
-            ValueError: If producto not found, cantidad invalid, or insufficient stock.
+            NotFoundError: If producto not found.
+            ValueError: If cantidad invalid or insufficient stock.
         """
-        # Fetch existing producto
-        producto = await self.repo.get_by_id(producto_id)
-        if not producto:
-            raise ValueError(f"Producto {producto_id} no existe")
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
 
-        # Validate cantidad
-        if not isinstance(cantidad, int):
-            raise ValueError("Cantidad debe ser entero")
-        if cantidad < 0:
-            raise ValueError("Cantidad no puede ser negativa")
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
 
-        # Pessimistic validation: sufficient stock BEFORE update
-        if producto.stock_cantidad < cantidad:
-            raise ValueError(
-                f"Stock insuficiente para {producto.id}. "
-                f"Disponible: {producto.stock_cantidad}, Solicitado: {cantidad}"
-            )
+            if not isinstance(cantidad, int):
+                raise ValidationError("La cantidad debe ser un número entero")
+            if cantidad < 0:
+                raise ValidationError("La cantidad no puede ser negativa")
 
-        # Decrement
-        producto.stock_cantidad -= cantidad
-        self.session.add(producto)
-        await self.session.flush()
+            if producto.stock_cantidad < cantidad:
+                raise ConflictError(
+                    f"Stock insuficiente para producto {producto.id}. "
+                    f"Disponible: {producto.stock_cantidad}, Solicitado: {cantidad}"
+                )
 
-        return True
+            producto.stock_cantidad -= cantidad
+            uow.session.add(producto)
+            await uow.session.flush()
+
+            return True
 
     # ========================================================================
-    # TASK 3.5: Soft delete and error mapping
+    # Soft delete and error mapping
     # ========================================================================
 
     async def delete(self, producto_id: int) -> bool:
-        """Soft delete producto (set deleted_at = NOW()).
-
-        Cascading: ProductoCategoria and ProductoIngrediente are NOT physically deleted,
-        but queries filter them out via producto's soft delete.
+        """Soft delete producto (set deleted_at = NOW()) via UoW.
 
         Args:
             producto_id: Product ID to delete.
@@ -459,53 +452,14 @@ class ProductoService:
             True if successful.
 
         Raises:
-            ValueError: If producto not found.
+            NotFoundError: If producto not found.
         """
-        # Fetch existing producto
-        producto = await self.repo.get_by_id(producto_id)
-        if not producto:
-            raise ValueError(f"Producto {producto_id} no existe")
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
 
-        # Soft delete (BaseRepository.delete sets deleted_at)
-        await self.repo.delete(producto_id)
-        return True
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
 
-    def map_error_to_response(self, error: Exception) -> tuple[int, dict]:
-        """Map service exceptions to HTTP status codes and error response.
-
-        Used by router to convert exceptions to JSON responses.
-
-        Args:
-            error: Exception raised by service.
-
-        Returns:
-            Tuple of (status_code, error_dict) where error_dict has 'detail' and optionally 'code'.
-        """
-        error_msg = str(error)
-
-        # 400 Bad Request: validation errors
-        if any(
-            phrase in error_msg
-            for phrase in [
-                "no puede ser negativo",
-                "debe ser",
-                "requerido",
-                "no vacío",
-                "debe ser entero",
-                "no ser vacío",
-                "> 0",
-                "<= ",
-            ]
-        ):
-            return (400, {"detail": error_msg, "code": "INVALID_INPUT"})
-
-        # 404 Not Found
-        if "no existe" in error_msg.lower():
-            return (404, {"detail": error_msg, "code": "NOT_FOUND"})
-
-        # 409 Conflict: validation conflict (categoria/ingrediente not found = 409 per spec)
-        if "no existe o está eliminada" in error_msg.lower():
-            return (409, {"detail": error_msg, "code": "CONFLICT"})
-
-        # 500 Internal Server Error (fallback)
-        return (500, {"detail": "Error interno del servidor", "code": "INTERNAL_ERROR"})
+            await repo.delete(producto_id)
+            return True

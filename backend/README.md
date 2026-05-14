@@ -81,7 +81,8 @@ ENVIRONMENT=development
 ### Development Mode
 
 ```bash
-uvicorn main:app --reload --port 8000
+# From the project root (not inside backend/)
+uvicorn backend.main:app --reload --port 8000
 ```
 
 The application will start on `http://localhost:8000`
@@ -89,7 +90,8 @@ The application will start on `http://localhost:8000`
 ### Production Mode
 
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --workers 4
+# From the project root (not inside backend/)
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --workers 4
 ```
 
 ## API Documentation

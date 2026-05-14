@@ -1,11 +1,5 @@
 // Components
-export {
-  LoginForm,
-  RegisterForm,
-  AuthProvider,
-  ProtectedRoute,
-  PublicRoute,
-} from './components';
+export { LoginForm, RegisterForm, AuthProvider, ProtectedRoute, PublicRoute } from './components';
 export type { LoginFormProps, RegisterFormProps } from './components';
 
 // Hooks

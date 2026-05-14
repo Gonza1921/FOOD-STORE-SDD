@@ -1,4 +1,8 @@
-## ADDED Requirements
+## Purpose
+
+Sistema de autenticación y autorización para FOOD STORE. Cubre registro de usuarios, login con JWT (access token 30min + refresh token 7d con rotación), logout con revocación, rate limiting (5 intentos/15min en login), detección de replay attacks, y RBAC (ADMIN, STOCK, PEDIDOS, CLIENT). Incluye frontend con formularios, route guards, interceptor Axios con refresh automático, y sesión persistente via localStorage.
+
+## Requirements
 
 ### Requirement: Registro de cliente (US-001)
 

@@ -108,7 +108,15 @@ export function CategoriesAdminPage() {
             onSubmit={editing ? handleUpdate : handleCreate}
             initial={
               editing
+<<<<<<< HEAD
                 ? { nombre: editing.nombre, descripcion: editing.descripcion, parent_id: editing.parent_id }
+=======
+                ? {
+                    nombre: editing.nombre,
+                    descripcion: editing.descripcion,
+                    parent_id: editing.parent_id,
+                  }
+>>>>>>> origin/main
                 : undefined
             }
             categories={categories}

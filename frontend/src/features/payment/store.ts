@@ -60,7 +60,12 @@ export const usePaymentStore = create<PaymentStore>()((set) => ({
   updatePaymentStatus: (status: PaymentStatus) =>
     set({
       paymentStatus: status,
-      checkoutStep: status === 'approved' ? 'success' : status === 'rejected' || status === 'cancelled' ? 'error' : 'confirming',
+      checkoutStep:
+        status === 'approved'
+          ? 'success'
+          : status === 'rejected' || status === 'cancelled'
+            ? 'error'
+            : 'confirming',
     }),
 
   setError: (error: string | null) =>

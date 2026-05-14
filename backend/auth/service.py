@@ -142,15 +142,14 @@ class AuthService:
                 await repo.revoke_all_user_tokens(stored.usuario_id)
                 raise APIError(
                     message=(
-                        "Sesión comprometida. "
-                        "Todos los tokens han sido revocados."
+                        "Sesión comprometida. " "Todos los tokens han sido revocados."
                     ),
                     status_code=401,
                     error_code="SESSION_COMPROMISED",
                 )
 
             # 3. Check expiration
-            if stored.expires_at < datetime.now(timezone.utc):
+            if stored.expires_at < datetime.utcnow():
                 raise UnauthorizedError("Token de refresco expirado")
 
             # 4. Revoke old token
@@ -227,7 +226,7 @@ class AuthService:
     ) -> None:
         """Hash a raw refresh token and store it in the database."""
         token_hash = hash_token(raw_token)
-        expires_at = datetime.now(timezone.utc) + timedelta(
+        expires_at = datetime.utcnow() + timedelta(
             days=settings.jwt_refresh_token_expire_days
         )
         await repo.create_refresh_token(usuario_id, token_hash, expires_at)

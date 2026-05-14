@@ -84,9 +84,7 @@ class ProductoRepository(BaseRepository[Producto]):
         result = await self.session.execute(statement)
         return result.scalar_one_or_none()
 
-    async def get_con_asociaciones(
-        self, producto_id: int
-    ) -> Optional[Producto]:
+    async def get_con_asociaciones(self, producto_id: int) -> Optional[Producto]:
         """Get product with eager-loaded categorias and ingredientes.
 
         Args:
@@ -148,9 +146,13 @@ class ProductoRepository(BaseRepository[Producto]):
         )
 
         # Count total BEFORE pagination
-        count_statement = select(func.count()).select_from(Producto).where(
-            Producto.disponible.is_(True),
-            Producto.deleted_at.is_(None),
+        count_statement = (
+            select(func.count())
+            .select_from(Producto)
+            .where(
+                Producto.disponible.is_(True),
+                Producto.deleted_at.is_(None),
+            )
         )
         if categoria_id is not None:
             count_statement = count_statement.join(ProductoCategoria).where(
@@ -190,9 +192,7 @@ class ProductoCategoriaRepository(BaseRepository[ProductoCategoria]):
         await self.session.execute(statement)
         await self.session.flush()
 
-    async def get_by_producto(
-        self, producto_id: int
-    ) -> list[ProductoCategoria]:
+    async def get_by_producto(self, producto_id: int) -> list[ProductoCategoria]:
         """Get all category associations for a product.
 
         Args:
@@ -205,9 +205,7 @@ class ProductoCategoriaRepository(BaseRepository[ProductoCategoria]):
             ProductoCategoria.producto_id == producto_id
         )
         # Optional: join with Categoria to ensure category not deleted
-        statement = statement.join(Categoria).where(
-            Categoria.deleted_at.is_(None)
-        )
+        statement = statement.join(Categoria).where(Categoria.deleted_at.is_(None))
         result = await self.session.execute(statement)
         return list(result.scalars().all())
 
@@ -227,9 +225,7 @@ class ProductoIngredienteRepository(BaseRepository[ProductoIngrediente]):
         await self.session.execute(statement)
         await self.session.flush()
 
-    async def get_by_producto(
-        self, producto_id: int
-    ) -> list[ProductoIngrediente]:
+    async def get_by_producto(self, producto_id: int) -> list[ProductoIngrediente]:
         """Get all ingredient associations for a product.
 
         Args:
@@ -242,8 +238,6 @@ class ProductoIngredienteRepository(BaseRepository[ProductoIngrediente]):
             ProductoIngrediente.producto_id == producto_id
         )
         # Optional: join with Ingrediente to ensure ingredient not deleted
-        statement = statement.join(Ingrediente).where(
-            Ingrediente.deleted_at.is_(None)
-        )
+        statement = statement.join(Ingrediente).where(Ingrediente.deleted_at.is_(None))
         result = await self.session.execute(statement)
         return list(result.scalars().all())
