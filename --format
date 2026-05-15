@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exported_at": "2026-05-15 00:33:13",
+  "exported_at": "2026-05-15 00:26:03",
   "sessions": [
     {
       "id": "ses_35f2c6b52ffegmrOwdVmpNbG0n",
@@ -8876,14 +8876,6 @@
       "content": "podes exportar la memoria de engram asi se sube tambien todo lo que generamosy luego volve a hacer los commit y el push pero a una rama nueva, que se llame rama-enzo",
       "project": "FOOD-STORE-SDD",
       "created_at": "2026-05-15 00:24:40"
-    },
-    {
-      "id": 111,
-      "sync_id": "prompt-a2e71200e00e44fb",
-      "session_id": "ses_1d7372747ffeOSvGoxptFbvAgm",
-      "content": "engram export project-memory/memoria-foodstore.json (ejecuta ese comando y despues volve a subir todo a rama-enzo)",
-      "project": "FOOD-STORE-SDD",
-      "created_at": "2026-05-15 00:32:48"
     }
   ]
 }
