@@ -455,3 +455,157 @@ class PedidoService:
         async with UnitOfWork() as uow:
             repo = uow.register("pedidos", PedidoRepository, Pedido)
             return await repo.get_by_id_con_items(pedido_id)
+
+    # ========================================================================
+    # Cancel operations (for users and admins)
+    # ========================================================================
+
+    async def cancelar_pedido(
+        self,
+        pedido_id: int,
+        observacion: str,
+        usuario_id: int,
+        es_admin: bool = False,
+    ) -> Pedido:
+        """Cancel a pedido with observation.
+
+        Validations:
+        - User can cancel their own pedidos in PENDIENTE state
+        - Admin can cancel pedidos in PENDIENTE, CONFIRMADO, EN_PREP states
+        - Cannot cancel from terminal states (ENTREGADO, CANCELADO)
+        - Observation is mandatory
+        - Stock is restored if pedido was CONFIRMED or EN_PREP
+
+        Args:
+            pedido_id: Pedido ID to cancel.
+            observacion: Reason for cancellation (mandatory).
+            usuario_id: User requesting cancellation.
+            es_admin: If True, allow broader cancellation rights.
+
+        Returns:
+            Updated Pedido with CANCELADO state.
+
+        Raises:
+            NotFoundError: If pedido not found.
+            ValidationError: If not authorized or invalid state.
+        """
+        if not observacion or not observacion.strip():
+            raise ValidationError("La observación es obligatoria al cancelar")
+
+        async with UnitOfWork() as uow:
+            repo = uow.register("pedidos", PedidoRepository, Pedido)
+
+            # Get pedido with items
+            pedido = await repo.get_by_id_con_items(pedido_id)
+            if not pedido:
+                raise NotFoundError(f"Pedido {pedido_id} no encontrado")
+
+            estado_actual = pedido.estado_codigo  # type: ignore[arg-type]
+
+            # Check authorization
+            if not es_admin:
+                # Non-admin: can only cancel their own PENDIENTE pedidos
+                if pedido.usuario_id != usuario_id:
+                    raise ValidationError("No tienes permiso para cancelar este pedido")
+                if estado_actual != FSMEstados.PENDIENTE:
+                    raise ValidationError(
+                        "Solo puedes cancelar tus pedidos en estado PENDIENTE"
+                    )
+            else:
+                # Admin: can cancel from PENDIENTE, CONFIRMADO, EN_PREP
+                if not FSMTransiciones.puede_cancelar(estado_actual):
+                    if estado_actual in [FSMEstados.ENTREGADO, FSMEstados.CANCELADO]:
+                        raise ValidationError(
+                            f"No se puede cancelar un pedido en estado '{estado_actual}'"
+                        )
+                    raise ValidationError(
+                        f"No se puede cancelar desde el estado '{estado_actual}'"
+                    )
+
+            # Check terminal state
+            if FSMTransiciones.es_estado_terminal(estado_actual):
+                raise ValidationError(
+                    f"El pedido está en estado terminal '{estado_actual}' "
+                    "y no puede ser modificado"
+                )
+
+            # ---- Restore stock if needed (only for CONFIRMADO or EN_PREP) ----
+            if estado_actual in [FSMEstados.CONFIRMADO, FSMEstados.EN_PREP]:
+                for detalle in getattr(pedido, "detalles", []):
+                    stmt = select(Producto).where(Producto.id == detalle.producto_id)
+                    result = await uow.session.execute(stmt)
+                    producto = result.scalar_one_or_none()
+
+                    if producto:
+                        # Restore stock
+                        producto.stock_cantidad += detalle.cantidad
+                        uow.session.add(producto)
+
+                await uow.session.flush()
+
+            # ---- Update state to CANCELADO ----
+            pedido.estado_codigo = FSMEstados.CANCELADO
+            uow.session.add(pedido)
+            await uow.session.flush()
+
+            # ---- Create history record with observation ----
+            historial = HistorialEstadoPedido(
+                pedido_id=pedido.id,
+                estado_desde=estado_actual,
+                estado_nuevo=FSMEstados.CANCELADO,
+                usuario_id=usuario_id,
+                motivo=observacion.strip(),
+            )
+            uow.session.add(historial)
+            await uow.session.flush()
+
+            # ---- Refresh ----
+            await uow.session.refresh(pedido)
+            stmt = select(DetallePedido).where(DetallePedido.pedido_id == pedido.id)
+            result = await uow.session.execute(statement=stmt)
+            pedido.detalles = list(result.scalars().all())  # type: ignore[attr-defined]
+
+            return pedido
+
+    # ========================================================================
+    # History / Audit Trail
+    # ========================================================================
+
+    async def obtener_historial(
+        self,
+        pedido_id: int,
+        usuario_id: int,
+        es_admin: bool = False,
+    ) -> list[HistorialEstadoPedido]:
+        """Get state transition history for a pedido.
+
+        Args:
+            pedido_id: Pedido ID.
+            usuario_id: Requesting user ID.
+            es_admin: If True, bypass ownership check.
+
+        Returns:
+            List of HistorialEstadoPedido records ordered by created_at.
+
+        Raises:
+            NotFoundError: If pedido not found or not owned by user.
+        """
+        async with UnitOfWork() as uow:
+            repo = uow.register("pedidos", PedidoRepository, Pedido)
+
+            # First check if pedido exists and user has access
+            pedido = await repo.get_by_id_con_items(pedido_id)
+            if not pedido:
+                raise NotFoundError(f"Pedido {pedido_id} no encontrado")
+
+            # Authorization check
+            if not es_admin and pedido.usuario_id != usuario_id:
+                raise ValidationError("No tienes permiso para ver el historial de este pedido")
+
+            # Get history
+            stmt = select(HistorialEstadoPedido).where(
+                HistorialEstadoPedido.pedido_id == pedido_id
+            ).order_by(HistorialEstadoPedido.created_at.asc())
+
+            result = await uow.session.execute(stmt)
+            return list(result.scalars().all())

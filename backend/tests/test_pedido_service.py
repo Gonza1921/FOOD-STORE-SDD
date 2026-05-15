@@ -149,3 +149,82 @@ class TestRouterImport:
         assert any("/confirmar" in r for r in routes)  # POST /{id}/confirmar
         assert any("/estado" in r for r in routes)  # PATCH /{id}/estado
         assert any("/admin" in r for r in routes)  # GET /admin/todos
+        assert any("/cancelar" in r for r in routes)  # PATCH /{id}/cancelar
+        assert any("/historial" in r for r in routes)  # GET /{id}/historial
+
+
+class TestNewEndpoints:
+    """Test new endpoints (cancelar, historial) are properly defined"""
+
+    def test_cancelar_endpoint_exists(self):
+        """PATCH /{id}/cancelar should be defined"""
+        from backend.pedidos.router import router
+        routes = [r.path for r in router.routes]
+        assert any("/cancelar" in r for r in routes)
+
+    def test_historial_endpoint_exists(self):
+        """GET /{id}/historial should be defined"""
+        from backend.pedidos.router import router
+        routes = [r.path for r in router.routes]
+        assert any("/historial" in r for r in routes)
+
+    def test_cancel_request_schema_import(self):
+        """PedidoCancelRequest should be importable"""
+        from backend.pedidos.schemas import PedidoCancelRequest
+        assert PedidoCancelRequest is not None
+
+    def test_historial_response_schema_import(self):
+        """HistorialEstadoResponse should be importable"""
+        from backend.pedidos.schemas import HistorialEstadoResponse
+        assert HistorialEstadoResponse is not None
+
+    def test_historial_list_response_schema_import(self):
+        """HistorialListResponse should be importable"""
+        from backend.pedidos.schemas import HistorialListResponse
+        assert HistorialListResponse is not None
+
+    def test_cancelar_method_in_service(self):
+        """cancelar_pedido method should exist in PedidoService"""
+        from backend.pedidos.service import PedidoService
+        assert hasattr(PedidoService, "cancelar_pedido")
+
+    def test_historial_method_in_service(self):
+        """obtener_historial method should exist in PedidoService"""
+        from backend.pedidos.service import PedidoService
+        assert hasattr(PedidoService, "obtener_historial")
+
+
+class TestCancelSchemaValidation:
+    """Test PedidoCancelRequest schema validation"""
+
+    def test_observacion_required(self):
+        """Observación should be required"""
+        from backend.pedidos.schemas import PedidoCancelRequest
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            PedidoCancelRequest(observacion="")
+
+    def test_observacion_min_length(self):
+        """Observación should have min length"""
+        from backend.pedidos.schemas import PedidoCancelRequest
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            PedidoCancelRequest(observacion="   ")
+
+    def test_observacion_valid(self):
+        """Valid observación should pass"""
+        from backend.pedidos.schemas import PedidoCancelRequest
+
+        req = PedidoCancelRequest(observacion="Cliente lo solicitó")
+        assert req.observacion == "Cliente lo solicitó"
+
+    def test_observacion_max_length(self):
+        """Observación should have max length"""
+        from backend.pedidos.schemas import PedidoCancelRequest
+        from pydantic import ValidationError
+
+        long_text = "x" * 501  # 501 chars
+        with pytest.raises(ValidationError):
+            PedidoCancelRequest(observacion=long_text)

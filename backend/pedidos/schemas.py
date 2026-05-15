@@ -244,3 +244,61 @@ class PedidoAdminListResponse(BaseModel):
     total: int = Field(..., ge=0)
     skip: int = Field(..., ge=0)
     limit: int = Field(..., gt=0)
+
+
+# ============================================================================
+# Cancel Schema
+# ============================================================================
+
+
+class PedidoCancelRequest(BaseModel):
+    """Request schema for PATCH /pedidos/{id}/cancelar"""
+
+    observacion: str = Field(
+        ...,
+        min_length=1,
+        max_length=500,
+        description="Reason for cancellation (mandatory)"
+    )
+
+    @field_validator("observacion")
+    @classmethod
+    def observacion_no_vacia(cls, v: str) -> str:
+        """Validate observation is not empty or whitespace only."""
+        if not v or not v.strip():
+            raise ValueError("La observación no puede estar vacía")
+        return v.strip()
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "observacion": "El cliente solicitó la cancelación por falta de disponibilidad",
+            }
+        }
+
+
+# ============================================================================
+# History / Audit Trail Schemas
+# ============================================================================
+
+
+class HistorialEstadoResponse(BaseModel):
+    """Response schema for historial state transitions"""
+
+    id: int
+    pedido_id: int
+    estado_desde: Optional[str]
+    estado_nuevo: str
+    motivo: Optional[str]
+    usuario_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class HistorialListResponse(BaseModel):
+    """Response schema for GET /pedidos/{id}/historial"""
+
+    items: list[HistorialEstadoResponse]
+    total: int = Field(..., ge=0, description="Total records")

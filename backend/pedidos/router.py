@@ -33,6 +33,9 @@ from .schemas import (
     PedidoEstadoUpdate,
     PedidoTransicionResponse,
     PedidoSummary,
+    PedidoCancelRequest,
+    HistorialEstadoResponse,
+    HistorialListResponse,
 )
 from .service import PedidoService
 
@@ -348,6 +351,145 @@ async def get_todos_pedidos_admin(
         total=total,
         skip=skip,
         limit=limit,
+    )
+
+
+# ============================================================================
+# PATCH /pedidos/{pedido_id}/cancelar — Cancel a pedido
+# ============================================================================
+
+
+@router.patch(
+    "/{pedido_id}/cancelar",
+    response_model=PedidoResponse,
+    summary="Cancelar un pedido",
+)
+async def cancelar_pedido(
+    pedido_id: int = Path(..., gt=0, description="ID del pedido"),
+    cancel_data: PedidoCancelRequest = Body(...),
+    current_user: Usuario = Depends(get_current_user),
+) -> PedidoResponse:
+    """Cancelar un pedido.
+
+    Validaciones:
+    - Cliente puede cancelar sus propios pedidos en estado PENDIENTE
+    - Admin puede cancelar pedidos en estados PENDIENTE, CONFIRMADO, EN_PREP
+    - No se puede cancelar desde estados terminales (ENTREGADO, CANCELADO)
+    - La observación es obligatoria
+    - Si el pedido estaba CONFIRMADO o EN_PREP, se restaura el stock
+
+    Requiere autenticación JWT.
+    """
+    from backend.core.dependencies import require_role
+
+    # Check if user is admin
+    es_admin = any(
+        rol in ["ADMIN", "PEDIDOS"]
+        for rol in getattr(current_user, "roles", [])
+    )
+
+    # If admin, validate role
+    if es_admin:
+        # Re-validate with require_role for admin endpoints
+        admin_user = await require_role(["ADMIN", "PEDIDOS"])(current_user)
+        es_admin = True
+        current_user = admin_user
+    else:
+        # Regular user - verify ownership happens in service
+        es_admin = False
+
+    service = PedidoService()
+
+    # Cancel pedido
+    pedido = await service.cancelar_pedido(
+        pedido_id=pedido_id,
+        observacion=cancel_data.observacion,
+        usuario_id=current_user.id,
+        es_admin=es_admin,
+    )
+
+    detalles = getattr(pedido, "detalles", [])
+
+    return PedidoResponse(
+        id=pedido.id,
+        usuario_id=pedido.usuario_id,
+        estado=pedido.estado_codigo,  # type: ignore[arg-type]
+        total=pedido.total,
+        items=[
+            {
+                "id": detalle.id,
+                "producto_id": detalle.producto_id,
+                "cantidad": detalle.cantidad,
+                "precio_unitario": detalle.precio_snapshot,
+                "subtotal": detalle.precio_snapshot * detalle.cantidad,
+            }
+            for detalle in detalles
+        ],
+        creado_en=pedido.creado_en,  # type: ignore[arg-type]
+        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
+    )
+
+
+# ============================================================================
+# GET /pedidos/{pedido_id}/historial — Get state transition history
+# ============================================================================
+
+
+@router.get(
+    "/{pedido_id}/historial",
+    response_model=HistorialListResponse,
+    summary="Obtener historial de estados del pedido",
+)
+async def get_pedido_historial(
+    pedido_id: int = Path(..., gt=0, description="ID del pedido"),
+    current_user: Usuario = Depends(get_current_user),
+) -> HistorialListResponse:
+    """Obtener el historial de cambios de estado de un pedido.
+
+    Muestra todos los cambios de estado en orden cronológico.
+
+    El usuario puede ver el historial de sus propios pedidos.
+    Los admins pueden ver el historial de cualquier pedido.
+
+    Requiere autenticación JWT.
+    """
+    from backend.core.dependencies import require_role
+
+    # Check if user is admin
+    es_admin = any(
+        rol in ["ADMIN", "PEDIDOS"]
+        for rol in getattr(current_user, "roles", [])
+    )
+
+    # If admin, validate role
+    if es_admin:
+        admin_user = await require_role(["ADMIN", "PEDIDOS"])(current_user)
+        es_admin = True
+        current_user = admin_user
+
+    service = PedidoService()
+
+    # Get history
+    historial = await service.obtener_historial(
+        pedido_id=pedido_id,
+        usuario_id=current_user.id,
+        es_admin=es_admin,
+    )
+
+    return HistorialListResponse(
+        items=[
+            HistorialEstadoResponse(
+                id=h.id,
+                pedido_id=h.pedido_id,
+                estado_desde=h.estado_desde,
+                estado_nuevo=h.estado_nuevo,
+                motivo=h.motivo,
+                usuario_id=h.usuario_id,
+                created_at=h.created_at,  # type: ignore[arg-type]
+            )
+            for h in historial
+        ],
+        total=len(historial),
     )
 
 
