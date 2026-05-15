@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exported_at": "2026-05-15 14:03:27",
+  "exported_at": "2026-05-15 14:06:54",
   "sessions": [
     {
       "id": "ses_35f2c6b52ffegmrOwdVmpNbG0n",
@@ -8921,6 +8921,21 @@
       "last_seen_at": "2026-05-15 13:59:16",
       "created_at": "2026-05-15 13:59:16",
       "updated_at": "2026-05-15 13:59:16"
+    },
+    {
+      "id": 494,
+      "sync_id": "obs-eeddb0b3d73679ec",
+      "session_id": "manual-save",
+      "type": "architecture",
+      "title": "CH-013: Carrito UI completado, archivado y pusheado",
+      "content": "**What**: CH-013 (Carrito UI - EPIC 08) completado al 100%, comiteado y pusheado a main. Memoria engram exportada a project-memory/memoria-foodstore.json.\n\n**Why**: Feature completa de carrito con página dedicada, botón de agregar desde catálogo, CartSummary funcional, y sidebar/topbar apuntando a /carrito.\n\n**Where**: \n- frontend/src/pages/CartPage.tsx\n- frontend/src/features/cart/components/AddToCartButton.tsx\n- frontend/src/features/cart/hooks/useCart.ts\n- frontend/src/features/cart/components/CartSummary.tsx\n- frontend/src/pages/PublicCatalogPage.tsx\n- frontend/src/widgets/Sidebar/Sidebar.tsx\n- frontend/src/widgets/Layout/AppLayout.tsx\n- frontend/src/pages/CheckoutPage.tsx\n- openspec/changes/ch-013-cart-ui/\n- project-memory/memoria-foodstore.json\n\n**Learned**: Sidebar tenía conditional hook call (violaba rules of hooks). CheckoutPage tenía bug de clearCart sin destructure. Export engram funciona con 216 sesiones y 493 observaciones en este proyecto.",
+      "scope": "project",
+      "topic_key": "change/ch-013-cart-ui",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-15 14:04:30",
+      "created_at": "2026-05-15 14:04:30",
+      "updated_at": "2026-05-15 14:04:30"
     }
   ],
   "prompts": [
@@ -10411,6 +10426,14 @@
       "content": "engram export project-memory/memoria-foodstore.json y despues commmitea y pushea al repo",
       "project": "FOOD-STORE-SDD",
       "created_at": "2026-05-15 14:03:19"
+    },
+    {
+      "id": 187,
+      "sync_id": "prompt-0cefe7c6dbc315ae",
+      "session_id": "ses_1d423d979ffeQxQfd0T7KFbPJ3",
+      "content": "archivalo y exporta memoria y pushea lo que no hayas pusheado asi sigue mi compañero",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-15 14:06:02"
     }
   ]
 }
