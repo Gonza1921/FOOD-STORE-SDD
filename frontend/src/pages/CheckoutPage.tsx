@@ -19,7 +19,7 @@ import { useUiStore } from '@/features/ui/store';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const { items, totalPrice, totalItems, clearCart, removeItem, updateQuantity } = useCartStore();
+  const { items, totalPrice, totalItems, removeItem, updateQuantity } = useCartStore();
   const { addToast } = useUiStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
 

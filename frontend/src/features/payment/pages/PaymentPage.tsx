@@ -1,0 +1,144 @@
+/** PaymentPage — MercadoPago checkout integration
+ *  Path: /pagar/:pedidoId
+ *
+ *  Flow:
+ *    1. Receive pedido_id from URL
+ *    2. Call API to create MP preference
+ *    3. Show MP checkout
+ *    4. Poll for payment status
+ *    5. On success: clear cart, navigate to order detail
+ */
+
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { usePaymentStore } from '../store';
+import { useCartStore } from '../../cart/store';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'TEST-4a918b9b-0c2b-4e2b-9e5c-1234567890ab';
+
+interface PreferenciaResponse {
+  preference_id: string;
+  init_point: string;
+  pedido_id: number;
+}
+
+export function PaymentPage() {
+  const { pedidoId } = useParams<{ pedidoId: string }>();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [preferencia, setPreferencia] = useState<PreferenciaResponse | null>(null);
+  const { updatePaymentStatus, resetPayment } = usePaymentStore();
+  const { clearCart } = useCartStore();
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!pedidoId || initialized.current) return;
+    initialized.current = true;
+
+    const initPayment = async () => {
+      try {
+        const response = await axios.post<PreferenciaResponse>(
+          `${API_URL}/pagos/crear-preferencia`,
+          { pedido_id: parseInt(pedidoId, 10) },
+          { withCredentials: true }
+        );
+        setPreferencia(response.data);
+        setLoading(false);
+
+        // Initialize MercadoPago checkout
+        if (window.MercadoPago) {
+          const mp = window.MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+          mp.checkout({
+            preference: { id: response.data.preference_id },
+            render: { container: '#mp-checkout-container', label: 'Pagar ahora' },
+            autoOpen: true,
+          });
+        }
+      } catch (err: any) {
+        const msg = err.response?.data?.detail || 'Error al iniciar pago';
+        setError(msg);
+        setLoading(false);
+      }
+    };
+
+    initPayment();
+  }, [pedidoId]);
+
+  // Poll for payment status
+  useEffect(() => {
+    if (!pedidoId) return;
+
+    const checkStatus = setInterval(async () => {
+      try {
+        const response = await axios.get(`${API_URL}/pagos/${pedidoId}`, {
+          withCredentials: true,
+        });
+        const status = response.data.mp_status;
+
+        if (status === 'approved') {
+          updatePaymentStatus('approved');
+          clearCart();
+          resetPayment();
+          navigate(`/mis-pedidos/${pedidoId}`);
+        } else if (status === 'rejected') {
+          updatePaymentStatus('rejected');
+          setError('Pago rechazado. Intenta nuevamente.');
+        }
+      } catch {
+        // Ignore errors during polling
+      }
+    }, 3000);
+
+    return () => clearInterval(checkStatus);
+  }, [pedidoId, navigate, updatePaymentStatus, clearCart, resetPayment]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto mb-4" />
+          <p className="text-on-surface-variant">Iniciando pago...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-surface flex items-center justify-center">
+        <div className="max-w-md bg-surface-container-lowest rounded-xl border border-error/30 p-6 text-center">
+          <span className="material-symbols-outlined text-5xl text-error mb-4">error</span>
+          <h2 className="text-lg font-semibold text-on-surface mb-2">Error en el pago</h2>
+          <p className="text-on-surface-variant mb-4">{error}</p>
+          <button
+            onClick={() => navigate('/carrito')}
+            className="bg-brand-600 text-white px-4 py-2 rounded-lg hover:bg-brand-700"
+          >
+            Volver al carrito
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-surface">
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-semibold text-on-surface mb-6">Pago del Pedido #{pedidoId}</h1>
+        <div
+          id="mp-checkout-container"
+          className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-6 min-h-[300px]"
+        />
+      </div>
+    </div>
+  );
+}
+
+declare global {
+  interface Window {
+    MercadoPago: any;
+  }
+}

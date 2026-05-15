@@ -110,17 +110,21 @@ class HistorialEstadoPedido(SQLModel, table=True):
 
 class Pago(SQLModel, table=True):
     """Payment entity - MercadoPago integration"""
-    
+
     __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", unique=True, index=True)
-    
+
     # MercadoPago IDs
     mp_payment_id: Optional[int] = Field(default=None, unique=True)
     mp_status: str = Field(max_length=30)  # pending, approved, rejected
-    external_reference: str = Field(unique=True, max_length=100)  # Pedido UUID
+    external_reference: str = Field(unique=True, max_length=100)  # Pedido ID
     idempotency_key: str = Field(unique=True, max_length=100)  # Generated UUID
-    
+
+    # Payment details
+    transaction_amount: Optional[float] = Field(default=None)
+    date_approved: Optional[datetime] = Field(default=None)
+
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
