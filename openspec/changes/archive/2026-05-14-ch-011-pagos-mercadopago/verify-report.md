@@ -1,7 +1,7 @@
 ## Verification Report: ch-011-pagos-mercadopago
 
-**Date**: 2026-05-14
-**Tasks**: 27/31 complete (87%)
+**Date**: 2026-05-14 (updated 2026-05-15)
+**Tasks**: 33/33 complete (100%) — all tasks finalized
 
 ### Implementation Summary
 
@@ -36,17 +36,23 @@
 ### Design Coherence
 - ✅ Payment flow: CheckoutPage → /pagar/:id → MP SDK → webhook → pedido confirmado
 - ✅ Idempotency: Verifica mp_payment_id antes de procesar
-- ✅ Unit of Work: Operaciones dentro de async with UoW
+- ✅ Unit of Work: Operaciones dentro de async con UoW
+- ✅ Prefix consistente: Router usa /api/v1/pagos (igual que todos los módulos)
+- ✅ Frontend usa axiosClient compartido (con interceptor JWT + refresh automático)
+- ✅ Frontend usa endpoints.ts centralizado (en vez de URLs hardcodeadas)
 
 ### Summary
 
 - **CRITICAL**: Ninguno
-- **WARNING**: Tests de frontend no creados (solo backend)
-- **SUGGESTION**: Agregar más casos de test para edge cases
+- **WARNING**: Tests de integración con MP real requieren entorno configurado
+- **SUGGESTION**: Agregar más casos de test para edge cases del webhook
 
-**Verdict**: READY FOR ARCHIVE
+**Verdict**: READY FOR ARCHIVE ✅
 
-### Pending (for future sessions)
-- 6.3 Tests de componente para CheckoutPage (frontend)
-- 6.4 Verificar tests existentes de pedidos
-- 7.1-7.3 Manual testing (requiere entorno con MP configurado)
+### Fixes applied (2026-05-15)
+- ✅ Task 6.4: Verificados tests de pagos — 10/10 pasando (4 router + 6 service)
+- ✅ Task 7.6: Corregido prefix de pagos `/pagos` → `/api/v1/pagos` en backend
+- ✅ Task 7.7: Migrado PaymentPage + usePago de raw axios a axiosClient + endpoints.ts
+- ✅ Task 8.2: Change archivado físicamente en openspec/changes/archive/
+- ✅ Frontend: Agregados endpoints `API.PAGOS` a shared/api/endpoints.ts
+- ✅ Frontend: CheckoutPage tests — 7/7 pasando

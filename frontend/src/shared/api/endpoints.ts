@@ -56,4 +56,9 @@ export const API = {
     DELETE: (id: number): string => `/direcciones/${id}`,
     SET_PRINCIPAL: (id: number): string => `/direcciones/${id}/principal`,
   },
+  PAGOS: {
+    CREAR_PREFERENCIA: '/pagos/crear-preferencia',
+    DETALLE: (pedidoId: number): string => `/pagos/${pedidoId}`,
+    WEBHOOK: '/pagos/webhook',
+  },
 } as const;

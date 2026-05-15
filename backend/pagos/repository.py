@@ -2,7 +2,7 @@
 
 from typing import Optional
 from sqlmodel import Session, select
-from backend.models.pago import Pago
+from backend.models.pedido import Pago
 
 
 class PagoRepository:

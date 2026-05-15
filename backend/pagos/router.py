@@ -15,7 +15,7 @@ from .service import PagosService
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/pagos", tags=["pagos"])
+router = APIRouter(prefix="/api/v1/pagos", tags=["pagos"])
 
 
 @router.post(
@@ -43,6 +43,12 @@ async def crear_preferencia(
     except Exception as e:
         logger.error(f"Error creating preference: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/webhook", summary="Webhook verification")
+async def webhook_verification():
+    """MercadoPago sends GET to verify webhook URL."""
+    return {"status": "ok", "message": "Webhook endpoint configured"}
 
 
 @router.get(
@@ -75,9 +81,8 @@ async def get_pago(pedido_id: int, current_user: Usuario) -> PagoResponse:
 @router.post("/webhook", summary="MercadoPago webhook")
 async def webhook(request: Request) -> PlainTextResponse:
     """MercadoPago IPN webhook endpoint (public, no auth)."""
-    service = PagosService()
-
     try:
+        service = PagosService()
         body = await request.json()
         logger.info(f"MercadoPago webhook received: {body}")
 
@@ -89,9 +94,3 @@ async def webhook(request: Request) -> PlainTextResponse:
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}")
         return PlainTextResponse(content="OK", status_code=200)
-
-
-@router.get("/webhook", summary="Webhook verification")
-async def webhook_verification():
-    """MercadoPago sends GET to verify webhook URL."""
-    return {"status": "ok", "message": "Webhook endpoint configured"}
