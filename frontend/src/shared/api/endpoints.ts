@@ -56,6 +56,10 @@ export const API = {
     DELETE: (id: number): string => `/direcciones/${id}`,
     SET_PRINCIPAL: (id: number): string => `/direcciones/${id}/principal`,
   },
+  USUARIOS: {
+    PERFIL: '/usuarios/perfil',
+    CAMBIAR_CONTRASENA: '/usuarios/perfil/cambiar-contrasena',
+  },
   PAGOS: {
     CREAR_PREFERENCIA: '/pagos/crear-preferencia',
     DETALLE: (pedidoId: number): string => `/pagos/${pedidoId}`,

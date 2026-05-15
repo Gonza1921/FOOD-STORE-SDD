@@ -48,6 +48,7 @@ class Usuario(SQLModel, table=True):
     password_hash: str = Field(max_length=60)  # bcrypt cost ≥ 12
     nombre: str = Field(max_length=50)
     apellido: str = Field(max_length=50)
+    telefono: Optional[str] = Field(default=None, max_length=20)
     
     # Relationships
     roles: list["Rol"] = Relationship(

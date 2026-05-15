@@ -6,6 +6,8 @@ export { default as PublicCatalogPage } from './PublicCatalogPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as CartPage } from './CartPage';
 
+export { PerfilPage } from '@/features/perfil';
+
 export { CategoriesAdminPage } from '@/features/categories';
 export { IngredientsAdminPage } from '@/features/ingredients';
 export { ProductsAdminPage } from '@/features/products';

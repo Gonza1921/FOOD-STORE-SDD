@@ -14,6 +14,7 @@ import {
   CheckoutPage,
   CartPage,
   DireccionesListPage,
+  PerfilPage,
 } from '@/pages/index';
 import { PaymentPage } from '@/features/payment/pages/PaymentPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
@@ -89,6 +90,16 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Profile route */}
+        <Route
+          path="/mi-perfil"
+          element={
+            <ProtectedRoute>
+              <PerfilPage />
             </ProtectedRoute>
           }
         />
