@@ -12,6 +12,7 @@ import {
   OrderDetailPage,
   AdminOrdersPage,
   CheckoutPage,
+  CartPage,
   DireccionesListPage,
 } from '@/pages/index';
 import { PaymentPage } from '@/features/payment/pages/PaymentPage';
@@ -68,6 +69,16 @@ export default function Router() {
           element={
             <ProtectedRoute roles={['ADMIN']}>
               <IngredientsAdminPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Cart route */}
+        <Route
+          path="/carrito"
+          element={
+            <ProtectedRoute>
+              <CartPage />
             </ProtectedRoute>
           }
         />

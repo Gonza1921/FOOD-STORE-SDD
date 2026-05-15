@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { usePublicCatalog } from '@/features/products';
+import { AddToCartButton } from '@/features/cart';
 import { Button, Badge, Skeleton } from '@/shared/ui';
 
 export default function PublicCatalogPage() {
@@ -183,6 +184,14 @@ export default function PublicCatalogPage() {
                             </Badge>
                           ))}
                         </div>
+                      )}
+
+                      {product.disponible && (
+                        <AddToCartButton
+                          productoId={product.id}
+                          nombre={product.nombre}
+                          precio={Number(product.precio_base)}
+                        />
                       )}
                     </div>
                   </div>

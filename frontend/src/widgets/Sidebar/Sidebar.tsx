@@ -31,7 +31,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/', label: 'Dashboard', icon: 'dashboard', roles: [] },
-  { path: '/checkout', label: 'Carrito', icon: 'shopping_cart', roles: [], badge: 'cart' },
+  { path: '/carrito', label: 'Carrito', icon: 'shopping_cart', roles: [], badge: 'cart' },
   { path: '/mis-pedidos', label: 'Mis Pedidos', icon: 'receipt_long', roles: [] },
   { path: '/mis-direcciones', label: 'Mis Direcciones', icon: 'home_pin', roles: [] },
   { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
@@ -45,7 +45,8 @@ const navItems: NavItem[] = [
 // ---------------------------------------------------------------------------
 
 function NavLinkItem({ item, onClick }: { item: NavItem; onClick?: () => void }) {
-  const totalItems = item.badge === 'cart' ? useCartStore((s) => s.totalItems()) : 0;
+  const cartTotal = useCartStore((s) => s.totalItems());
+  const totalItems = item.badge === 'cart' ? cartTotal : 0;
 
   const navLinkClass = ({ isActive }: { isActive: boolean }) => {
     const base =

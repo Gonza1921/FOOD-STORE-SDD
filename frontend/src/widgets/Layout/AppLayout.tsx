@@ -72,7 +72,7 @@ export default function AppLayout() {
             {/* ── Cart icon with badge ── */}
             <button
               type="button"
-              onClick={() => navigate('/checkout')}
+              onClick={() => navigate('/carrito')}
               className="relative flex h-9 w-9 items-center justify-center rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-brand-600 transition-all duration-200"
               aria-label={`Carrito con ${totalItems} producto${totalItems !== 1 ? 's' : ''}`}
             >

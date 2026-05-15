@@ -1,6 +1,6 @@
 // Components
-export { CartSummary } from './components';
-export type { CartSummaryProps } from './components';
+export { CartSummary, AddToCartButton } from './components';
+export type { CartSummaryProps, AddToCartButtonProps } from './components';
 
 // Hooks
 export { useCart } from './hooks';
