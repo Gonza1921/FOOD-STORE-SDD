@@ -14,6 +14,7 @@ import {
   CheckoutPage,
   DireccionesListPage,
 } from '@/pages/index';
+import { PaymentPage } from '@/features/payment/pages/PaymentPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
 
@@ -77,6 +78,16 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Payment route - MercadoPago checkout */}
+        <Route
+          path="/pagar/:pedidoId"
+          element={
+            <ProtectedRoute>
+              <PaymentPage />
             </ProtectedRoute>
           }
         />
