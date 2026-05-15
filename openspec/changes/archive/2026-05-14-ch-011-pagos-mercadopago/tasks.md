@@ -41,8 +41,8 @@
 
 - [x] 6.1 Tests unitarios para service de pagos (mock de MP SDK) - test_pagos_service.py
 - [x] 6.2 Tests de integración para webhook endpoint - test_pagos_router.py
-- [ ] 6.3 Tests de componente para CheckoutPage
-- [ ] 6.4 Verificar que tests de pedidos existentes sigan pasando
+- [x] 6.3 Tests de componente para CheckoutPage (7 tests passing)
+- [ ] 6.4 Verificar que tests de pedidos existentes sigan pasando (requiere DB PostgreSQL)
 
 ## 7. Verificación y Documentación
 
