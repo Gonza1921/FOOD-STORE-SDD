@@ -76,8 +76,8 @@ cd frontend
 cp .env.example .env
 # Completar VITE_API_URL=http://localhost:8000
 
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 App disponible en `http://localhost:5173`

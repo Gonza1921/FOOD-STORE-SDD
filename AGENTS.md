@@ -136,31 +136,31 @@ FOOD-STORE-SDD/
 
 ```bash
 # Instalación
-npm install                      # Instala dependencias
+pnpm install                      # Instala dependencias
 
 # Desarrollo
-npm run dev                      # Inicia servidor Vite (http://localhost:5173)
-npm run dev:api-mock            # Dev con API simulada (para testing aislado)
+pnpm dev                      # Inicia servidor Vite (http://localhost:5173)
+pnpm dev:api-mock            # Dev con API simulada (para testing aislado)
 
 # Build
-npm run build                    # Compila para producción
-npm run build:analyze           # Analiza tamaño del bundle
+pnpm build                    # Compila para producción
+pnpm build:analyze           # Analiza tamaño del bundle
 
 # Testing
-npm run test                     # Ejecuta pruebas unitarias
-npm run test:watch              # Watch mode para desarrollo
-npm run test:coverage           # Reporte de cobertura
+pnpm test                     # Ejecuta pruebas unitarias
+pnpm test:watch              # Watch mode para desarrollo
+pnpm test:coverage           # Reporte de cobertura
 
 # Code Quality
-npm run lint                     # ESLint
-npm run lint:fix                # ESLint con auto-fix
-npm run format                  # Prettier (format)
-npm run format:check            # Prettier (check)
-npm run type-check              # TypeScript type checking
+pnpm lint                     # ESLint
+pnpm lint:fix                # ESLint con auto-fix
+pnpm format                  # Prettier (format)
+pnpm format:check            # Prettier (check)
+pnpm type-check              # TypeScript type checking
 
 # Production
-npm run preview                 # Previsualiza build de producción
-npm run start                   # Sirve build para producción
+pnpm preview                 # Previsualiza build de producción
+pnpm start                   # Sirve build para producción
 ```
 
 ### Backend
