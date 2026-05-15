@@ -21,6 +21,8 @@ from backend.productos.router import router as productos_router
 from backend.pedidos.router import router as pedidos_router
 from backend.direcciones.router import router as direcciones_router
 from backend.pagos.router import router as pagos_router
+from backend.admin.router import router as admin_router
+from backend.admin.usuarios_router import router as admin_usuarios_router
 from backend.routers import health
 
 # Configure logging
@@ -187,6 +189,8 @@ app.include_router(productos_router)
 app.include_router(pedidos_router)
 app.include_router(direcciones_router)
 app.include_router(pagos_router)
+app.include_router(admin_router)
+app.include_router(admin_usuarios_router)
 
 
 # Root endpoint
