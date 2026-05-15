@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { usePaymentStore } from '../store';
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+import { axiosClient } from '@/shared/api/axiosClient';
+import { API } from '@/shared/api/endpoints';
 
 interface CrearPreferenciaResponse {
   preference_id: string;
@@ -19,15 +18,9 @@ export function usePago() {
     startCheckout(pedidoId);
 
     try {
-      const response = await axios.post<CrearPreferenciaResponse>(
-        `${API_URL}/pagos/crear-preferencia`,
-        { pedido_id: pedidoId },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        }
+      const response = await axiosClient.post<CrearPreferenciaResponse>(
+        API.PAGOS.CREAR_PREFERENCIA,
+        { pedido_id: pedidoId }
       );
 
       const { preference_id, init_point } = response.data;
@@ -44,9 +37,8 @@ export function usePago() {
 
   const verificarPago = async (pedidoId: number): Promise<void> => {
     try {
-      const response = await axios.get(
-        `${API_URL}/pagos/${pedidoId}`,
-        { withCredentials: true }
+      const response = await axiosClient.get(
+        API.PAGOS.DETALLE(pedidoId)
       );
 
       const status = response.data.mp_status;

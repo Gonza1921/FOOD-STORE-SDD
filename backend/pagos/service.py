@@ -15,7 +15,7 @@ import mercadopago
 from backend.core.exceptions import ValidationError
 from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido
-from backend.models.pago import Pago
+from backend.models.pedido import Pago
 from backend.pagos.repository import PagoRepository
 
 if TYPE_CHECKING:

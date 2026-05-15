@@ -13,9 +13,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { usePaymentStore } from '../store';
 import { useCartStore } from '../../cart/store';
-import axios from 'axios';
+import { axiosClient } from '@/shared/api/axiosClient';
+import { API } from '@/shared/api/endpoints';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'TEST-4a918b9b-0c2b-4e2b-9e5c-1234567890ab';
 
 interface PreferenciaResponse {
@@ -40,10 +40,9 @@ export function PaymentPage() {
 
     const initPayment = async () => {
       try {
-        const response = await axios.post<PreferenciaResponse>(
-          `${API_URL}/pagos/crear-preferencia`,
-          { pedido_id: parseInt(pedidoId, 10) },
-          { withCredentials: true }
+        const response = await axiosClient.post<PreferenciaResponse>(
+          API.PAGOS.CREAR_PREFERENCIA,
+          { pedido_id: parseInt(pedidoId, 10) }
         );
         setPreferencia(response.data);
         setLoading(false);
@@ -73,9 +72,7 @@ export function PaymentPage() {
 
     const checkStatus = setInterval(async () => {
       try {
-        const response = await axios.get(`${API_URL}/pagos/${pedidoId}`, {
-          withCredentials: true,
-        });
+        const response = await axiosClient.get(API.PAGOS.DETALLE(parseInt(pedidoId, 10)));
         const status = response.data.mp_status;
 
         if (status === 'approved') {

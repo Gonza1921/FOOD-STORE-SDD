@@ -15,8 +15,8 @@ class TestPagosRouter:
         return TestClient(app)
 
     def test_webhook_verification_get(self, client):
-        """Test GET /pagos/webhook returns ok"""
-        response = client.get("/pagos/webhook")
+        """Test GET /api/v1/pagos/webhook returns ok"""
+        response = client.get("/api/v1/pagos/webhook")
         assert response.status_code == 200
         assert response.json()["status"] == "ok"
 
@@ -28,7 +28,7 @@ class TestPagosRouter:
         mock_service.return_value = mock_instance
 
         response = client.post(
-            "/pagos/crear-preferencia",
+            "/api/v1/pagos/crear-preferencia",
             json={"pedido_id": 1}
         )
 
@@ -37,8 +37,8 @@ class TestPagosRouter:
 
     @patch('backend.pagos.router.PagosService')
     def test_get_pago_requires_auth(self, mock_service, client):
-        """Test GET /pagos/{pedido_id} requires authentication"""
-        response = client.get("/pagos/1")
+        """Test GET /api/v1/pagos/{pedido_id} requires authentication"""
+        response = client.get("/api/v1/pagos/1")
         # Should fail without auth
         assert response.status_code in [401, 422]
 
@@ -53,7 +53,7 @@ class TestWebhookEndpoint:
 
         # Webhook should be public (no auth required)
         response = client.post(
-            "/pagos/webhook",
+            "/api/v1/pagos/webhook",
             json={"action": "payment.created", "data": {"id": 12345}}
         )
 
