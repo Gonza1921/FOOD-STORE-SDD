@@ -21,6 +21,7 @@ from backend.core.exceptions import ConflictError, NotFoundError, ValidationErro
 from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido, DetallePedido, HistorialEstadoPedido
 from backend.models.producto import Producto
+from backend.models.direccion import Direccion
 from .repository import PedidoRepository
 
 
@@ -84,6 +85,8 @@ class PedidoService:
         self,
         usuario_id: int,
         items: list[dict],
+        direccion_id: int,
+        forma_pago_id: int,
     ) -> Pedido:
         """Create new pedido with items and automatic total calculation.
 
@@ -91,16 +94,21 @@ class PedidoService:
         - items must not be empty (already validated in schema)
         - Each producto_id must exist and be available
         - cantidad must be >= 1 (already validated in schema)
-        - Stock validation (deferred until confirmation)
+        - Stock must be sufficient for all items
+        - direccion_id must belong to the user
+        - forma_pago_id must be valid
 
         Calculation:
         - precio_snapshot = current producto.precio_base (captured at order time)
         - subtotal = cantidad * precio_snapshot
-        - total = SUM(subtotal for all items)
+        - costo_envio = 500 (fixed for now)
+        - total = SUM(subtotal for all items) + costo_envio
 
         Args:
             usuario_id: ID of the user creating the pedido.
-            items: List of dicts with producto_id and cantidad.
+            items: List of dicts with producto_id, cantidad, ingredientes_excluidos.
+            direccion_id: Delivery address ID.
+            forma_pago_id: Payment method ID.
 
         Returns:
             Created Pedido with items.
@@ -112,23 +120,49 @@ class PedidoService:
         if not items:
             raise ValidationError("El pedido debe tener al menos un artículo")
 
+        # Constants
+        COSTO_ENVIO = Decimal("500")
+
         async with UnitOfWork() as uow:
             repo = uow.register("pedidos", PedidoRepository, Pedido)
 
-            # ---- Validations ----
+            # ---- Validate direccion belongs to user ----
+            stmt_direccion = select(Direccion).where(
+                Direccion.id == direccion_id,
+                Direccion.usuario_id == usuario_id,
+                Direccion.deleted_at.is_(None),
+            )
+            result_direccion = await uow.session.execute(stmt_direccion)
+            direccion = result_direccion.scalar_one_or_none()
+
+            if not direccion:
+                raise ValidationError("La dirección de entrega no existe o no te pertenece")
+
+            # Generate direccion snapshot (JSON string)
+            direccion_snapshot = f"{direccion.calle_linea1}, {direccion.ciudad}"
+
+            # ---- Validate forma_pago_id ----
+            # For now, valid forms are: 1=Efectivo, 2=Tarjeta, 3=MercadoPago
+            forma_pago_map = {1: "EFECTIVO", 2: "TARJETA", 3: "MERCADOPAGO"}
+            forma_pago_codigo = forma_pago_map.get(forma_pago_id)
+            if not forma_pago_codigo:
+                raise ValidationError(f"Forma de pago ID {forma_pago_id} no válida")
+
+            # ---- Validations: stock and items ----
             total_pedido = Decimal("0")
             detalles_a_crear = []
 
             for item in items:
                 producto_id = item.get("producto_id")
                 cantidad = item.get("cantidad")
+                ingredientes_excluidos = item.get("ingredientes_excluidos")
 
                 if not isinstance(producto_id, int) or producto_id <= 0:
                     raise ValidationError("ID de producto inválido")
                 if not isinstance(cantidad, int) or cantidad < 1:
                     raise ValidationError("Cantidad inválida")
 
-                # Get producto to capture price snapshot
+                # Get producto to capture price snapshot and validate stock
                 stmt = select(Producto).where(
                     Producto.id == producto_id,
                     Producto.deleted_at.is_(None),
@@ -139,6 +173,14 @@ class PedidoService:
 
                 if not producto:
                     raise ValidationError(f"Producto {producto_id} no encontrado o no disponible")
+
+                # Validate stock sufficient
+                if producto.stock_cantidad < cantidad:
+                    raise ConflictError(
+                        f"Stock insuficiente para producto '{producto.nombre}'. "
+                        f"Disponible: {producto.stock_cantidad}, "
+                        f"Solicitado: {cantidad}"
+                    )
 
                 # Calculate subtotal (snapshot price at order time)
                 precio_snapshot = producto.precio_base
@@ -151,15 +193,19 @@ class PedidoService:
                     "cantidad": cantidad,
                     "nombre_snapshot": producto.nombre,
                     "precio_snapshot": precio_snapshot,
+                    "ingredientes_excluidos": ingredientes_excluidos,
                 })
 
             # ---- Create Pedido ----
-            # Default estado: PENDIENTE (using FK to estado_pedido.codigo)
+            total_con_envio = total_pedido + COSTO_ENVIO
             pedido = Pedido(
                 usuario_id=usuario_id,
                 estado_codigo=FSMEstados.PENDIENTE,
-                total=total_pedido,
-                forma_pago_codigo="EFECTIVO",  # Default payment method
+                total=total_con_envio,
+                subtotal=total_pedido,
+                costo_envio=COSTO_ENVIO,
+                forma_pago_codigo=forma_pago_codigo,
+                direccion_snapshot=direccion_snapshot,
             )
             uow.session.add(pedido)
             await uow.session.flush()
@@ -172,8 +218,20 @@ class PedidoService:
                     cantidad=detalle_data["cantidad"],
                     nombre_snapshot=detalle_data["nombre_snapshot"],
                     precio_snapshot=detalle_data["precio_snapshot"],
+                    ingredientes_excluidos=detalle_data.get("ingredientes_excluidos"),
                 )
                 uow.session.add(detalle)
+            await uow.session.flush()
+
+            # ---- Create HistorialEstadoPedido (initial state) ----
+            historial = HistorialEstadoPedido(
+                pedido_id=pedido.id,
+                estado_desde=None,
+                estado_nuevo=FSMEstados.PENDIENTE,
+                usuario_id=usuario_id,
+                motivo="Pedido creado",
+            )
+            uow.session.add(historial)
             await uow.session.flush()
 
             # ---- Refresh with items ----

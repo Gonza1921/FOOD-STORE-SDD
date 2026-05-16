@@ -46,6 +46,10 @@ class PedidoItemCreate(BaseModel):
 
     producto_id: int = Field(..., gt=0, description="Product ID (must exist)")
     cantidad: int = Field(..., ge=1, description="Quantity, must be >= 1")
+    ingredientes_excluidos: Optional[list[int]] = Field(
+        default=None,
+        description="List of ingredient IDs to exclude from this product"
+    )
 
     @field_validator("cantidad")
     @classmethod
@@ -60,6 +64,7 @@ class PedidoItemCreate(BaseModel):
             "example": {
                 "producto_id": 1,
                 "cantidad": 2,
+                "ingredientes_excluidos": [3, 5]
             }
         }
 
@@ -93,6 +98,8 @@ class PedidoCreate(BaseModel):
     items: list[PedidoItemCreate] = Field(
         ..., min_length=1, description="At least one item is required"
     )
+    direccion_id: int = Field(..., gt=0, description="Delivery address ID")
+    forma_pago_id: int = Field(..., gt=0, description="Payment method ID")
 
     @field_validator("items")
     @classmethod
@@ -108,7 +115,9 @@ class PedidoCreate(BaseModel):
                 "items": [
                     {"producto_id": 1, "cantidad": 2},
                     {"producto_id": 3, "cantidad": 1},
-                ]
+                ],
+                "direccion_id": 5,
+                "forma_pago_id": 1
             }
         }
 
@@ -125,6 +134,7 @@ class PedidoResponse(BaseModel):
     usuario_id: int
     estado: str
     total: Decimal = Field(..., decimal_places=2)
+    costo_envio: Decimal = Field(default=Decimal("0"), decimal_places=2)
     items: list[PedidoItemResponse] = Field(default_factory=list)
     creado_en: datetime
     actualizado_en: datetime
@@ -229,9 +239,8 @@ class PedidoTransicionResponse(BaseModel):
 class PedidoAdminResponse(PedidoResponse):
     """Extended response for admin with additional fields"""
 
-    costo_envio: Decimal = Field(..., decimal_places=2)
     forma_pago_codigo: str
-    direccion_id: Optional[int] = None
+    direccion_snapshot: Optional[str] = None
 
     class Config:
         from_attributes = True

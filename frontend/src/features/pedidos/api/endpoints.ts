@@ -13,10 +13,13 @@ import { API } from '@/shared/api/endpoints';
 export interface PedidoItemCreate {
   producto_id: number;
   cantidad: number;
+  ingredientes_excluidos?: number[];
 }
 
 export interface PedidoCreate {
   items: PedidoItemCreate[];
+  direccion_id: number;
+  forma_pago_id: number;
 }
 
 export interface PedidoItemResponse {
@@ -32,6 +35,7 @@ export interface PedidoResponse {
   usuario_id: number;
   estado: string;
   total: string;
+  costo_envio: string;
   items: PedidoItemResponse[];
   creado_en: string;
   actualizado_en: string;

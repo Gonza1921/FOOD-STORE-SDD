@@ -11,7 +11,7 @@ export interface CartItem {
   precio: number;
   cantidad: number;
   imagen: string;
-  personalizacion?: string;
+  ingredientes_excluidos?: number[];
 }
 
 export interface CartStore {
@@ -65,7 +65,7 @@ export const useCartStore = create<CartStore>()(
                 precio: item.precio,
                 cantidad: item.cantidad ?? 1,
                 imagen: item.imagen,
-                personalizacion: item.personalizacion,
+                ingredientes_excluidos: item.ingredientes_excluidos,
               },
             ],
           };

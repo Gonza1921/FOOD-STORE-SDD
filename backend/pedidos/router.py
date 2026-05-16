@@ -66,12 +66,17 @@ async def create_pedido(
 
     Requiere autenticación JWT.
     El total se calcula automáticamente según los precios de los productos.
+    Incluye dirección de entrega y forma de pago.
     """
     service = PedidoService()
 
     # Prepare items for service
     items = [
-        {"producto_id": item.producto_id, "cantidad": item.cantidad}
+        {
+            "producto_id": item.producto_id,
+            "cantidad": item.cantidad,
+            "ingredientes_excluidos": item.ingredientes_excluidos,
+        }
         for item in pedido_data.items
     ]
 
@@ -79,6 +84,8 @@ async def create_pedido(
     pedido = await service.create_pedido(
         usuario_id=current_user.id,
         items=items,
+        direccion_id=pedido_data.direccion_id,
+        forma_pago_id=pedido_data.forma_pago_id,
     )
 
     # Build response with items
@@ -87,6 +94,7 @@ async def create_pedido(
         usuario_id=pedido.usuario_id,
         estado=pedido.estado_codigo,  # type: ignore[arg-type]
         total=pedido.total,
+        costo_envio=pedido.costo_envio or getattr(pedido, "costo_envio", 500),
         items=[
             {
                 "id": detalle.id,
