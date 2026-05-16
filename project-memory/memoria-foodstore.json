@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exported_at": "2026-05-15 15:21:31",
+  "exported_at": "2026-05-16 23:55:00",
   "sessions": [
     {
       "id": "ses_35f2c6b52ffegmrOwdVmpNbG0n",
@@ -1152,6 +1152,12 @@
       "project": "FOOD-STORE-SDD",
       "directory": "C:\\Users\\enzog\\OneDrive\\Desktop\\TUP 2026\\FOOD-STORE-SDD",
       "started_at": "2026-05-15 15:13:29"
+    },
+    {
+      "id": "manual-save-food-store-sdd",
+      "project": "food-store-sdd",
+      "directory": "C:\\Users\\marti\\Desktop\\foodstoreSSD\\FOOD-STORE-SDD",
+      "started_at": "2026-05-16 23:54:43"
     }
   ],
   "observations": [
@@ -8998,6 +9004,17 @@
       "content": "hace el archive y luego exporta la memoria con este comando:engram export project-memory/memoria-foodstore.json",
       "project": "FOOD-STORE-SDD",
       "created_at": "2026-05-15 15:20:37"
+    },
+    {
+      "id": 121,
+      "sync_id": "session-41-food-store",
+      "session_id": "manual-save-food-store-sdd",
+      "type": "session_summary",
+      "title": "Session summary: food-store-sdd",
+      "content": "## Goal\nImplementar CH-032: creación de pedidos con dirección y forma de pago\n\n## Instructions\n- Backend: FastAPI, SQLModel, PostgreSQL (puerto 5433)\n- Frontend: React, Vite, Zustand, TanStack Query\n- Metodología: OpenSpec con workflow completo\n\n## Discoveries\n- PostgreSQL corriendo en puerto 5433 (no 5432)\n- Error sslmode resuelto eliminando de DATABASE_URL\n- BACKEND SE CIERRA SOLO si no se inicia con proceso dedicado (Start-Process o batch file)\n- CORS configurado para localhost:5173 en backend\n- Usuarios nuevos tienen rol CLIENT por defecto\n- Tabla usuario_rol tiene columnas: usuario_id, rol_codigo, asignado_en, asignado_por_id\n- Ingredientes requiere rol ADMIN\n\n## Accomplished\n- ✅ Implementado backend: schemas, service, router para checkout con direccion_id y forma_pago_id\n- ✅ Implementado frontend: CheckoutPage con selectores de dirección y forma de pago\n- ✅ Creada migración 006_add_pedido_checkout_fields.py\n- ✅ Corregido import Direccion → DireccionEntrega en service.py\n- ✅ Corregido down_revision de migración 004\n- ✅ 150 tests passed, 39 skipped\n- ✅ Merge de feature/orders-create-pedido a main\n- ✅ Push a remoto\n\n## Next Steps\n- Arreglar CORS en ingredientes endpoint\n- Levantar backend de forma persistente\n- Testear funcionalidad de checkout completa\n\n## Relevant Files\n- backend/pedidos/service.py - validación dirección, stock, snapshots\n- backend/pedidos/schemas.py - nuevos campos request\n- backend/pedidos/router.py - endpoint POST /pedidos actualizado\n- frontend/src/pages/CheckoutPage.tsx - selectores de dirección y pago\n- start_backend.bat - script para iniciar backend persistentemente",
+      "project": "food-store-sdd",
+      "scope": "project",
+      "created_at": "2026-05-16 23:54:43"
     }
   ]
 }
