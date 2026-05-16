@@ -21,7 +21,7 @@ from backend.core.exceptions import ConflictError, NotFoundError, ValidationErro
 from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido, DetallePedido, HistorialEstadoPedido
 from backend.models.producto import Producto
-from backend.models.direccion import Direccion
+from backend.models.direccion import DireccionEntrega
 from .repository import PedidoRepository
 
 
@@ -127,10 +127,10 @@ class PedidoService:
             repo = uow.register("pedidos", PedidoRepository, Pedido)
 
             # ---- Validate direccion belongs to user ----
-            stmt_direccion = select(Direccion).where(
-                Direccion.id == direccion_id,
-                Direccion.usuario_id == usuario_id,
-                Direccion.deleted_at.is_(None),
+            stmt_direccion = select(DireccionEntrega).where(
+                DireccionEntrega.id == direccion_id,
+                DireccionEntrega.usuario_id == usuario_id,
+                DireccionEntrega.deleted_at.is_(None),
             )
             result_direccion = await uow.session.execute(stmt_direccion)
             direccion = result_direccion.scalar_one_or_none()
