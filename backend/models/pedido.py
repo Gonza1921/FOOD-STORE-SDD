@@ -36,13 +36,17 @@ class Pedido(SQLModel, table=True):
     estado_codigo: str = Field(foreign_key="estado_pedido.codigo", index=True)
 
     # Snapshots - immutable at creation
+    subtotal: Decimal = Field(max_digits=10, decimal_places=2)
+    costo_envio: Decimal = Field(max_digits=10, decimal_places=2, default=Decimal("500.00"))
     total: Decimal = Field(max_digits=10, decimal_places=2)
-    costo_envio: Decimal = Field(max_digits=10, decimal_places=2, default=Decimal("50.00"))
+
+    # Address snapshot (immutable string)
+    direccion_snapshot: Optional[str] = Field(default=None, max_length=500)
 
     # Payment method
     forma_pago_codigo: str = Field(foreign_key="forma_pago.codigo")
 
-    # Delivery address (can be null for pickup)
+    # Delivery address FK (for reference)
     direccion_id: Optional[int] = Field(default=None, foreign_key="direccion_entrega.id")
 
     # Relationships
@@ -53,11 +57,6 @@ class Pedido(SQLModel, table=True):
     # Audit
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
-
-    @property
-    def total_con_envio(self) -> Decimal:
-        """Total including shipping"""
-        return self.total + self.costo_envio
 
 
 class DetallePedido(SQLModel, table=True):
@@ -74,7 +73,7 @@ class DetallePedido(SQLModel, table=True):
     precio_snapshot: Decimal = Field(max_digits=10, decimal_places=2)
 
     # Customization (IDs of removable ingredients stored as JSON string)
-    personalizacion: Optional[str] = Field(default=None)  # JSON: ["id1", "id2"]
+    ingredientes_excluidos: Optional[str] = Field(default=None, max_length=500)  # JSON: "[1,2,3]"
 
     # Relationship
     pedido: Optional["Pedido"] = Relationship(back_populates="detalles")

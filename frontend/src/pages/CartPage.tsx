@@ -110,7 +110,7 @@ export default function CartPage() {
                   <p className="text-xs text-on-surface-variant mt-0.5">
                     ${Number(item.precio).toFixed(2)} c/u
                   </p>
-                  {item.personalizacion && (
+                  {item.ingredientes_excluidos && item.ingredientes_excluidos.length > 0 && (
                     <p className="text-xs text-brand-600 mt-0.5">
                       Personalizado
                     </p>
