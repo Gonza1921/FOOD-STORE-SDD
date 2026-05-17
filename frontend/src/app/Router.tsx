@@ -15,6 +15,8 @@ import {
   CartPage,
   DireccionesListPage,
   PerfilPage,
+  OrderConfirmationPage,
+  PaymentResultPage,
 } from '@/pages/index';
 import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
@@ -138,6 +140,26 @@ export default function Router() {
           element={
             <ProtectedRoute>
               <DireccionesListPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Order confirmation route (post-checkout) */}
+        <Route
+          path="/confirmacion/:pedidoId"
+          element={
+            <ProtectedRoute>
+              <OrderConfirmationPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Payment result route (return from MercadoPago) */}
+        <Route
+          path="/pago/resultado/:pedidoId"
+          element={
+            <ProtectedRoute>
+              <PaymentResultPage />
             </ProtectedRoute>
           }
         />

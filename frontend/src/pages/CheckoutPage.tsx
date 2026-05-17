@@ -48,7 +48,7 @@ export function CheckoutPage() {
         type: 'success',
         duration: 4000,
       });
-      navigate(`/mis-pedidos/${pedido.id}`);
+      navigate(`/confirmacion/${pedido.id}`);
     },
     onError: (error) => {
       addToast({

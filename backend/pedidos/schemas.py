@@ -82,6 +82,7 @@ class PedidoItemResponse(BaseModel):
     cantidad: int
     precio_unitario: Decimal = Field(..., decimal_places=2)
     subtotal: Decimal = Field(..., decimal_places=2)
+    nombre_snapshot: str = Field(default="", description="Product name captured at order time")
 
     class Config:
         from_attributes = True
@@ -138,6 +139,7 @@ class PedidoResponse(BaseModel):
     items: list[PedidoItemResponse] = Field(default_factory=list)
     creado_en: datetime
     actualizado_en: datetime
+    direccion_snapshot: Optional[str] = Field(default=None, description="Address captured at order time")
 
     class Config:
         from_attributes = True

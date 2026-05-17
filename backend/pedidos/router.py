@@ -47,6 +47,32 @@ from .service import PedidoService
 router = APIRouter(prefix="/api/v1/pedidos", tags=["Pedidos"])
 
 
+def _build_pedido_response(pedido) -> dict:
+    """Build PedidoResponse-compatible dict from a Pedido model instance."""
+    detalles = getattr(pedido, "detalles", [])
+    return {
+        "id": pedido.id,
+        "usuario_id": pedido.usuario_id,
+        "estado": pedido.estado_codigo,
+        "total": pedido.total,
+        "costo_envio": pedido.costo_envio or getattr(pedido, "costo_envio", 500),
+        "items": [
+            {
+                "id": d.id,
+                "producto_id": d.producto_id,
+                "cantidad": d.cantidad,
+                "precio_unitario": d.precio_snapshot,
+                "subtotal": d.precio_snapshot * d.cantidad,
+                "nombre_snapshot": d.nombre_snapshot,
+            }
+            for d in detalles
+        ],
+        "creado_en": pedido.creado_en,
+        "actualizado_en": pedido.actualizado_en,
+        "direccion_snapshot": getattr(pedido, "direccion_snapshot", None),
+    }
+
+
 # ============================================================================
 # TASK 2.4: POST /api/v1/pedidos — Create new pedido
 # ============================================================================
@@ -89,25 +115,7 @@ async def create_pedido(
     )
 
     # Build response with items
-    return PedidoResponse(
-        id=pedido.id,
-        usuario_id=pedido.usuario_id,
-        estado=pedido.estado_codigo,  # type: ignore[arg-type]
-        total=pedido.total,
-        costo_envio=pedido.costo_envio or getattr(pedido, "costo_envio", 500),
-        items=[
-            {
-                "id": detalle.id,
-                "producto_id": detalle.producto_id,
-                "cantidad": detalle.cantidad,
-                "precio_unitario": detalle.precio_snapshot,
-                "subtotal": detalle.precio_snapshot * detalle.cantidad,
-            }
-            for detalle in getattr(pedido, "detalles", [])
-        ],
-        creado_en=pedido.creado_en,  # type: ignore[arg-type]
-        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
-    )
+    return PedidoResponse(**_build_pedido_response(pedido))
 
 
 # ============================================================================
@@ -138,7 +146,7 @@ async def get_pedidos(
         limit=limit,
     )
 
-    # Build response items
+    # Build response items (no items loaded in list view for performance)
     pedido_items = []
     for pedido in items:
         pedido_items.append(
@@ -147,9 +155,11 @@ async def get_pedidos(
                 usuario_id=pedido.usuario_id,
                 estado=pedido.estado_codigo,  # type: ignore[arg-type]
                 total=pedido.total,
-                items=[],  # No items loaded in list view for performance
+                items=[],
                 creado_en=pedido.creado_en,  # type: ignore[arg-type]
                 actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
+                costo_envio=getattr(pedido, "costo_envio", 500),
+                direccion_snapshot=getattr(pedido, "direccion_snapshot", None),
             )
         )
 
@@ -186,27 +196,7 @@ async def get_pedido(
         usuario_id=current_user.id,
     )
 
-    # Get items
-    detalles = getattr(pedido, "detalles", [])
-
-    return PedidoResponse(
-        id=pedido.id,
-        usuario_id=pedido.usuario_id,
-        estado=pedido.estado_codigo,  # type: ignore[arg-type]
-        total=pedido.total,
-        items=[
-            {
-                "id": detalle.id,
-                "producto_id": detalle.producto_id,
-                "cantidad": detalle.cantidad,
-                "precio_unitario": detalle.precio_snapshot,
-                "subtotal": detalle.precio_snapshot * detalle.cantidad,
-            }
-            for detalle in detalles
-        ],
-        creado_en=pedido.creado_en,  # type: ignore[arg-type]
-        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
-    )
+    return PedidoResponse(**_build_pedido_response(pedido))
 
 
 # ============================================================================
@@ -243,26 +233,7 @@ async def confirmar_pedido(
         es_admin=True,
     )
 
-    detalles = getattr(pedido, "detalles", [])
-
-    return PedidoResponse(
-        id=pedido.id,
-        usuario_id=pedido.usuario_id,
-        estado=pedido.estado_codigo,  # type: ignore[arg-type]
-        total=pedido.total,
-        items=[
-            {
-                "id": detalle.id,
-                "producto_id": detalle.producto_id,
-                "cantidad": detalle.cantidad,
-                "precio_unitario": detalle.precio_snapshot,
-                "subtotal": detalle.precio_snapshot * detalle.cantidad,
-            }
-            for detalle in detalles
-        ],
-        creado_en=pedido.creado_en,  # type: ignore[arg-type]
-        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
-    )
+    return PedidoResponse(**_build_pedido_response(pedido))
 
 
 @router.patch(
@@ -294,26 +265,7 @@ async def update_estado_pedido(
         es_admin=True,
     )
 
-    detalles = getattr(pedido, "detalles", [])
-
-    return PedidoResponse(
-        id=pedido.id,
-        usuario_id=pedido.usuario_id,
-        estado=pedido.estado_codigo,  # type: ignore[arg-type]
-        total=pedido.total,
-        items=[
-            {
-                "id": detalle.id,
-                "producto_id": detalle.producto_id,
-                "cantidad": detalle.cantidad,
-                "precio_unitario": detalle.precio_snapshot,
-                "subtotal": detalle.precio_snapshot * detalle.cantidad,
-            }
-            for detalle in detalles
-        ],
-        creado_en=pedido.creado_en,  # type: ignore[arg-type]
-        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
-    )
+    return PedidoResponse(**_build_pedido_response(pedido))
 
 
 @router.get(
@@ -351,6 +303,8 @@ async def get_todos_pedidos_admin(
                 items=[],
                 creado_en=pedido.creado_en,  # type: ignore[arg-type]
                 actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
+                costo_envio=getattr(pedido, "costo_envio", 500),
+                direccion_snapshot=getattr(pedido, "direccion_snapshot", None),
             )
         )
 
@@ -416,26 +370,7 @@ async def cancelar_pedido(
         es_admin=es_admin,
     )
 
-    detalles = getattr(pedido, "detalles", [])
-
-    return PedidoResponse(
-        id=pedido.id,
-        usuario_id=pedido.usuario_id,
-        estado=pedido.estado_codigo,  # type: ignore[arg-type]
-        total=pedido.total,
-        items=[
-            {
-                "id": detalle.id,
-                "producto_id": detalle.producto_id,
-                "cantidad": detalle.cantidad,
-                "precio_unitario": detalle.precio_snapshot,
-                "subtotal": detalle.precio_snapshot * detalle.cantidad,
-            }
-            for detalle in detalles
-        ],
-        creado_en=pedido.creado_en,  # type: ignore[arg-type]
-        actualizado_en=pedido.actualizado_en,  # type: ignore[arg-type]
-    )
+    return PedidoResponse(**_build_pedido_response(pedido))
 
 
 # ============================================================================

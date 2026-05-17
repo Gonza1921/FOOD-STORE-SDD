@@ -39,6 +39,12 @@ class Settings(BaseSettings):
         description="Comma-separated list of allowed CORS origins",
     )
 
+    # Frontend URL (for MercadoPago back_urls redirects)
+    frontend_url: str = Field(
+        default="http://localhost:5173",
+        description="Frontend base URL for MP redirects (back_urls)",
+    )
+
     # Environment
     environment: str = Field(
         default="development",

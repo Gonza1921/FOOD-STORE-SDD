@@ -1,7 +1,7 @@
 """PagosService — business logic for MercadoPago integration
 
 Handles:
-- Creating payment preferences in MercadoPago
+- Creating payment preferences in MercadoPago with back_urls
 - Processing webhooks with idempotency
 - Triggering automatic order confirmation on payment approval
 """
@@ -12,6 +12,7 @@ from typing import Optional, TYPE_CHECKING
 
 import mercadopago
 
+from backend.core.config import settings
 from backend.core.exceptions import ValidationError
 from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido
@@ -53,7 +54,10 @@ class PagosService:
                     f"Estado actual: {pedido.estado_codigo}"
                 )
 
-            # Generate preference in MP
+            # Frontend base URL for MP redirects
+            frontend_url = settings.frontend_url.rstrip("/")
+
+            # Generate preference in MP with back_urls for automatic redirect
             preference_data = {
                 "items": [{
                     "title": f"Pedido #{pedido.id}",
@@ -66,7 +70,12 @@ class PagosService:
                     "MP_WEBHOOK_URL",
                     "https://tu-dominio.com/api/v1/pagos/webhook"
                 ),
-                "auto_return": "all",
+                "auto_return": "approved",
+                "back_urls": {
+                    "success": f"{frontend_url}/pago/resultado/{pedido.id}",
+                    "failure": f"{frontend_url}/pago/resultado/{pedido.id}",
+                    "pending": f"{frontend_url}/pago/resultado/{pedido.id}",
+                },
             }
 
             result = self.mp_sdk.preference().create(preference_data)

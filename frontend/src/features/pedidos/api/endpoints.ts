@@ -28,6 +28,7 @@ export interface PedidoItemResponse {
   cantidad: number;
   precio_unitario: string;
   subtotal: string;
+  nombre_snapshot: string;
 }
 
 export interface PedidoResponse {
@@ -39,6 +40,7 @@ export interface PedidoResponse {
   items: PedidoItemResponse[];
   creado_en: string;
   actualizado_en: string;
+  direccion_snapshot?: string | null;
 }
 
 export interface PedidoListResponse {
