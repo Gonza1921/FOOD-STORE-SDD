@@ -10,8 +10,9 @@ export function CheckoutPage() {
   const pedidoIdParam = searchParams.get('pedido_id');
   const pedidoId = pedidoIdParam ? parseInt(pedidoIdParam, 10) : null;
 
-  const { checkoutStep, preferenceId, paymentStatus, error, loading, crearPreferencia, verificarPago, limpiar } = usePago();
-  const { items, total } = useCartStore();
+  const { checkoutStep, preferenceId, error, loading, crearPreferencia, verificarPago, limpiar } = usePago();
+  const items = useCartStore((s) => s.items);
+  const total = useCartStore((s) => s.totalPrice());
 
   const mpInitialized = useRef(false);
 
@@ -53,13 +54,21 @@ export function CheckoutPage() {
 
   // Check payment status periodically
   useEffect(() => {
-    if (checkoutStep === 'payment' && pedidoId) {
-      const interval = setInterval(() => {
-        verificarPago(pedidoId);
-      }, 5000);
+    if (checkoutStep !== 'payment' || !pedidoId) return;
 
-      return () => clearInterval(interval);
-    }
+    const interval = setInterval(() => {
+      verificarPago(pedidoId);
+    }, 5000);
+
+    // After 3 minutes, stop polling
+    const timeout = setTimeout(() => {
+      clearInterval(interval);
+    }, 180000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
   }, [checkoutStep, pedidoId, verificarPago]);
 
   // Redirect on success
@@ -131,8 +140,8 @@ export function CheckoutPage() {
           <div className="space-y-2 mb-4">
             {items.map((item) => (
               <div key={item.productoId} className="flex justify-between text-sm">
-                <span>{item.producto?.nombre || `Producto #${item.productoId}`} x {item.cantidad}</span>
-                <span className="font-medium">${((item.producto?.precio || 0) * item.cantidad).toFixed(2)}</span>
+                <span>{item.nombre || `Producto #${item.productoId}`} x {item.cantidad}</span>
+                <span className="font-medium">${((item.precio || 0) * item.cantidad).toFixed(2)}</span>
               </div>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/features/auth/store';
+import { useUiStore } from '@/features/ui/store';
 import { API } from './endpoints';
 
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
@@ -55,8 +56,17 @@ axiosClient.interceptors.request.use(
 );
 
 // ---------------------------------------------------------------------------
-// Response interceptor — auto-refresh on 401
+// Response interceptor — auto-refresh on 401 + user-friendly error toasts
 // ---------------------------------------------------------------------------
+
+// HTTP status → user-friendly message mapping
+const ERROR_MESSAGES: Record<number, string> = {
+  400: 'Error de validación. Revisá los datos ingresados.',
+  403: 'No tenés permisos para realizar esta acción.',
+  404: 'El recurso solicitado no existe.',
+  429: 'Demasiadas solicitudes. Esperá un momento e intentá de nuevo.',
+  500: 'Error interno del servidor. Intentá de nuevo más tarde.',
+};
 
 axiosClient.interceptors.response.use(
   (response) => response,
@@ -68,7 +78,28 @@ axiosClient.interceptors.response.use(
     // Don't intercept auth endpoints (login, register, refresh — they must reach the server)
     const isAuthEndpoint = originalRequest.url?.startsWith('/auth/') ?? false;
 
-    if (error.response?.status !== 401 || originalRequest._retry || isAuthEndpoint) {
+    // ── Show user-friendly toasts for non-401 errors ──
+    if (error.response?.status !== 401 && !isAuthEndpoint) {
+      const status = error.response?.status;
+      if (status && ERROR_MESSAGES[status]) {
+        useUiStore.getState().addToast({
+          type: 'error',
+          message: ERROR_MESSAGES[status],
+          duration: 5000,
+        });
+      } else if (!error.response) {
+        // Network error (no response received)
+        useUiStore.getState().addToast({
+          type: 'warning',
+          message: 'Error de conexión. Verificá tu internet e intentá de nuevo.',
+          duration: 5000,
+        });
+      }
+      return Promise.reject(error);
+    }
+
+    // ── 401 handling: skip auth endpoints and retried requests ──
+    if (originalRequest._retry || isAuthEndpoint) {
       return Promise.reject(error);
     }
 

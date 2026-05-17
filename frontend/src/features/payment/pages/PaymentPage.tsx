@@ -29,7 +29,6 @@ export function PaymentPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [preferencia, setPreferencia] = useState<PreferenciaResponse | null>(null);
   const { updatePaymentStatus, resetPayment } = usePaymentStore();
   const { clearCart } = useCartStore();
   const initialized = useRef(false);
@@ -44,7 +43,6 @@ export function PaymentPage() {
           API.PAGOS.CREAR_PREFERENCIA,
           { pedido_id: parseInt(pedidoId, 10) }
         );
-        setPreferencia(response.data);
         setLoading(false);
 
         // Initialize MercadoPago checkout

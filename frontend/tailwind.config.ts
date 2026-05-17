@@ -38,6 +38,10 @@ export default {
           container: '#e8f5e9',
           light: '#4caf50',
         },
+        info: {
+          DEFAULT: '#0288d1',
+          container: '#e1f5fe',
+        },
         warning: {
           DEFAULT: '#ed6c02',
           container: '#fff4e5',

@@ -18,3 +18,6 @@ export type { ModalProps } from './Modal';
 
 export { default as Skeleton } from './Skeleton';
 export type { SkeletonProps } from './Skeleton';
+
+export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as ToastContainer } from './ToastContainer';

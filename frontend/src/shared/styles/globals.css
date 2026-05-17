@@ -20,6 +20,7 @@
     --color-brand-light: 232 93 42;
     --color-error: 186 26 26;
     --color-success: 46 125 50;
+    --color-info: 2 136 209;
   }
 
   .dark {
@@ -33,6 +34,7 @@
     --color-brand-light: 239 116 72;
     --color-error: 255 180 171;
     --color-success: 129 199 132;
+    --color-info: 79 195 247;
   }
 }
 
