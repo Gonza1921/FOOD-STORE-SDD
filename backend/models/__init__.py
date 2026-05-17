@@ -8,6 +8,7 @@ from .producto import Producto
 from .ingrediente import Ingrediente
 from .producto_ingrediente import ProductoIngrediente
 from .producto_categoria import ProductoCategoria
+from .configuracion import Configuracion
 from .pedido import (
     Pedido,
     DetallePedido,
@@ -23,6 +24,8 @@ __all__ = [
     "Rol",
     "UsuarioRol",
     "RefreshToken",
+    # Config
+    "Configuracion",
     # Addresses
     "DireccionEntrega",
     # Catalog

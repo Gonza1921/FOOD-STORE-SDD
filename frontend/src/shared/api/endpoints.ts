@@ -60,6 +60,9 @@ export const API = {
     PERFIL: '/usuarios/perfil',
     CAMBIAR_CONTRASENA: '/usuarios/perfil/cambiar-contrasena',
   },
+  ADMIN: {
+    CONFIGURACION: '/admin/configuracion',
+  },
   PAGOS: {
     CREAR_PREFERENCIA: '/pagos/crear-preferencia',
     DETALLE: (pedidoId: number): string => `/pagos/${pedidoId}`,

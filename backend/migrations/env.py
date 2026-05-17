@@ -11,7 +11,7 @@ backend_path = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, backend_path)
 
 # Import models to register them with SQLModel metadata
-from models import usuario, direccion, categoria, producto, pedido
+from models import usuario, direccion, categoria, producto, pedido, configuracion
 
 # Import settings with fallback
 try:

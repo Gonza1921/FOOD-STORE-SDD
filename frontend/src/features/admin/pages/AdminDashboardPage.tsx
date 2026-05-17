@@ -3,6 +3,7 @@ import { MetricCard } from '../components/MetricCard';
 import { ChartBar, ChartLine, ChartPie } from '../components/Charts';
 import { TopProductosTable } from '../components/TopProductosTable';
 import { VentasPeriodoChart } from '../components/VentasPeriodoChart';
+import ConfigSection from '../components/ConfigSection';
 import Skeleton from '@/shared/ui/Skeleton';
 
 export default function AdminDashboardPage() {
@@ -111,6 +112,9 @@ export default function AdminDashboardPage() {
         <TopProductosTable />
         <VentasPeriodoChart />
       </div>
+
+      {/* Configuración del sistema */}
+      <ConfigSection />
     </div>
   );
 }
