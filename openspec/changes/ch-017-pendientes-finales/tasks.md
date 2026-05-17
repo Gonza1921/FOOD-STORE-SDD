@@ -42,13 +42,13 @@
 
 ## 8. Backend — Tests
 
-- [ ] 8.1 Crear `backend/tests/test_categorias_service.py` — CRUD + soft delete + paginación
-- [ ] 8.2 Crear `backend/tests/test_categorias_router.py` — endpoints HTTP con test client
-- [ ] 8.3 Crear `backend/tests/test_ingredientes_service.py` — CRUD + es_alergeno + soft delete
-- [ ] 8.4 Crear `backend/tests/test_ingredientes_router.py` — endpoints HTTP
-- [ ] 8.5 Crear `backend/tests/test_admin_router.py` — métricas existentes + nuevas (top productos, ventas período)
-- [ ] 8.6 Crear `backend/tests/test_direcciones_service.py` — CRUD + validación pertenencia usuario
-- [ ] 8.7 Crear `backend/tests/test_pedido_router.py` — creación, price conflict 409, rate limiting
+- [x] 8.1 Crear `backend/tests/test_categorias_service.py` — 11 tests: CRUD + soft delete + jerarquía
+- [x] 8.2 Crear `backend/tests/test_categorias_router.py` — 10 tests: endpoints + RBAC
+- [x] 8.3 Crear `backend/tests/test_ingredientes_service.py` — 10 tests: CRUD + es_alergeno + soft delete
+- [x] 8.4 Crear `backend/tests/test_ingredientes_router.py` — 9 tests: endpoints + público sin auth
+- [x] 8.5 Crear `backend/tests/test_admin_router.py` — 10 tests: dashboard + top productos + ventas período + feature flags
+- [x] 8.6 Crear `backend/tests/test_direcciones_service.py` — 9 tests: CRUD + ownership + principal
+- [x] 8.7 Crear `backend/tests/test_pedido_router.py` — 8 tests: creación + price conflict 409 + rate limiting
 
 ## 9. Frontend — Catálogo Público y Detalle
 
