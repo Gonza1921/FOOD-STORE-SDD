@@ -16,6 +16,8 @@ import {
   DireccionesListPage,
   PerfilPage,
 } from '@/pages/index';
+import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
+import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import { PaymentPage } from '@/features/payment/pages/PaymentPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
@@ -48,7 +50,23 @@ export default function Router() {
           }
         />
 
-        {/* Admin routes (ADMIN or STOCK roles) */}
+        {/* Admin routes (ADMIN role) */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/usuarios"
+          element={
+            <ProtectedRoute roles={['ADMIN']}>
+              <AdminUsuariosPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/admin/productos"
           element={

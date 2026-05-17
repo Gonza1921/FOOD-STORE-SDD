@@ -19,9 +19,12 @@ import { useCartStore } from '@/features/cart/store';
 const routeTitles: Record<string, string> = {
   '/': 'Dashboard',
   '/dashboard': 'Dashboard',
+  '/admin': 'Dashboard Admin',
+  '/admin/usuarios': 'Usuarios',
   '/admin/productos': 'Productos',
   '/admin/categorias': 'Categorías',
   '/admin/ingredientes': 'Ingredientes',
+  '/admin/pedidos': 'Pedidos',
 };
 
 // ---------------------------------------------------------------------------
