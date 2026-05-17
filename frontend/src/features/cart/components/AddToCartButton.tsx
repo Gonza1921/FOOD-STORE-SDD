@@ -13,7 +13,7 @@ export function AddToCartButton({ productoId, nombre, precio, imagen }: AddToCar
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({ productoId, nombre, precio, imagen: imagen ?? '' });
+    addItem({ productoId, nombre, precio, precioCarrito: precio, imagen: imagen ?? '' });
   };
 
   return (

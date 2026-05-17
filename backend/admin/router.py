@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select, func, text
 
 from backend.core.dependencies import require_role
+from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido, EstadoPedido
 from backend.models.producto import Producto
 
@@ -24,23 +25,21 @@ async def get_metrics(
     - Ingresos por día (últimos 30 días)
     - Tendencia de pedidos (últimos 7 días)
     """
-    from backend.core.database import get_db
-
-    async with get_db() as db:
+    async with UnitOfWork() as uow:
         # Calcular fechas para los últimos 30 y 7 días
         fecha_30_dias = datetime.utcnow() - timedelta(days=30)
         fecha_7_dias = datetime.utcnow() - timedelta(days=7)
 
         # Total de pedidos
-        total_pedidos = await db.scalar(select(func.count(Pedido.id)))
+        total_pedidos = await uow.session.scalar(select(func.count(Pedido.id)))
 
         # Pedidos pendientes
-        pendiente = await db.scalar(
+        pendiente = await uow.session.scalar(
             select(func.count(Pedido.id)).where(Pedido.estado == EstadoPedido.PENDIENTE)
         )
 
         # Ingresos totales (ENTREGADO + CONFIRMADO)
-        ingresos_result = await db.execute(
+        ingresos_result = await uow.session.execute(
             select(func.sum(Pedido.total)).where(
                 Pedido.estado.in_([EstadoPedido.ENTREGADO, EstadoPedido.CONFIRMADO])
             )
@@ -48,18 +47,18 @@ async def get_metrics(
         ingresos_totales = ingresos_result.scalar() or 0
 
         # Productos con stock bajo (<=10)
-        stock_bajo = await db.scalar(
+        stock_bajo = await uow.session.scalar(
             select(func.count(Producto.id)).where(Producto.stock_cantidad <= 10)
         )
 
         # Distribución por estado
-        estado_dist = await db.execute(
+        estado_dist = await uow.session.execute(
             select(Pedido.estado, func.count(Pedido.id)).group_by(Pedido.estado)
         )
         pedidos_por_estado = {row[0].value: row[1] for row in estado_dist.fetchall()}
 
         # Ingresos por día - últimos 30 días
-        ingresos_dia_result = await db.execute(
+        ingresos_dia_result = await uow.session.execute(
             select(
                 func.date(Pedido.creado_en).label("fecha"),
                 func.sum(Pedido.total).label("total"),
@@ -74,7 +73,7 @@ async def get_metrics(
         ]
 
         # Tendencia de pedidos - últimos 7 días
-        tendencia_result = await db.execute(
+        tendencia_result = await uow.session.execute(
             select(
                 func.date(Pedido.creado_en).label("fecha"),
                 func.count(Pedido.id).label("total"),

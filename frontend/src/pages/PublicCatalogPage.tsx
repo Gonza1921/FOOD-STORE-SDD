@@ -4,20 +4,32 @@
  */
 
 import { useState } from 'react';
-import { usePublicCatalog } from '@/features/products';
+import { Link } from 'react-router-dom';
+import { usePublicCatalog, usePublicIngredientes } from '@/features/products';
 import { AddToCartButton } from '@/features/cart';
 import { Button, Badge, Skeleton } from '@/shared/ui';
 
 export default function PublicCatalogPage() {
   const [search, setSearch] = useState('');
   const [skip, setSkip] = useState(0);
+  const [excluirAlergenos, setExcluirAlergenos] = useState<number[]>([]);
   const limit = 12;
+
+  const { data: alergenos, isLoading: loadingAlergenos } = usePublicIngredientes();
 
   const { data, isLoading, isError, refetch, total } = usePublicCatalog({
     skip,
     limit,
     search: search || undefined,
+    excluirAlergenos: excluirAlergenos.length > 0 ? excluirAlergenos : undefined,
   });
+
+  const toggleAlergeno = (id: number) => {
+    setSkip(0);
+    setExcluirAlergenos((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id]
+    );
+  };
 
   const currentPage = Math.floor(skip / limit) + 1;
   const totalPages = total ? Math.ceil(total / limit) : 0;
@@ -83,7 +95,7 @@ export default function PublicCatalogPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* ── Search ── */}
-        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
           <form onSubmit={handleSearchSubmit} className="flex gap-3">
             <div className="flex-1 relative">
               <span
@@ -105,6 +117,54 @@ export default function PublicCatalogPage() {
             </Button>
           </form>
         </div>
+
+        {/* ── Allergen filters ── */}
+        {!loadingAlergenos && alergenos && alergenos.length > 0 && (
+          <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/10 px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-2 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: '"wght" 500' }}>
+                  warning
+                </span>
+                Excluir alérgenos
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                {alergenos.map((ing) => (
+                  <label
+                    key={ing.id}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer transition-all border ${
+                      excluirAlergenos.includes(ing.id)
+                        ? 'border-red-300 bg-red-50 text-red-700'
+                        : 'border-outline-variant/30 bg-surface-container text-on-surface-variant hover:border-red-200'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={excluirAlergenos.includes(ing.id)}
+                      onChange={() => toggleAlergeno(ing.id)}
+                      className="sr-only"
+                    />
+                    <span className={`material-symbols-outlined text-sm ${excluirAlergenos.includes(ing.id) ? '' : 'opacity-40'}`}
+                      style={{ fontSize: '16px', fontVariationSettings: '"wght" 400' }}
+                    >
+                      {excluirAlergenos.includes(ing.id) ? 'check_circle' : 'add_circle'}
+                    </span>
+                    {ing.nombre}
+                  </label>
+                ))}
+              </div>
+              {excluirAlergenos.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => { setSkip(0); setExcluirAlergenos([]); }}
+                  className="mt-2 text-xs text-brand-600 hover:text-brand-700"
+                >
+                  Limpiar filtros
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── Loading ── */}
         {isLoading && renderSkeletons()}
@@ -143,10 +203,11 @@ export default function PublicCatalogPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 {data?.items.map((product, i) => (
-                  <div
+                  <Link
                     key={product.id}
+                    to={`/productos/${product.id}`}
                     className="group rounded-xl border border-outline-variant/10 bg-surface-container-lowest shadow-premium overflow-hidden 
-                               transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1 active:scale-[0.99] animate-fade-in-up"
+                               transition-all duration-300 hover:shadow-premium-lg hover:-translate-y-1 active:scale-[0.99] animate-fade-in-up block"
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Image area */}
@@ -194,7 +255,7 @@ export default function PublicCatalogPage() {
                         />
                       )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

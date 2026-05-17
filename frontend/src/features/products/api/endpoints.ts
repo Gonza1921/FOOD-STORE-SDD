@@ -57,6 +57,12 @@ export interface Producto {
   actualizado_en: string;
 }
 
+export interface IngredientePublicRef {
+  id: number;
+  nombre: string;
+  es_alergeno: boolean;
+}
+
 export interface ProductoPublic {
   id: number;
   nombre: string;
@@ -65,6 +71,16 @@ export interface ProductoPublic {
   disponible: boolean;
   categorias: CategoriaRef[];
   ingredientes: IngredienteRef[];
+}
+
+export interface ProductoPublicDetail {
+  id: number;
+  nombre: string;
+  descripcion: string | null;
+  precio_base: number;
+  disponible: boolean;
+  categorias: CategoriaRef[];
+  ingredientes: IngredientePublicRef[];
 }
 
 export interface ProductoListResponse {
@@ -102,6 +118,7 @@ export const PRODUCT_QUERY_KEYS = {
     limit?: number;
     search?: string;
     categoria_id?: number;
+    excluirAlergenos?: number[];
   }) => [...PRODUCT_QUERY_KEYS.public(), 'catalog', params] as const,
 } as const;
 
@@ -172,10 +189,23 @@ export async function getPublicCatalog(
   skip: number = 0,
   limit: number = 20,
   search?: string,
-  categoria_id?: number
+  categoria_id?: number,
+  excluirAlergenos?: number[]
 ): Promise<ProductoPublicListResponse> {
-  const response = await axiosClient.get<ProductoPublicListResponse>(API.PRODUCTS.PUBLIC_CATALOG, {
-    params: { skip, limit, search, categoria_id },
-  });
+  const params: Record<string, unknown> = { skip, limit, search, categoria_id };
+  if (excluirAlergenos && excluirAlergenos.length > 0) {
+    params.excluir_alergenos = excluirAlergenos.join(',');
+  }
+  const response = await axiosClient.get<ProductoPublicListResponse>(API.PRODUCTS.PUBLIC_CATALOG, { params });
+  return response.data;
+}
+
+/**
+ * Get public product detail (no auth required)
+ */
+export async function getPublicProductoDetail(productoId: number): Promise<ProductoPublicDetail> {
+  const response = await axiosClient.get<ProductoPublicDetail>(
+    `/api/v1/productos/${productoId}/publico`
+  );
   return response.data;
 }

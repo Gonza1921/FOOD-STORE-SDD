@@ -22,9 +22,10 @@ Matches patterns used in: auth, categorias, ingredientes, productos
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Path, Body, status
+from fastapi import APIRouter, Depends, Query, Path, Body, Request, status
 
 from backend.core.dependencies import get_current_user, require_role
+from backend.core.rate_limit import limiter_pedidos
 from backend.models.usuario import Usuario
 from .schemas import (
     PedidoCreate,
@@ -84,7 +85,9 @@ def _build_pedido_response(pedido) -> dict:
     status_code=status.HTTP_201_CREATED,
     summary="Crear nuevo pedido",
 )
+@limiter_pedidos.limit("10/hour")
 async def create_pedido(
+    request: Request,
     pedido_data: PedidoCreate,
     current_user: Usuario = Depends(get_current_user),
 ) -> PedidoResponse:
@@ -101,6 +104,7 @@ async def create_pedido(
         {
             "producto_id": item.producto_id,
             "cantidad": item.cantidad,
+            "precio_carrito": item.precio_carrito,
             "ingredientes_excluidos": item.ingredientes_excluidos,
         }
         for item in pedido_data.items

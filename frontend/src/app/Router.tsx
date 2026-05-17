@@ -8,6 +8,7 @@ import {
   IngredientsAdminPage,
   ProductsAdminPage,
   PublicCatalogPage,
+  ProductoDetailPage,
   OrdersPage,
   OrderDetailPage,
   AdminOrdersPage,
@@ -32,6 +33,7 @@ export default function Router() {
       <Route path="/registro" element={<RegisterPage />} />
       <Route path="/acceso-denegado" element={<UnauthorizedPage />} />
       <Route path="/catalogo" element={<PublicCatalogPage />} />
+      <Route path="/productos/:id" element={<ProductoDetailPage />} />
 
       {/* ── Protected routes (with AppLayout sidebar) ── */}
       <Route element={<AppLayout />}>

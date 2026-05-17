@@ -14,7 +14,7 @@ from backend.auth.schemas import (
 )
 from backend.auth.service import AuthService
 from backend.core.dependencies import get_current_user
-from backend.core.rate_limit import limiter
+from backend.core.rate_limit import limiter, limiter_register
 from backend.models.usuario import Usuario
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -26,14 +26,17 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user account",
 )
-async def register(request: RegisterRequest):
+@limiter_register.limit("3/hour")
+async def register(request: Request, register_request: RegisterRequest):
     """Create a new user with role ``CLIENT`` and return a token pair.
 
     The password is hashed with bcrypt before storage. The ``CLIENT``
     role is assigned automatically by the service layer (RN-AU07).
+
+    Rate-limited to 3 registrations per hour per IP.
     """
     service = AuthService()
-    return await service.register(request)
+    return await service.register(register_request)
 
 
 @router.post(

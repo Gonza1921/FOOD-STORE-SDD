@@ -7,6 +7,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from backend.core.dependencies import require_role
+from backend.core.unit_of_work import UnitOfWork
 from backend.models.usuario import Usuario, Rol, UsuarioRol
 
 router = APIRouter(prefix="/admin/usuarios", tags=["Admin Usuarios"])
@@ -59,9 +60,7 @@ async def listar_usuarios(
     search: Optional[str] = None,
 ):
     """Listar todos los usuarios con paginación y búsqueda opcional"""
-    from backend.core.database import get_db
-
-    async with get_db() as db:
+    async with UnitOfWork() as uow:
         query = select(Usuario).options(selectinload(Usuario.roles)).where(
             Usuario.eliminado_en == None  # noqa: E711
         )
@@ -70,13 +69,13 @@ async def listar_usuarios(
             query = query.where(Usuario.nombre.ilike(f"%{search}%"))
 
         # Total sin paginar
-        total = await db.scalar(
+        total = await uow.session.scalar(
             select(func.count()).select_from(query.subquery())
         )
 
         # Con paginación
         query = query.offset((page - 1) * limit).limit(limit)
-        result = await db.execute(query)
+        result = await uow.session.execute(query)
         usuarios = result.scalars().all()
 
     return [
@@ -97,10 +96,8 @@ async def listar_roles(
     current_user: Usuario = Depends(require_role(["ADMIN"])),
 ):
     """Listar todos los roles disponibles"""
-    from backend.core.database import get_db
-
-    async with get_db() as db:
-        result = await db.execute(select(Rol))
+    async with UnitOfWork() as uow:
+        result = await uow.session.execute(select(Rol))
         roles = result.scalars().all()
 
     return [RolesResponse(id=r.id, codigo=r.codigo, nombre=r.nombre) for r in roles]
@@ -112,16 +109,14 @@ async def get_usuario(
     current_user: Usuario = Depends(require_role(["ADMIN"])),
 ):
     """Obtener un usuario específico"""
-    from backend.core.database import get_db
-
-    async with get_db() as db:
-        usuario = await db.get(Usuario, usuario_id)
+    async with UnitOfWork() as uow:
+        usuario = await uow.session.get(Usuario, usuario_id)
         if not usuario:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Usuario no encontrado",
             )
-        await db.refresh(usuario, ["roles"])
+        await uow.session.refresh(usuario, ["roles"])
 
     return UsuarioResponse(
         id=usuario.id,
@@ -139,12 +134,10 @@ async def crear_usuario(
     current_user: Usuario = Depends(require_role(["ADMIN"])),
 ):
     """Crear un nuevo usuario"""
-    from backend.core.database import get_db
     from backend.auth.repository import UsuarioRepository
 
-    # Validar que el email no exista
-    async with get_db() as db:
-        repo = UsuarioRepository(db)
+    async with UnitOfWork() as uow:
+        repo = UsuarioRepository(uow.session)
         existing = await repo.find_by_email(data.email)
         if existing:
             raise HTTPException(
@@ -153,7 +146,7 @@ async def crear_usuario(
             )
 
         # Buscar roles en BD
-        result = await db.execute(
+        result = await uow.session.execute(
             select(Rol).where(Rol.codigo.in_(data.roles))
         )
         roles_db = result.scalars().all()
@@ -172,15 +165,15 @@ async def crear_usuario(
             nombre=data.nombre,
             password_hash=hashed,
         )
-        db.add(nuevo_usuario)
-        await db.flush()
+        uow.session.add(nuevo_usuario)
+        await uow.session.flush()
 
         # Asignar roles
         for rol in roles_db:
             usuario_rol = UsuarioRol(usuario_id=nuevo_usuario.id, rol_id=rol.id)
-            db.add(usuario_rol)
+            uow.session.add(usuario_rol)
 
-        await db.refresh(nuevo_usuario, ["roles"])
+        await uow.session.refresh(nuevo_usuario, ["roles"])
 
     return UsuarioResponse(
         id=nuevo_usuario.id,
@@ -199,10 +192,8 @@ async def actualizar_usuario(
     current_user: Usuario = Depends(require_role(["ADMIN"])),
 ):
     """Actualizar un usuario (nombre, email, roles)"""
-    from backend.core.database import get_db
-
-    async with get_db() as db:
-        usuario = await db.get(Usuario, usuario_id)
+    async with UnitOfWork() as uow:
+        usuario = await uow.session.get(Usuario, usuario_id)
         if not usuario:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -216,7 +207,7 @@ async def actualizar_usuario(
         # Actualizar email
         if data.email is not None:
             # Verificar que no exista otro usuario con ese email
-            existing = await db.execute(
+            existing = await uow.session.execute(
                 select(Usuario).where(
                     Usuario.email == data.email,
                     Usuario.id != usuario_id,
@@ -235,7 +226,7 @@ async def actualizar_usuario(
             # Validar que ADMIN no pueda quitarse el rol ADMIN a sí mismo
             if usuario_id == current_user.id and "ADMIN" not in data.roles:
                 # Verificar que hay otros admins
-                admin_count = await db.scalar(
+                admin_count = await uow.session.scalar(
                     select(func.count(Usuario.id))
                     .select_from(Usuario)
                     .join(UsuarioRol)
@@ -250,7 +241,7 @@ async def actualizar_usuario(
                     )
 
             # Buscar roles en BD
-            result = await db.execute(
+            result = await uow.session.execute(
                 select(Rol).where(Rol.codigo.in_(data.roles))
             )
             roles_db = result.scalars().all()
@@ -261,16 +252,16 @@ async def actualizar_usuario(
                 )
 
             # Eliminar roles actuales
-            await db.execute(
+            await uow.session.execute(
                 UsuarioRol.delete().where(UsuarioRol.usuario_id == usuario_id)
             )
 
             # Agregar nuevos roles
             for rol in roles_db:
                 usuario_rol = UsuarioRol(usuario_id=usuario_id, rol_id=rol.id)
-                db.add(usuario_rol)
+                uow.session.add(usuario_rol)
 
-        await db.refresh(usuario, ["roles"])
+        await uow.session.refresh(usuario, ["roles"])
 
     return UsuarioResponse(
         id=usuario.id,
@@ -288,10 +279,8 @@ async def eliminar_usuario(
     current_user: Usuario = Depends(require_role(["ADMIN"])),
 ):
     """Eliminar usuario (soft delete)"""
-    from backend.core.database import get_db
-
-    async with get_db() as db:
-        usuario = await db.get(Usuario, usuario_id)
+    async with UnitOfWork() as uow:
+        usuario = await uow.session.get(Usuario, usuario_id)
         if not usuario:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -307,6 +296,7 @@ async def eliminar_usuario(
 
         # Soft delete
         usuario.eliminado_en = datetime.utcnow()
-        await db.commit()
+        uow.session.add(usuario)
+        # UoW auto-commits on exit
 
     return None

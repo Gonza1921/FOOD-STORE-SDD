@@ -68,6 +68,7 @@ class PedidoItemCreate(BaseModel):
             "example": {
                 "producto_id": 1,
                 "cantidad": 2,
+                "precio_carrito": 1200.00,
                 "ingredientes_excluidos": [3, 5]
             }
         }
@@ -118,8 +119,8 @@ class PedidoCreate(BaseModel):
         json_schema_extra = {
             "example": {
                 "items": [
-                    {"producto_id": 1, "cantidad": 2},
-                    {"producto_id": 3, "cantidad": 1},
+                    {"producto_id": 1, "cantidad": 2, "precio_carrito": 1200.00},
+                    {"producto_id": 3, "cantidad": 1, "precio_carrito": 850.00},
                 ],
                 "direccion_id": 5,
                 "forma_pago_id": 1

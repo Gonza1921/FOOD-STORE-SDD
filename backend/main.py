@@ -12,7 +12,7 @@ from slowapi.errors import RateLimitExceeded
 
 from backend.core.config import settings
 from backend.core.database import check_database_health
-from backend.core.exceptions import APIError
+from backend.core.exceptions import APIError, PriceConflictError
 from backend.core.rate_limit import limiter
 from backend.auth.router import router as auth_router
 from backend.categorias.router import router as categorias_router
@@ -24,6 +24,7 @@ from backend.pagos.router import router as pagos_router
 from backend.usuarios.router import router as usuarios_router
 from backend.admin.router import router as admin_router
 from backend.admin.usuarios_router import router as admin_usuarios_router
+from backend.admin.metrics_router import router as admin_metrics_router
 from backend.routers import health
 
 # Configure logging
@@ -151,6 +152,21 @@ async def api_error_handler(request: Request, exc: APIError):
     )
 
 
+@app.exception_handler(PriceConflictError)
+async def price_conflict_handler(request: Request, exc: PriceConflictError):
+    """Handle PriceConflictError with structured 409 response."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "type": "https://foodstore.internal/errors/price-conflict",
+            "title": exc.message,
+            "status": exc.status_code,
+            "detail": "Uno o más productos cambiaron de precio",
+            "productos": exc.details.get("productos", []),
+        },
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception):
     """Catch-all handler for unexpected exceptions.
@@ -193,6 +209,7 @@ app.include_router(pagos_router)
 app.include_router(usuarios_router)
 app.include_router(admin_router)
 app.include_router(admin_usuarios_router)
+app.include_router(admin_metrics_router)
 
 
 # Root endpoint

@@ -13,6 +13,8 @@ export interface UsePublicCatalogParams {
   search?: string;
   /** Filter by category ID */
   categoria_id?: number;
+  /** Exclude products containing these ingredient IDs (allergens) */
+  excluirAlergenos?: number[];
   /** Enable the query */
   enabled?: boolean;
 }
@@ -38,13 +40,14 @@ export function usePublicCatalog({
   limit = 20,
   search,
   categoria_id,
+  excluirAlergenos,
   enabled = true,
 }: UsePublicCatalogParams = {}): UsePublicCatalogReturn {
-  const queryKey = PRODUCT_QUERY_KEYS.publicCatalog({ skip, limit, search, categoria_id });
+  const queryKey = PRODUCT_QUERY_KEYS.publicCatalog({ skip, limit, search, categoria_id, excluirAlergenos });
 
   const query = useQuery({
     queryKey,
-    queryFn: () => getPublicCatalog(skip, limit, search, categoria_id),
+    queryFn: () => getPublicCatalog(skip, limit, search, categoria_id, excluirAlergenos),
     staleTime: 30 * 60 * 1000, // 30 minutes - public catalog changes infrequently
     enabled,
   });

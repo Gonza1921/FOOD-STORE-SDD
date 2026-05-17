@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from backend.core.dependencies import require_role
 from backend.ingredientes.schemas import (
@@ -21,6 +21,22 @@ router = APIRouter(prefix="/api/v1/ingredientes", tags=["ingredientes"])
 async def list_ingredientes(
     es_alergeno: Optional[bool] = Query(None, alias="es_alergeno"),
 ):
+    service = IngredienteService()
+    return await service.list(es_alergeno=es_alergeno)
+
+
+@router.get(
+    "/publico",
+    response_model=list[IngredienteOut],
+    summary="Listar ingredientes (público, solo alérgenos)",
+)
+async def list_ingredientes_publico(
+    es_alergeno: Optional[bool] = Query(True, alias="es_alergeno"),
+):
+    """Listar ingredientes (público, sin autenticación).
+    
+    Por defecto solo retorna alérgenos (es_alergeno=true).
+    """
     service = IngredienteService()
     return await service.list(es_alergeno=es_alergeno)
 

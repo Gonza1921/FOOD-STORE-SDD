@@ -18,27 +18,27 @@
 
 ## 4. Backend — Price Check en Checkout (US-070)
 
-- [ ] 4.1 Crear `PriceConflictError` en `backend/core/exceptions.py` o reutilizar `ConflictError` con estructura para lista de productos con diferencias de precio
-- [ ] 4.2 Modificar `create_pedido()` en `backend/pedidos/service.py` — después de validar que producto existe, comparar `item.precio_carrito` vs `producto.precio_base`. Si hay diferencias, raise `PriceConflictError` con detalle de productos (bajo feature flag)
-- [ ] 4.3 Agregar handler para `PriceConflictError` que devuelva 409 Conflict con lista de productos según contrato del design
-- [ ] 4.4 Decorar `POST /api/v1/pedidos` con rate limit 10/hour/user
+- [x] 4.1 Crear `PriceConflictError` en `backend/core/exceptions.py` o reutilizar `ConflictError` con estructura para lista de productos con diferencias de precio
+- [x] 4.2 Modificar `create_pedido()` en `backend/pedidos/service.py` — después de validar que producto existe, comparar `item.precio_carrito` vs `producto.precio_base`. Si hay diferencias, raise `PriceConflictError` con detalle de productos (bajo feature flag)
+- [x] 4.3 Agregar handler para `PriceConflictError` que devuelva 409 Conflict con lista de productos según contrato del design
+- [x] 4.4 Decorar `POST /api/v1/pedidos` con rate limit 10/hour/user
 
 ## 5. Backend — Métricas Avanzadas de Admin (US-057, US-058)
 
-- [ ] 5.1 Crear `backend/admin/metrics_service.py` con `get_top_productos(limite: int = 10)` — SUM cantidad DetallePedido agrupado por producto, solo pedidos CONFIRMADO + ENTREGADO
-- [ ] 5.2 Agregar en `metrics_service.py` — `get_ventas_periodo(desde: date, hasta: date, granularidad: str)` con DATE_TRUNC y whitelist de granularidades
-- [ ] 5.3 Crear `backend/admin/metrics_router.py` — endpoints `GET /api/v1/admin/metricas/productos-top` y `GET /api/v1/admin/metricas/ventas` con UnitOfWork, bajo feature flag
-- [ ] 5.4 Registrar `metrics_router` en `backend/main.py` o en `admin/router.py` como sub-router
+- [x] 5.1 Crear `backend/admin/metrics_service.py` con `get_top_productos(limite: int = 10)` — SUM cantidad DetallePedido agrupado por producto, solo pedidos CONFIRMADO + ENTREGADO
+- [x] 5.2 Agregar en `metrics_service.py` — `get_ventas_periodo(desde: date, hasta: date, granularidad: str)` con DATE_TRUNC y whitelist de granularidades
+- [x] 5.3 Crear `backend/admin/metrics_router.py` — endpoints `GET /api/v1/admin/metricas/productos-top` y `GET /api/v1/admin/metricas/ventas` con UnitOfWork, bajo feature flag
+- [x] 5.4 Registrar `metrics_router` en `backend/main.py` o en `admin/router.py` como sub-router
 
 ## 6. Backend — Rate Limiting Completo (US-073)
 
-- [ ] 6.1 Agregar en `backend/core/rate_limit.py` — `limiter_register` con key function `get_remote_address` y `limiter_pedidos` con key function personalizada que extrae `user_id` del JWT
-- [ ] 6.2 Decorar `POST /api/v1/auth/register` con `@limiter_register.limit("3/hour")`
+- [x] 6.1 Agregar en `backend/core/rate_limit.py` — `limiter_register` con key function `get_remote_address` y `limiter_pedidos` con key function personalizada que extrae `user_id` del JWT
+- [x] 6.2 Decorar `POST /api/v1/auth/register` con `@limiter_register.limit("3/hour")`
 
 ## 7. Backend — Refactor Admin Routers a UnitOfWork
 
-- [ ] 7.1 Refactorizar `backend/admin/router.py` — reemplazar `async with get_db() as db:` por `async with UnitOfWork() as uow:` en todos los endpoints de métricas existentes
-- [ ] 7.2 Refactorizar `backend/admin/usuarios_router.py` — reemplazar `async with get_db() as db:` por `async with UnitOfWork() as uow:` en todos los endpoints CRUD de usuarios
+- [x] 7.1 Refactorizar `backend/admin/router.py` — reemplazar `async with get_db() as db:` por `async with UnitOfWork() as uow:` en todos los endpoints de métricas existentes
+- [x] 7.2 Refactorizar `backend/admin/usuarios_router.py` — reemplazar `async with get_db() as db:` por `async with UnitOfWork() as uow:` en todos los endpoints CRUD de usuarios
 
 ## 8. Backend — Tests
 
@@ -52,22 +52,22 @@
 
 ## 9. Frontend — Catálogo Público y Detalle
 
-- [ ] 9.1 Modificar `frontend/src/pages/PublicCatalogPage.tsx` — agregar sección de checkboxes con lista de ingredientes alérgenos debajo del search que genera `excluirAlergenos` param
-- [ ] 9.2 Agregar enlace a detalle de producto en cada card del catálogo (`/productos/{id}`)
-- [ ] 9.3 Crear `frontend/src/features/products/hooks/usePublicProductoDetail.ts` — hook TanStack Query para consumir `GET /api/v1/productos/{id}/publico`
-- [ ] 9.4 Crear `frontend/src/pages/ProductoDetailPage.tsx` — página de detalle público con nombre, descripción, precio, imagen, ingredientes y es_alergeno
-- [ ] 9.5 Agregar ruta `/productos/:id` → `ProductoDetailPage` en el router
+- [x] 9.1 Modificar `frontend/src/pages/PublicCatalogPage.tsx` — agregar sección de checkboxes con lista de ingredientes alérgenos debajo del search que genera `excluirAlergenos` param
+- [x] 9.2 Agregar enlace a detalle de producto en cada card del catálogo (`/productos/{id}`)
+- [x] 9.3 Crear `frontend/src/features/products/hooks/usePublicProductoDetail.ts` — hook TanStack Query para consumir `GET /api/v1/productos/{id}/publico`
+- [x] 9.4 Crear `frontend/src/pages/ProductoDetailPage.tsx` — página de detalle público con nombre, descripción, precio, imagen, ingredientes y es_alergeno
+- [x] 9.5 Agregar ruta `/productos/:id` → `ProductoDetailPage` en el router
 
 ## 10. Frontend — Price Check en Checkout
 
-- [ ] 10.1 Modificar `frontend/src/features/cart/store.ts` — almacenar `precioCarrito` en cada item del carrito (precio al momento de agregar)
-- [ ] 10.2 Modificar `frontend/src/pages/CheckoutPage.tsx` — enviar `precio_carrito` en cada item al crear pedido
-- [ ] 10.3 Agregar manejo de 409 Conflict en CheckoutPage — mostrar modal con lista de productos que cambiaron de precio y opciones "Actualizar carrito" / "Volver al catálogo"
+- [x] 10.1 Modificar `frontend/src/features/cart/store.ts` — almacenar `precioCarrito` en cada item del carrito (precio al momento de agregar)
+- [x] 10.2 Modificar `frontend/src/pages/CheckoutPage.tsx` — enviar `precio_carrito` en cada item al crear pedido
+- [x] 10.3 Agregar manejo de 409 Conflict en CheckoutPage — mostrar modal con lista de productos que cambiaron de precio y opciones "Actualizar carrito" / "Volver al catálogo"
 
 ## 11. Frontend — Dashboard Widgets Admin
 
-- [ ] 11.1 Crear `frontend/src/features/admin/hooks/useAdminTopProductos.ts` — hook TanStack Query para top productos
-- [ ] 11.2 Crear `frontend/src/features/admin/hooks/useAdminVentasPeriodo.ts` — hook TanStack Query para ventas por período con parámetros desde/hasta/granularidad
-- [ ] 11.3 Crear `frontend/src/features/admin/components/TopProductosTable.tsx` — tabla con ranking de productos más vendidos
-- [ ] 11.4 Crear `frontend/src/features/admin/components/VentasPeriodoChart.tsx` — gráfico de ventas con selector de granularidad (día/semana/mes) y date range picker
-- [ ] 11.5 Integrar widgets en `frontend/src/features/admin/pages/AdminDashboardPage.tsx`
+- [x] 11.1 Crear `frontend/src/features/admin/hooks/useAdminTopProductos.ts` — hook TanStack Query para top productos
+- [x] 11.2 Crear `frontend/src/features/admin/hooks/useAdminVentasPeriodo.ts` — hook TanStack Query para ventas por período con parámetros desde/hasta/granularidad
+- [x] 11.3 Crear `frontend/src/features/admin/components/TopProductosTable.tsx` — tabla con ranking de productos más vendidos
+- [x] 11.4 Crear `frontend/src/features/admin/components/VentasPeriodoChart.tsx` — gráfico de ventas con selector de granularidad (día/semana/mes) y date range picker
+- [x] 11.5 Integrar widgets en `frontend/src/features/admin/pages/AdminDashboardPage.tsx`

@@ -3,6 +3,7 @@ export { default as RegisterPage } from './RegisterPage';
 export { default as UnauthorizedPage } from './UnauthorizedPage';
 export { default as DashboardPage } from './DashboardPage';
 export { default as PublicCatalogPage } from './PublicCatalogPage';
+export { default as ProductoDetailPage } from './ProductoDetailPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as CartPage } from './CartPage';
 

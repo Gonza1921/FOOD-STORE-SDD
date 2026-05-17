@@ -1,6 +1,8 @@
 import { useAdminMetrics } from '../hooks/useAdminMetrics';
 import { MetricCard } from '../components/MetricCard';
 import { ChartBar, ChartLine, ChartPie } from '../components/Charts';
+import { TopProductosTable } from '../components/TopProductosTable';
+import { VentasPeriodoChart } from '../components/VentasPeriodoChart';
 import Skeleton from '@/shared/ui/Skeleton';
 
 export default function AdminDashboardPage() {
@@ -102,6 +104,12 @@ export default function AdminDashboardPage() {
             Sin datos disponibles
           </div>
         )}
+      </div>
+
+      {/* Nuevos widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TopProductosTable />
+        <VentasPeriodoChart />
       </div>
     </div>
   );

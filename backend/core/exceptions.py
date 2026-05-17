@@ -89,6 +89,18 @@ class ConflictError(APIError):
         )
 
 
+class PriceConflictError(APIError):
+    """Raised when product prices changed between cart addition and checkout"""
+
+    def __init__(self, productos: list[dict]):
+        super().__init__(
+            message="Precios actualizados",
+            status_code=409,
+            error_code="PRICE_CONFLICT",
+            details={"productos": productos},
+        )
+
+
 class InternalServerError(APIError):
     """Raised for unexpected server errors"""
 

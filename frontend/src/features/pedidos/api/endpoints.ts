@@ -13,6 +13,7 @@ import { API } from '@/shared/api/endpoints';
 export interface PedidoItemCreate {
   producto_id: number;
   cantidad: number;
+  precio_carrito?: number;
   ingredientes_excluidos?: number[];
 }
 

@@ -17,7 +17,8 @@ from typing import Optional
 
 from sqlmodel import select
 
-from backend.core.exceptions import ConflictError, NotFoundError, ValidationError
+from backend.core.config import settings
+from backend.core.exceptions import ConflictError, NotFoundError, PriceConflictError, ValidationError
 from backend.core.unit_of_work import UnitOfWork
 from backend.models.pedido import Pedido, DetallePedido, HistorialEstadoPedido
 from backend.models.producto import Producto
@@ -152,10 +153,13 @@ class PedidoService:
             total_pedido = Decimal("0")
             detalles_a_crear = []
 
+            productos_con_diff = []
+
             for item in items:
                 producto_id = item.get("producto_id")
                 cantidad = item.get("cantidad")
                 ingredientes_excluidos = item.get("ingredientes_excluidos")
+                precio_carrito = item.get("precio_carrito")
 
                 if not isinstance(producto_id, int) or producto_id <= 0:
                     raise ValidationError("ID de producto inválido")
@@ -173,6 +177,16 @@ class PedidoService:
 
                 if not producto:
                     raise ValidationError(f"Producto {producto_id} no encontrado o no disponible")
+
+                # Price check: compare precio_carrito vs current precio_base
+                if settings.ff_price_check and precio_carrito is not None:
+                    if producto.precio_base != precio_carrito:
+                        productos_con_diff.append({
+                            "id": producto.id,
+                            "nombre": producto.nombre,
+                            "precio_carrito": precio_carrito,
+                            "precio_actual": producto.precio_base,
+                        })
 
                 # Validate stock sufficient
                 if producto.stock_cantidad < cantidad:
@@ -195,6 +209,10 @@ class PedidoService:
                     "precio_snapshot": precio_snapshot,
                     "ingredientes_excluidos": ingredientes_excluidos,
                 })
+
+            # ---- Price check: if any diff found, reject with 409 ----
+            if productos_con_diff:
+                raise PriceConflictError(productos=productos_con_diff)
 
             # ---- Create Pedido ----
             total_con_envio = total_pedido + COSTO_ENVIO

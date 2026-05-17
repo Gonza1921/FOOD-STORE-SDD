@@ -12,6 +12,8 @@ export interface CartItem {
   cantidad: number;
   imagen: string;
   ingredientes_excluidos?: number[];
+  /** Precio al momento de agregar al carrito (para price check) */
+  precioCarrito: number;
 }
 
 export interface CartStore {
@@ -22,6 +24,7 @@ export interface CartStore {
   addItem: (item: Omit<CartItem, 'cantidad'> & { cantidad?: number }) => void;
   removeItem: (productoId: number) => void;
   updateQuantity: (productoId: number, cantidad: number) => void;
+  updatePrice: (productoId: number, nuevoPrecio: number) => void;
   clearCart: () => void;
 
   // Selectors (computed via functions)
@@ -63,6 +66,7 @@ export const useCartStore = create<CartStore>()(
                 productoId: item.productoId,
                 nombre: item.nombre,
                 precio: item.precio,
+                precioCarrito: item.precioCarrito ?? item.precio,
                 cantidad: item.cantidad ?? 1,
                 imagen: item.imagen,
                 ingredientes_excluidos: item.ingredientes_excluidos,
@@ -87,6 +91,13 @@ export const useCartStore = create<CartStore>()(
             items: state.items.map((i) => (i.productoId === productoId ? { ...i, cantidad } : i)),
           };
         }),
+
+      updatePrice: (productoId, nuevoPrecio) =>
+        set((state) => ({
+          items: state.items.map((i) =>
+            i.productoId === productoId ? { ...i, precio: nuevoPrecio } : i
+          ),
+        })),
 
       clearCart: () => set({ items: [] }),
 

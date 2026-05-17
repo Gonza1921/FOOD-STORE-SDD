@@ -12,12 +12,14 @@
  *   6. On error: toast with message, stay on page
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCartStore, CartItem } from '@/features/cart/store';
 import { useCreatePedido, PedidoCreate } from '@/features/pedidos';
 import { useDirecciones } from '@/features/direcciones';
 import { useUiStore } from '@/features/ui/store';
+import { Modal, Button } from '@/shared/ui';
+import type { AxiosError } from 'axios';
 
 const COSTO_ENVIO = 500;
 
@@ -27,11 +29,21 @@ const FORMA_PAGO_OPTIONS = [
   { id: 3, label: 'MercadoPago', desc: 'MercadoPago' },
 ];
 
+interface PriceConflictProduct {
+  id: number;
+  nombre: string;
+  precio_carrito: number;
+  precio_actual: number;
+}
+
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const { items, totalPrice, totalItems, removeItem, updateQuantity, clearCart } = useCartStore();
+  const { items, totalPrice, totalItems, removeItem, updateQuantity, updatePrice, clearCart } = useCartStore();
   const { addToast } = useUiStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priceConflict, setPriceConflict] = useState<{
+    productos: PriceConflictProduct[];
+  } | null>(null);
 
   // Address and payment state
   const [direccionId, setDireccionId] = useState<number | null>(null);
@@ -66,23 +78,46 @@ export function CheckoutPage() {
 
     setIsSubmitting(true);
 
+    // Read fresh state from store to avoid stale closures
+    const freshItems = useCartStore.getState().items;
+
     try {
       const pedidoData: PedidoCreate = {
-        items: items.map((item) => ({
+        items: freshItems.map((item) => ({
           producto_id: item.productoId,
           cantidad: item.cantidad,
+          precio_carrito: item.precioCarrito,
           ingredientes_excluidos: (item as CartItem & { ingredientes_excluidos?: number[] }).ingredientes_excluidos,
         })),
         direccion_id: direccionId!,
         forma_pago_id: formaPagoId!,
       };
       await createPedido(pedidoData);
-    } catch {
-      // Error handled by onError callback
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{
+        detail?: string;
+        details?: { productos?: PriceConflictProduct[] };
+      }>;
+      if (axiosErr?.response?.status === 409 && axiosErr.response.data?.details?.productos) {
+        setPriceConflict({
+          productos: axiosErr.response.data.details.productos,
+        });
+      }
+      // Other errors handled by onError callback
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleUpdateCart = useCallback(() => {
+    if (!priceConflict) return;
+    for (const p of priceConflict.productos) {
+      useCartStore.getState().updatePrice(p.id, p.precio_actual);
+    }
+    setPriceConflict(null);
+    // Retry checkout after prices are updated
+    setTimeout(() => handleCheckout(), 100);
+  }, [priceConflict]);
 
   // ── Empty State ──
   if (items.length === 0) {
@@ -159,6 +194,69 @@ export function CheckoutPage() {
       </div>
     );
   }
+
+  // ── Price conflict modal ──
+  const renderPriceConflictModal = () => {
+    if (!priceConflict) return null;
+    return (
+      <Modal
+        open
+        onClose={() => setPriceConflict(null)}
+        title="Precios actualizados"
+        maxWidth="max-w-lg"
+      >
+        <p className="text-sm text-on-surface-variant mb-4">
+          Algunos productos en tu carrito cambiaron de precio desde que los agregaste:
+        </p>
+        <div className="space-y-3 mb-6">
+          {priceConflict.productos.map((p) => (
+            <div
+              key={p.id}
+              className="flex items-center justify-between p-3 rounded-lg bg-surface-container border border-outline-variant/20"
+            >
+              <div>
+                <p className="text-sm font-medium text-on-surface">{p.nombre}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="text-xs text-on-surface-variant line-through">
+                    ${Number(p.precio_carrito).toFixed(2)}
+                  </span>
+                  <span className="material-symbols-outlined text-xs text-on-surface-variant" style={{ fontSize: '14px' }}>
+                    arrow_forward
+                  </span>
+                  <span className="text-xs font-semibold text-brand-600">
+                    ${Number(p.precio_actual).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                p.precio_actual > p.precio_carrito
+                  ? 'bg-red-50 text-red-600'
+                  : 'bg-green-50 text-green-600'
+              }`}>
+                {p.precio_actual > p.precio_carrito ? '↑' : '↓'} {Math.abs(Number(p.precio_actual) - Number(p.precio_carrito)).toFixed(2)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            variant="premium"
+            onClick={handleUpdateCart}
+            className="flex-1"
+          >
+            Actualizar carrito
+          </Button>
+          <Link
+            to="/catalogo"
+            className="flex-1 inline-flex items-center justify-center px-4 py-2.5 rounded-xl border border-outline-variant/30 text-sm font-medium text-on-surface-variant hover:bg-surface-container transition-colors"
+            onClick={() => setPriceConflict(null)}
+          >
+            Volver al catálogo
+          </Link>
+        </div>
+      </Modal>
+    );
+  };
 
   // ── Data State ──
   return (
@@ -487,13 +585,14 @@ export function CheckoutPage() {
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant/10">
             <div className="flex items-center justify-between">
-              <span className="text-base font-semibold text-on-surface">Total</span>
-              <span className="text-xl font-bold text-brand-600">
-                ${(totalPrice() + COSTO_ENVIO).toFixed(2)}
-              </span>
-            </div>
+            <span className="text-base font-semibold text-on-surface">Total</span>
+            <span className="text-xl font-bold text-brand-600">
+              ${(totalPrice() + COSTO_ENVIO).toFixed(2)}
+            </span>
           </div>
         </div>
+
+        {renderPriceConflictModal()}
 
         {/* ── Actions ── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

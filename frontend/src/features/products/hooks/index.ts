@@ -2,6 +2,8 @@
 export { useProducts } from './useProducts';
 export { useProductDetail } from './useProductDetail';
 export { usePublicCatalog } from './usePublicCatalog';
+export { usePublicProductoDetail } from './usePublicProductoDetail';
+export { usePublicIngredientes } from './usePublicIngredientes';
 
 // Mutation hooks
 export {
