@@ -46,6 +46,10 @@ class PedidoItemCreate(BaseModel):
 
     producto_id: int = Field(..., gt=0, description="Product ID (must exist)")
     cantidad: int = Field(..., ge=1, description="Quantity, must be >= 1")
+    precio_carrito: Decimal = Field(
+        ..., gt=0, decimal_places=2,
+        description="Price at which the client added the product (for price check)"
+    )
     ingredientes_excluidos: Optional[list[int]] = Field(
         default=None,
         description="List of ingredient IDs to exclude from this product"

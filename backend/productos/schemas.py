@@ -25,6 +25,14 @@ class IngredienteRef(BaseModel):
     nombre: str
 
 
+class IngredientePublicRef(BaseModel):
+    """Reference to an Ingrediente with allergen info (for public detail)"""
+
+    id: int
+    nombre: str
+    es_alergeno: bool
+
+
 # ============================================================================
 # Task 4.1: ProductoCreate Schema
 # ============================================================================
@@ -223,6 +231,21 @@ class ProductoOutPublic(BaseModel):
     ingredientes: list[IngredienteRef] = Field(default_factory=list)
 
     # EXCLUDE: stock_cantidad, timestamps, admin-only fields
+
+    class Config:
+        from_attributes = True
+
+
+class ProductoOutPublicDetail(BaseModel):
+    """Response schema for GET /api/v1/productos/{id}/publico (no auth, full detail)"""
+
+    id: int
+    nombre: str
+    descripcion: Optional[str]
+    precio_base: Decimal = Field(..., decimal_places=2)
+    disponible: bool
+    categorias: list[CategoriaRef] = Field(default_factory=list)
+    ingredientes: list[IngredientePublicRef] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

@@ -51,6 +51,32 @@ class Settings(BaseSettings):
         description="Application environment (development, production)",
     )
 
+    # Feature flags
+    ff_catalogo_detalle_publico: bool = Field(
+        default=True,
+        description="Enable public product detail endpoint",
+    )
+    ff_filtro_alergenos: bool = Field(
+        default=True,
+        description="Enable allergen filter in public catalog",
+    )
+    ff_price_check: bool = Field(
+        default=True,
+        description="Enable price comparison at checkout",
+    )
+    ff_admin_metricas_avanzadas: bool = Field(
+        default=True,
+        description="Enable advanced admin metrics endpoints",
+    )
+    ff_rate_limit_registro: bool = Field(
+        default=True,
+        description="Enable rate limiting on register endpoint",
+    )
+    ff_rate_limit_pedidos: bool = Field(
+        default=True,
+        description="Enable rate limiting on create pedido endpoint",
+    )
+
     class Config:
         """Pydantic config"""
 
