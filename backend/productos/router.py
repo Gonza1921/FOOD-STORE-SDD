@@ -22,8 +22,9 @@ Matches patterns used in: categorias, ingredientes
 
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, Query, Path, Body, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, status
 
+from backend.core.config import settings
 from backend.core.dependencies import require_role
 from backend.models.usuario import Usuario
 from .schemas import (
@@ -33,6 +34,7 @@ from .schemas import (
     ProductoOut,
     ProductoOutList,
     ProductoOutPublic,
+    ProductoOutPublicDetail,
     ProductoOutPublicList,
 )
 from .service import ProductoService
@@ -146,17 +148,38 @@ async def get_catalogo_publico(
     categoria_id: Optional[int] = Query(
         None, gt=0, description="Filtrar por categoría"
     ),
+    excluir_alergenos: Optional[str] = Query(
+        None,
+        description="Excluir productos que contengan estos ingredientes (CSV de IDs, ej: 1,3,7)",
+    ),
 ) -> ProductoOutPublicList:
     """Obtener catálogo público de productos (SIN autenticación).
 
     Filtros automáticos: disponible=true, deleted_at IS NULL
     """
+    # Parse allergen exclusion CSV → list[int] (if feature flag enabled)
+    alergenos_ids: Optional[list[int]] = None
+    if (
+        excluir_alergenos
+        and settings.ff_filtro_alergenos
+    ):
+        try:
+            alergenos_ids = [
+                int(x.strip()) for x in excluir_alergenos.split(",") if x.strip()
+            ]
+        except ValueError:
+            raise HTTPException(
+                status_code=400,
+                detail="excluir_alergenos debe ser una lista de IDs separados por coma (ej: 1,3,7)",
+            )
+
     service = ProductoService()
     items, total = await service.get_public_paginated(
         skip=skip,
         limit=limit,
         search=search,
         categoria_id=categoria_id,
+        excluir_alergenos=alergenos_ids,
     )
 
     return ProductoOutPublicList(
@@ -165,6 +188,31 @@ async def get_catalogo_publico(
         skip=skip,
         limit=limit,
     )
+
+
+@router.get(
+    "/{producto_id}/publico",
+    response_model=ProductoOutPublicDetail,
+    summary="Detalle público de producto",
+)
+async def get_producto_publico(
+    producto_id: int = Path(..., gt=0, description="ID del producto"),
+) -> ProductoOutPublicDetail:
+    """Obtener detalle público de un producto (SIN autenticación).
+
+    Devuelve producto con categorías e ingredientes incluyendo es_alergeno.
+    Si el producto no existe o está eliminado, retorna 404.
+    """
+    if not settings.ff_catalogo_detalle_publico:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    service = ProductoService()
+    producto = await service.get_public_by_id(producto_id)
+
+    if not producto:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    return ProductoOutPublicDetail.model_validate(producto)
 
 
 # ============================================================================

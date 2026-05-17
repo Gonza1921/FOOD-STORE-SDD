@@ -9,15 +9,12 @@
 
 ## 2. Backend — Detalle Público de Producto (US-019)
 
-- [ ] 2.1 Agregar `get_public_by_id(producto_id: int)` en `backend/productos/repository.py` — query que obtiene producto + categorías + ingredientes con es_alergeno (bajo feature flag)
-- [ ] 2.2 Agregar `get_public_by_id(producto_id: int)` en `backend/productos/service.py` — validar que producto existe y no está eliminado; 404 si no
-- [ ] 2.3 Agregar endpoint `GET /api/v1/productos/{producto_id}/publico` en `backend/productos/router.py` — sin autenticación, bajo feature flag, responde con `ProductoOutPublicDetail`
-
-## 3. Backend — Filtro de Alérgenos en Catálogo Público (US-023)
-
-- [ ] 3.1 Modificar `get_public_paginated()` en `backend/productos/repository.py` — agregar parámetro `excluir_alergenos: Optional[list[int]]` con subquery NOT EXISTS
-- [ ] 3.2 Modificar `backend/productos/service.py` — pasar parámetro `excluir_alergenos` desde router a repository
-- [ ] 3.3 Modificar `GET /api/v1/productos/publico/catalogo` en `backend/productos/router.py` — agregar query param `excluir_alergenos: Optional[str] = Query(None)` con parseo CSV a `list[int]`, bajo feature flag
+- [x] 2.1 Agregar `get_public_by_id(producto_id: int)` en `backend/productos/repository.py` — query que obtiene producto + categorías + ingredientes con es_alergeno (bajo feature flag)
+- [x] 2.2 Agregar `get_public_by_id(producto_id: int)` en `backend/productos/service.py` — validar que producto existe y no está eliminado; 404 si no
+- [x] 2.3 Agregar endpoint `GET /api/v1/productos/{producto_id}/publico` en `backend/productos/router.py` — sin autenticación, bajo feature flag, responde con `ProductoOutPublicDetail`
+- [x] 3.1 Modificar `get_public_paginated()` en `backend/productos/repository.py` — agregar parámetro `excluir_alergenos: Optional[list[int]]` con subquery NOT EXISTS
+- [x] 3.2 Modificar `backend/productos/service.py` — pasar parámetro `excluir_alergenos` desde router a repository
+- [x] 3.3 Modificar `GET /api/v1/productos/publico/catalogo` en `backend/productos/router.py` — agregar query param `excluir_alergenos: Optional[str] = Query(None)` con parseo CSV a `list[int]`, bajo feature flag
 
 ## 4. Backend — Price Check en Checkout (US-070)
 

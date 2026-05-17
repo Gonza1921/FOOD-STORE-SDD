@@ -12,7 +12,7 @@ Patterns:
 from decimal import Decimal
 from typing import Optional
 
-from sqlalchemy import delete, func
+from sqlalchemy import delete, exists, func, not_
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
 
@@ -103,12 +103,36 @@ class ProductoRepository(BaseRepository[Producto]):
         result = await self.session.execute(statement)
         return result.unique().scalar_one_or_none()
 
+    async def get_public_by_id(self, producto_id: int) -> Optional[Producto]:
+        """Get public product detail (available or not, but not deleted).
+
+        Unlike `get_con_asociaciones`, this includes `es_alergeno` on ingredients
+        and does NOT require authentication. Used for the public detail endpoint.
+
+        Args:
+            producto_id: Product ID.
+
+        Returns:
+            Producto with categorias and ingredientes loaded, or None if not found/deleted.
+        """
+        statement = select(Producto).where(
+            Producto.id == producto_id,
+            Producto.deleted_at.is_(None),
+        )
+        statement = statement.options(
+            selectinload(Producto.categorias),
+            selectinload(Producto.ingredientes),
+        )
+        result = await self.session.execute(statement)
+        return result.unique().scalar_one_or_none()
+
     async def get_public_paginated(
         self,
         skip: int = 0,
         limit: int = 20,
         search: Optional[str] = None,
         categoria_id: Optional[int] = None,
+        excluir_alergenos: Optional[list[int]] = None,
     ) -> tuple[list[Producto], int]:
         """Get public catalog (disponible=true, not deleted) with optional filters.
 
@@ -117,6 +141,8 @@ class ProductoRepository(BaseRepository[Producto]):
             limit: Maximum records to return.
             search: Search term to filter by nombre or descripcion.
             categoria_id: Optional category ID to filter by.
+            excluir_alergenos: Optional list of ingredient IDs to exclude.
+                Products containing ANY of these ingredients are filtered out.
 
         Returns:
             Tuple of (list of Producto, total count).
@@ -139,6 +165,18 @@ class ProductoRepository(BaseRepository[Producto]):
                 Producto.nombre.ilike(f"%{search}%")
                 | Producto.descripcion.ilike(f"%{search}%")
             )
+
+        # Optional allergen exclusion (subquery NOT EXISTS)
+        if excluir_alergenos:
+            allergen_subq = (
+                select(ProductoIngrediente.producto_id)
+                .where(
+                    ProductoIngrediente.ingrediente_id.in_(excluir_alergenos),
+                    ProductoIngrediente.producto_id == Producto.id,
+                )
+                .correlate(Producto)
+            )
+            statement = statement.where(not_(exists(allergen_subq)))
 
         # Eager load relations
         statement = statement.options(
@@ -163,6 +201,16 @@ class ProductoRepository(BaseRepository[Producto]):
                 Producto.nombre.ilike(f"%{search}%")
                 | Producto.descripcion.ilike(f"%{search}%")
             )
+        if excluir_alergenos:
+            allergen_subq = (
+                select(ProductoIngrediente.producto_id)
+                .where(
+                    ProductoIngrediente.ingrediente_id.in_(excluir_alergenos),
+                    ProductoIngrediente.producto_id == Producto.id,
+                )
+                .correlate(Producto)
+            )
+            count_statement = count_statement.where(not_(exists(allergen_subq)))
 
         count_result = await self.session.execute(count_statement)
         total = count_result.scalar() or 0

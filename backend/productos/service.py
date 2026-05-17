@@ -71,12 +71,27 @@ class ProductoService:
             repo = uow.register("productos", ProductoRepository, Producto)
             return await repo.get_con_asociaciones(producto_id)
 
+    async def get_public_by_id(self, producto_id: int) -> Optional[Producto]:
+        """Get producto for public detail (no auth required).
+
+        Args:
+            producto_id: Product ID.
+
+        Returns:
+            Producto with categorias and ingredientes (with es_alergeno),
+            or None if not found/deleted.
+        """
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            return await repo.get_public_by_id(producto_id)
+
     async def get_public_paginated(
         self,
         skip: int = 0,
         limit: int = 20,
         search: Optional[str] = None,
         categoria_id: Optional[int] = None,
+        excluir_alergenos: Optional[list[int]] = None,
     ) -> tuple[list[Producto], int]:
         """Get public catalog (disponible=true, not deleted) with filters.
 
@@ -85,13 +100,16 @@ class ProductoService:
             limit: Maximum records to return.
             search: Search term to filter by nombre or descripcion.
             categoria_id: Optional category ID to filter by.
+            excluir_alergenos: Optional list of ingredient IDs to exclude.
 
         Returns:
             Tuple of (list of Producto, total count).
         """
         async with UnitOfWork() as uow:
             repo = uow.register("productos", ProductoRepository, Producto)
-            return await repo.get_public_paginated(skip, limit, search, categoria_id)
+            return await repo.get_public_paginated(
+                skip, limit, search, categoria_id, excluir_alergenos
+            )
 
     # ========================================================================
     # Create with validations (categoria_id exists) and M2M associations
