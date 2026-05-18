@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/v1/pagos", tags=["pagos"])
 
 
 @router.post(
-    "/crear-preferencia",
+    "crear-preferencia",
     response_model=CrearPreferenciaResponse,
     summary="Create payment preference",
     description="Creates a MercadoPago preference for a pending order"
@@ -45,7 +45,7 @@ async def crear_preferencia(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/webhook", summary="Webhook verification")
+@router.get("webhook", summary="Webhook verification")
 async def webhook_verification():
     """MercadoPago sends GET to verify webhook URL."""
     return {"status": "ok", "message": "Webhook endpoint configured"}
@@ -78,7 +78,7 @@ async def get_pago(pedido_id: int, current_user: Usuario) -> PagoResponse:
     )
 
 
-@router.post("/webhook", summary="MercadoPago webhook")
+@router.post("webhook", summary="MercadoPago webhook")
 async def webhook(request: Request) -> PlainTextResponse:
     """MercadoPago IPN webhook endpoint (public, no auth)."""
     try:
