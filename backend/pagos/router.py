@@ -15,11 +15,19 @@ from .service import PagosService
 
 logger = logging.getLogger(__name__)
 
+# IMPORTANT: Order matters in FastAPI!
+# Static routes MUST come BEFORE dynamic routes
+# Otherwise FastAPI will try to match /crear-preferencia as {pedido_id}
+
 router = APIRouter(prefix="/api/v1/pagos", tags=["pagos"])
 
 
+# ============================================================================
+# STATIC ROUTES - MUST BE FIRST
+# ============================================================================
+
 @router.post(
-    "crear-preferencia",
+    "/crear-preferencia",
     response_model=CrearPreferenciaResponse,
     summary="Create payment preference",
     description="Creates a MercadoPago preference for a pending order"
@@ -45,11 +53,40 @@ async def crear_preferencia(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("webhook", summary="Webhook verification")
+@router.get(
+    "/webhook",
+    summary="Webhook verification"
+)
 async def webhook_verification():
     """MercadoPago sends GET to verify webhook URL."""
     return {"status": "ok", "message": "Webhook endpoint configured"}
 
+
+@router.post(
+    "/webhook",
+    summary="MercadoPago webhook"
+)
+async def webhook(request: Request) -> PlainTextResponse:
+    """MercadoPago IPN webhook endpoint (public, no auth)."""
+    try:
+        service = PagosService()
+        body = await request.json()
+        logger.info(f"MercadoPago webhook received: {body}")
+
+        result = await service.procesar_webhook(body, request)
+        logger.info(f"Webhook processed: {result}")
+
+        return PlainTextResponse(content="OK", status_code=200)
+
+    except Exception as e:
+        logger.error(f"Error processing webhook: {str(e)}")
+        # Always return 200 to MercadoPago to prevent retry storms
+        return PlainTextResponse(content="OK", status_code=200)
+
+
+# ============================================================================
+# DYNAMIC ROUTES - MUST BE LAST
+# ============================================================================
 
 @router.get(
     "/{pedido_id}",
@@ -57,7 +94,10 @@ async def webhook_verification():
     summary="Get payment status",
     description="Get the payment record for an order"
 )
-async def get_pago(pedido_id: int, current_user: Usuario) -> PagoResponse:
+async def get_pago(
+    pedido_id: int,
+    current_user: Usuario,
+) -> PagoResponse:
     """Get payment information for a specific order."""
     service = PagosService()
 
@@ -76,21 +116,3 @@ async def get_pago(pedido_id: int, current_user: Usuario) -> PagoResponse:
         creado_en=pago.creado_en,
         actualizado_en=pago.actualizado_en
     )
-
-
-@router.post("/webhook", summary="MercadoPago webhook")
-async def webhook(request: Request) -> PlainTextResponse:
-    """MercadoPago IPN webhook endpoint (public, no auth)."""
-    try:
-        service = PagosService()
-        body = await request.json()
-        logger.info(f"MercadoPago webhook received: {body}")
-
-        result = await service.procesar_webhook(body, request)
-        logger.info(f"Webhook processed: {result}")
-
-        return PlainTextResponse(content="OK", status_code=200)
-
-    except Exception as e:
-        logger.error(f"Error processing webhook: {str(e)}")
-        return PlainTextResponse(content="OK", status_code=200)
