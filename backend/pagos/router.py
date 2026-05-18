@@ -86,7 +86,7 @@ async def webhook(request: Request) -> PlainTextResponse:
         body = await request.json()
         logger.info(f"MercadoPago webhook received: {body}")
 
-        result = await service.procesar_webhook(body)
+        result = await service.procesar_webhook(body, request)
         logger.info(f"Webhook processed: {result}")
 
         return PlainTextResponse(content="OK", status_code=200)
