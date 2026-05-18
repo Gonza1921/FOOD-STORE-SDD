@@ -3,12 +3,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { usePago } from '../hooks';
 import { useCartStore } from '../../cart/store';
 import { Spinner } from '../../../shared/ui';
+import { loadMercadoPagoSDK, initMercadoPago } from '../../../shared/lib/mercadopago';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pedidoIdParam = searchParams.get('pedido_id');
   const pedidoId = pedidoIdParam ? parseInt(pedidoIdParam, 10) : null;
+
+  const PUBLIC_KEY = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+  
+  if (!PUBLIC_KEY) {
+    throw new Error('VITE_MERCADOPAGO_PUBLIC_KEY not configured');
+  }
 
   const { checkoutStep, preferenceId, error, loading, crearPreferencia, verificarPago, limpiar } = usePago();
   const items = useCartStore((s) => s.items);
@@ -19,23 +26,26 @@ export function CheckoutPage() {
   // Initialize MercadoPago SDK
   useEffect(() => {
     if (!mpInitialized.current) {
-      const script = document.createElement('script');
-      script.src = 'https://sdk.mercadopago.com/js/v2';
-      script.async = true;
-      script.onload = () => {
-        mpInitialized.current = true;
-        initializeCheckout();
+      const initSDK = async () => {
+        try {
+          await loadMercadoPagoSDK();
+          initMercadoPago(PUBLIC_KEY);
+          mpInitialized.current = true;
+          initializeCheckout();
+        } catch (err) {
+          console.error('Failed to load MercadoPago SDK:', err);
+        }
       };
-      document.body.appendChild(script);
+      initSDK();
     }
-  }, []);
+  }, [PUBLIC_KEY]);
 
   const initializeCheckout = async () => {
     if (!pedidoId || checkoutStep !== 'idle') return;
 
     const initPoint = await crearPreferencia(pedidoId);
     if (initPoint && window.MercadoPago) {
-      const mp = window.MercadoPago('TEST-4a918b9b-0c2b-4e2b-9e5c-1234567890ab', {
+      const mp = window.MercadoPago(PUBLIC_KEY, {
         locale: 'es-AR',
       });
 
