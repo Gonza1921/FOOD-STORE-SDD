@@ -55,7 +55,23 @@ export function PaymentPage() {
           });
         }
       } catch (err: any) {
-        const msg = err.response?.data?.detail || 'Error al iniciar pago';
+        // Handle FastAPI validation error format properly
+        const detail = err.response?.data?.detail;
+        let msg = 'Error al iniciar pago';
+
+        if (detail) {
+          if (Array.isArray(detail)) {
+            msg = detail.map((e: any) => e.msg).join(', ');
+          } else if (typeof detail === 'string') {
+            msg = detail;
+          } else {
+            msg = JSON.stringify(detail);
+          }
+        } else if (err.response?.data?.message) {
+          msg = err.response.data.message;
+        }
+
+        console.error('Payment error:', err.response?.data);
         setError(msg);
         setLoading(false);
       }

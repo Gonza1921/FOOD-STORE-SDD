@@ -28,7 +28,24 @@ export function usePago() {
       setLoading(false);
       return init_point;
     } catch (error: any) {
-      const message = error.response?.data?.detail || 'Error al crear preferencia de pago';
+      // Handle FastAPI validation error format properly
+      const detail = error.response?.data?.detail;
+      let message = 'Error al crear preferencia de pago';
+
+      if (detail) {
+        if (Array.isArray(detail)) {
+          // FastAPI returns array of validation errors
+          message = detail.map((e: any) => e.msg).join(', ');
+        } else if (typeof detail === 'string') {
+          message = detail;
+        } else {
+          message = JSON.stringify(detail);
+        }
+      } else if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+
+      console.error('Error creating preference:', error.response?.data);
       setError(message);
       setLoading(false);
       return null;
