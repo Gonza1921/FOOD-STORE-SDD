@@ -111,15 +111,16 @@ async def create_pedido(
     ]
 
     # Create pedido (atomic via UnitOfWork)
-    pedido = await service.create_pedido(
+    # Service returns a dict (serialized inside UoW to avoid MissingGreenlet)
+    pedido_dict = await service.create_pedido(
         usuario_id=current_user.id,
         items=items,
         direccion_id=pedido_data.direccion_id,
         forma_pago_id=pedido_data.forma_pago_id,
     )
 
-    # Build response with items
-    return PedidoResponse(**_build_pedido_response(pedido))
+    # Build response with items - service already serialized
+    return PedidoResponse(**pedido_dict)
 
 
 # ============================================================================

@@ -254,14 +254,36 @@ class PedidoService:
 
             # ---- Refresh with items ----
             await uow.session.refresh(pedido)
-            # Load items
+            # Load items with eager loading to avoid lazy loading issues
             stmt = select(DetallePedido).where(DetallePedido.pedido_id == pedido.id)
             result = await uow.session.execute(statement=stmt)
             detalles = list(result.scalars().all())
-            # Attach to pedido for response
-            pedido.detalles = detalles  # type: ignore[attr-defined]
 
-            return pedido
+            # Build response dict INSIDE UoW context to avoid MissingGreenlet
+            # This serializes BEFORE the session closes
+            response_dict = {
+                "id": pedido.id,
+                "usuario_id": pedido.usuario_id,
+                "estado": pedido.estado_codigo,
+                "total": float(pedido.total),
+                "costo_envio": float(pedido.costo_envio) if pedido.costo_envio else 500.0,
+                "items": [
+                    {
+                        "id": d.id,
+                        "producto_id": d.producto_id,
+                        "cantidad": d.cantidad,
+                        "precio_unitario": float(d.precio_snapshot),
+                        "subtotal": float(d.precio_snapshot * d.cantidad),
+                        "nombre_snapshot": d.nombre_snapshot,
+                    }
+                    for d in detalles
+                ],
+                "creado_en": pedido.creado_en.isoformat() if pedido.creado_en else None,
+                "actualizado_en": pedido.actualizado_en.isoformat() if pedido.actualizado_en else None,
+                "direccion_snapshot": pedido.direccion_snapshot,
+            }
+
+            return response_dict
 
     # ========================================================================
     # FSM State Transition (for admin)
