@@ -16,6 +16,7 @@ class CategoriaRef(BaseModel):
 
     id: int
     nombre: str
+    model_config = {"from_attributes": True}
 
 
 class IngredienteRef(BaseModel):
@@ -23,6 +24,7 @@ class IngredienteRef(BaseModel):
 
     id: int
     nombre: str
+    model_config = {"from_attributes": True}
 
 
 class IngredientePublicRef(BaseModel):
@@ -31,6 +33,7 @@ class IngredientePublicRef(BaseModel):
     id: int
     nombre: str
     es_alergeno: bool
+    model_config = {"from_attributes": True}
 
 
 # ============================================================================

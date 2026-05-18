@@ -29,41 +29,41 @@ interface UpdateUsuarioData {
   roles?: string[];
 }
 
-// GET /api/v1/admin/usuarios
+// GET /admin/usuarios
 const getUsuarios = async (page = 1, limit = 20, search?: string): Promise<Usuario[]> => {
   const params = new URLSearchParams({ page: String(page), limit: String(limit) });
   if (search) params.append('search', search);
-  const response = await axiosClient.get<Usuario[]>(`/api/v1/admin/usuarios?${params}`);
+  const response = await axiosClient.get<Usuario[]>(`/admin/usuarios?${params}`);
   return response.data;
 };
 
-// GET /api/v1/admin/usuarios/roles
+// GET /admin/usuarios/roles
 const getRoles = async (): Promise<Rol[]> => {
-  const response = await axiosClient.get<Rol[]>('/api/v1/admin/usuarios/roles');
+  const response = await axiosClient.get<Rol[]>('/admin/usuarios/roles');
   return response.data;
 };
 
-// GET /api/v1/admin/usuarios/{id}
+// GET /admin/usuarios/{id}
 const getUsuario = async (id: number): Promise<Usuario> => {
-  const response = await axiosClient.get<Usuario>(`/api/v1/admin/usuarios/${id}`);
+  const response = await axiosClient.get<Usuario>(`/admin/usuarios/${id}`);
   return response.data;
 };
 
-// POST /api/v1/admin/usuarios
+// POST /admin/usuarios
 const createUsuario = async (data: CreateUsuarioData): Promise<Usuario> => {
-  const response = await axiosClient.post<Usuario>('/api/v1/admin/usuarios', data);
+  const response = await axiosClient.post<Usuario>('/admin/usuarios', data);
   return response.data;
 };
 
-// PATCH /api/v1/admin/usuarios/{id}
+// PATCH /admin/usuarios/{id}
 const updateUsuario = async ({ id, ...data }: UpdateUsuarioData & { id: number }): Promise<Usuario> => {
-  const response = await axiosClient.patch<Usuario>(`/api/v1/admin/usuarios/${id}`, data);
+  const response = await axiosClient.patch<Usuario>(`/admin/usuarios/${id}`, data);
   return response.data;
 };
 
-// DELETE /api/v1/admin/usuarios/{id}
+// DELETE /admin/usuarios/{id}
 const deleteUsuario = async (id: number): Promise<void> => {
-  await axiosClient.delete(`/api/v1/admin/usuarios/${id}`);
+  await axiosClient.delete(`/admin/usuarios/${id}`);
 };
 
 // Hooks

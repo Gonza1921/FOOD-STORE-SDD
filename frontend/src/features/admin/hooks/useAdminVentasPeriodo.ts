@@ -31,7 +31,7 @@ export function useAdminVentasPeriodo(params: VentasParams) {
       if (hasta) searchParams.set('hasta', hasta);
       searchParams.set('granularidad', granularidad);
       const { data } = await axiosClient.get<VentasPeriodoResponse>(
-        `/api/v1/admin/metricas/ventas?${searchParams}`
+        `/admin/metricas/ventas?${searchParams}`
       );
       return data;
     },

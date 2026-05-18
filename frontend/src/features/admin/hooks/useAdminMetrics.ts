@@ -12,7 +12,7 @@ export interface AdminMetrics {
 }
 
 const getMetrics = async (): Promise<AdminMetrics> => {
-  const response = await axiosClient.get<AdminMetrics>('/api/v1/admin/metrics');
+  const response = await axiosClient.get<AdminMetrics>(    '/admin/metrics');
   return response.data;
 };
 

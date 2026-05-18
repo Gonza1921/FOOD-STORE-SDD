@@ -205,7 +205,7 @@ export async function getPublicCatalog(
  */
 export async function getPublicProductoDetail(productoId: number): Promise<ProductoPublicDetail> {
   const response = await axiosClient.get<ProductoPublicDetail>(
-    `/api/v1/productos/${productoId}/publico`
+    `/productos/${productoId}/publico`
   );
   return response.data;
 }

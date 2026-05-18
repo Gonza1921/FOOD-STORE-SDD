@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { axiosClient } from '@/shared/api/axiosClient';
 import { API } from '@/shared/api/endpoints';
 
@@ -44,6 +44,11 @@ export function useCategories(): UseCategoriesReturn {
       setIsLoading(false);
     }
   }, []);
+
+  // Auto-fetch on mount
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const create = useCallback(
     async (data: CategoryFormData) => {

@@ -12,7 +12,7 @@ from sqlmodel import SQLModel, Field
 class ProductoIngrediente(SQLModel, table=True):
     """M:N relationship between Productos and Ingredientes"""
 
-    __tablename__ = "productoingrediente"
+    __tablename__ = "producto_ingrediente"
     __table_args__ = {"extend_existing": True}
 
     id: Optional[int] = Field(default=None, primary_key=True)

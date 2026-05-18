@@ -38,7 +38,7 @@ interface PriceConflictProduct {
 
 export function CheckoutPage() {
   const navigate = useNavigate();
-  const { items, totalPrice, totalItems, removeItem, updateQuantity, updatePrice, clearCart } = useCartStore();
+  const { items, totalPrice, totalItems, removeItem, updateQuantity, clearCart } = useCartStore();
   const { addToast } = useUiStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [priceConflict, setPriceConflict] = useState<{
@@ -590,6 +590,7 @@ export function CheckoutPage() {
               ${(totalPrice() + COSTO_ENVIO).toFixed(2)}
             </span>
           </div>
+        </div>
         </div>
 
         {renderPriceConflictModal()}

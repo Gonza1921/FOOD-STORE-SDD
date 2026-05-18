@@ -12,7 +12,7 @@ export function usePublicIngredientes() {
     queryKey: ['ingredientes', 'publico'],
     queryFn: async () => {
       const { data } = await axiosClient.get<IngredientePublic[]>(
-        '/api/v1/ingredientes/publico'
+        '/ingredientes/publico'
       );
       return data;
     },

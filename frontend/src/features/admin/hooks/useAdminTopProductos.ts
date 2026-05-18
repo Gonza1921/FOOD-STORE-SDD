@@ -18,7 +18,7 @@ export function useAdminTopProductos(limite = 10) {
     queryKey: ['admin', 'metricas', 'productos-top', limite],
     queryFn: async () => {
       const { data } = await axiosClient.get<TopProductosResponse>(
-        '/api/v1/admin/metricas/productos-top',
+        '/admin/metricas/productos-top',
         { params: { limite } }
       );
       return data;
