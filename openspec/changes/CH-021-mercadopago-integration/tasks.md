@@ -103,7 +103,7 @@
 
 ## Phase 3: Frontend Implementation (5-6 hours)
 
-- [ ] **3.1 Create MP SDK Utilities** (1 hour)
+- [x] **3.1 Create MP SDK Utilities** (1 hour)
   - New file: `frontend/src/shared/lib/mercadopago.ts`
   - Implement `loadMercadoPagoSDK(): Promise<void>`
     - Inject `<script src="https://sdk.mercadopago.com/js/v2" async>`
@@ -118,7 +118,7 @@
     - ✅ In browser: `window.MercadoPago` defined after `loadMercadoPagoSDK()` resolves
     - ✅ No TypeScript errors
 
-- [ ] **3.2 Create Payment Store (Zustand)** (0.5 hours)
+- [x] **3.2 Create Payment Store (Zustand)** (0.5 hours)
   - New file: `frontend/src/shared/stores/paymentStore.ts`
   - Define store with state + actions:
     - State: `pedido_id`, `preference_id`, `payment_status`, `mp_status`, `error`
@@ -129,7 +129,7 @@
     - ✅ Store exports via `export const usePaymentStore = create<State>(...)`
     - ✅ `npm run build` compiles with TS strict mode passing
 
-- [ ] **3.3 Update CheckoutPage with MP Integration** (1.5 hours)
+- [x] **3.3 Update CheckoutPage with MP Integration** (1.5 hours)
   - File: `frontend/src/features/payment/pages/CheckoutPage.tsx`
   - Replace hardcoded TEST key with: `import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY`
   - Add error handling: if `VITE_MERCADOPAGO_PUBLIC_KEY` undefined, disable MP option + show message
@@ -147,7 +147,7 @@
     - ✅ `npm run build` compiles, 0 TS errors
     - ✅ Loading state shows + button disabled during flow
 
-- [ ] **3.4 Create PaymentResultPage** (1.5 hours)
+- [x] **3.4 Create PaymentResultPage** (1.5 hours)
   - New file: `frontend/src/features/payment/pages/PaymentResultPage.tsx`
   - Route: `/pago/resultado/:pedido_id` (add in Router.tsx in task 3.6)
   - Component structure:
@@ -173,7 +173,7 @@
     - ✅ Buttons navigate correctly
     - ✅ Order summary displayed
 
-- [ ] **3.5 Update OrderDetailPage with Payment Badge** (1 hour)
+- [x] **3.5 Update OrderDetailPage with Payment Badge** (1 hour)
   - File: `frontend/src/pages/OrderDetailPage.tsx`
   - On mount: fetch payment status:
     - Import hook: `import { usePago } from '@/features/payment/hooks/usePago'` (or use TanStack Query)
@@ -191,7 +191,7 @@
     - ✅ Auto-refetch works (verify in DevTools Network every 10s if pending)
     - ✅ Badge updates when status changes
 
-- [ ] **3.6 Add Routes & Update Configuration** (0.5 hours)
+- [x] **3.6 Add Routes & Update Configuration** (0.5 hours)
   - File: `frontend/src/app/Router.tsx` (or route config)
   - Add route:
     ```typescript
