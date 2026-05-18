@@ -299,6 +299,103 @@ class PedidoService:
             descontar_stock=True,
         )
 
+    async def confirmar_pedido_webhook(
+        self,
+        pedido_id: int,
+        uow: UnitOfWork,
+    ) -> Pedido:
+        """Confirm a pedido from webhook (MercadoPago payment approved).
+
+        This is called from the webhook handler within an existing transaction.
+        Skips permission checks since it's a system operation.
+
+        Args:
+            pedido_id: Pedido ID to confirm.
+            uow: Existing UnitOfWork context for atomicity.
+
+        Returns:
+            Updated Pedido with CONFIRMADO state.
+
+        Raises:
+            NotFoundError: If pedido not found.
+            ValidationError: If invalid transition.
+            ConflictError: If stock insufficient.
+        """
+        repo = uow.register("pedidos", PedidoRepository, Pedido)
+
+        # Get pedido with items
+        pedido = await repo.get_by_id_con_items(pedido_id)
+        if not pedido:
+            raise NotFoundError(f"Pedido {pedido_id} no encontrado")
+
+        # Store current state for history
+        estado_anterior = pedido.estado_codigo  # type: ignore[arg-type]
+
+        # Validate FSM transition
+        if not FSMTransiciones.es_transicion_valida(estado_anterior, FSMEstados.CONFIRMADO):
+            raise ValidationError(
+                f"No se puede cambiar de '{estado_anterior}' a 'CONFIRMADO'. "
+                f"Transiciones válidas desde '{estado_anterior}': "
+                f"{FSMTransiciones.TRANSICIONES.get(estado_anterior, [])}"
+            )
+
+        # Validate terminal state (can't transition FROM terminal)
+        if FSMTransiciones.es_estado_terminal(estado_anterior):
+            raise ValidationError(
+                f"El pedido está en estado terminal '{estado_anterior}' "
+                "y no puede ser modificado"
+            )
+
+        # ---- Stock decrement ----
+        for detalle in getattr(pedido, "detalles", []):
+            # Get current stock
+            stmt = select(Producto).where(Producto.id == detalle.producto_id)
+            result = await uow.session.execute(stmt)
+            producto = result.scalar_one_or_none()
+
+            if not producto:
+                raise ConflictError(
+                    f"Producto {detalle.producto_id} no encontrado"
+                )
+
+            if producto.stock_cantidad < detalle.cantidad:
+                raise ConflictError(
+                    f"Stock insuficiente para producto '{producto.nombre}'. "
+                    f"Disponible: {producto.stock_cantidad}, "
+                    f"Solicitado: {detalle.cantidad}"
+                )
+
+            # Decrement stock
+            producto.stock_cantidad -= detalle.cantidad
+            uow.session.add(producto)
+
+        await uow.session.flush()
+
+        # ---- Update state ----
+        pedido.estado_codigo = FSMEstados.CONFIRMADO
+        uow.session.add(pedido)
+        await uow.session.flush()
+
+        # ---- Create history record (system operation, no usuario_id) ----
+        historial = HistorialEstadoPedido(
+            pedido_id=pedido.id,
+            estado_desde=estado_anterior,
+            estado_nuevo=FSMEstados.CONFIRMADO,
+            usuario_id=0,  # System operation (webhook)
+            motivo="Pago aprobado por MercadoPago",
+        )
+        uow.session.add(historial)
+        await uow.session.flush()
+
+        # ---- Refresh ----
+        await uow.session.refresh(pedido)
+        stmt = select(DetallePedido).where(DetallePedido.pedido_id == pedido.id)
+        result = await uow.session.execute(statement=stmt)
+        pedido.detalles = list(result.scalars().all())  # type: ignore[attr-defined]
+
+        return pedido
+
+
     async def transicionar_estado(
         self,
         pedido_id: int,

@@ -215,7 +215,7 @@ class PagosService:
                     logger.info(
                         f"[MP] Processing approved payment, pedido_id: {pedido_id}"
                     )
-                    await pedido_service.confirmar_pedido(pedido_id, uow)
+                    await pedido_service.confirmar_pedido_webhook(pedido_id, uow)
                     return {
                         "status": "processed",
                         "action": "pedido_confirmado",
