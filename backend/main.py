@@ -10,6 +10,10 @@ from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+# Import all models to register them with SQLModel.metadata BEFORE routers load
+# This ensures FK resolution works (e.g., forma_pago.codigo in Pedido model)
+from backend import models  # noqa: F401
+
 from backend.core.config import settings
 from backend.core.database import check_database_health
 from backend.core.exceptions import APIError, PriceConflictError
