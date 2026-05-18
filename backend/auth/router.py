@@ -11,6 +11,7 @@ from backend.auth.schemas import (
     LogoutRequest,
     RefreshRequest,
     RegisterRequest,
+    UserResponse,
 )
 from backend.auth.service import AuthService
 from backend.core.dependencies import get_current_user
@@ -86,3 +87,23 @@ async def logout(
     """
     service = AuthService()
     await service.logout(request)
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Get current authenticated user",
+)
+async def get_current_user_info(
+    current_user: Usuario = Depends(get_current_user),
+):
+    """Return the profile data of the currently authenticated user.
+
+    Used by the frontend to validate tokens on app initialization.
+    """
+    return UserResponse(
+        id=current_user.id,
+        nombre=current_user.nombre,
+        email=current_user.email,
+        roles=[r.nombre for r in getattr(current_user, 'roles', [])],
+    )
