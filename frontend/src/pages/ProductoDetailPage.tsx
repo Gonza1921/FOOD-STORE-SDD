@@ -1,6 +1,8 @@
+import { useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usePublicProductoDetail } from '@/features/products';
 import { useCartStore } from '@/features/cart/store';
+import { useUiStore } from '@/features/ui/store';
 import { Badge, Skeleton, Button } from '@/shared/ui';
 
 export default function ProductoDetailPage() {
@@ -8,6 +10,8 @@ export default function ProductoDetailPage() {
   const productoId = Number(id);
   const { data: product, isLoading, isError } = usePublicProductoDetail(productoId);
   const addItem = useCartStore((s) => s.addItem);
+  const addToast = useUiStore((s) => s.addToast);
+  const [justAdded, setJustAdded] = useState(false);
 
   if (isLoading) {
     return (
@@ -55,13 +59,19 @@ export default function ProductoDetailPage() {
     );
   }
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
+    if (justAdded) return;
     addItem({
       productoId: product.id,
       nombre: product.nombre,
       precio: Number(product.precio_base),
+      imagen: '',
+      precioCarrito: Number(product.precio_base),
     });
-  };
+    addToast({ message: `${product.nombre} agregado al carrito`, type: 'success' });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
+  }, [addItem, addToast, justAdded, product]);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -159,13 +169,14 @@ export default function ProductoDetailPage() {
             {product.disponible && (
               <div className="mt-8">
                 <Button
-                  variant="premium"
+                  variant={justAdded ? 'primary' : 'premium'}
                   size="lg"
-                  icon="add_shopping_cart"
+                  icon={justAdded ? 'check_circle' : 'add_shopping_cart'}
                   onClick={handleAddToCart}
+                  disabled={justAdded}
                   className="w-full sm:w-auto"
                 >
-                  Agregar al carrito
+                  {justAdded ? 'Agregado' : 'Agregar al carrito'}
                 </Button>
               </div>
             )}
