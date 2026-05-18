@@ -145,6 +145,14 @@ export default function Router() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/mis-direcciones/nueva"
+          element={
+            <ProtectedRoute>
+              <DireccionesListPage />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Order confirmation route (post-checkout) */}
         <Route

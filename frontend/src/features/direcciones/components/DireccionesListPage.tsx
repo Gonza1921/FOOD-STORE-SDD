@@ -10,7 +10,8 @@
  * - Data: grid of DireccionCard + modal for create/edit
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Button, Modal } from '@/shared/ui';
 import { useDirecciones } from '../hooks/useDirecciones';
 import {
@@ -32,15 +33,27 @@ import type {
 // ---------------------------------------------------------------------------
 
 export default function DireccionesListPage() {
+  const location = useLocation();
+
+  // ── Auto-open create modal if navigating from "Nueva dirección" link ──
+  const isNuevaRoute = location.pathname.endsWith('/nueva');
+
   // ── List query ──
   const { data: direcciones, isLoading, isError, error, refetch } =
     useDirecciones();
 
   // ── Modal state ──
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(isNuevaRoute);
   const [editingAddress, setEditingAddress] = useState<
     DireccionResponse | undefined
   >(undefined);
+
+  // Auto-open modal when navigating from /mis-direcciones/nueva
+  useEffect(() => {
+    if (isNuevaRoute && !modalOpen && !isLoading) {
+      setModalOpen(true);
+    }
+  }, [isNuevaRoute, modalOpen, isLoading]);
 
   // ── Toast/feedback state ──
   const [feedback, setFeedback] = useState<{
