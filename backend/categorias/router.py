@@ -8,7 +8,7 @@ router = APIRouter(prefix="/api/v1/categorias", tags=["categorias"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[CategoriaOut],
     dependencies=[Depends(require_role(["ADMIN"]))],
 )
@@ -28,7 +28,7 @@ async def get_categoria(id: int):
 
 
 @router.post(
-    "/",
+    "",
     response_model=CategoriaOut,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_role(["ADMIN"]))],

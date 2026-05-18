@@ -122,6 +122,8 @@ axiosClient.interceptors.response.use(
 
     if (!refreshToken) {
       useAuthStore.getState().logout();
+      localStorage.removeItem('food-store-auth');
+      window.location.href = '/login';
       isRefreshing = false;
       return Promise.reject(error);
     }
@@ -147,6 +149,7 @@ axiosClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       useAuthStore.getState().logout();
+      localStorage.removeItem('food-store-auth');
       window.location.href = '/login';
       return Promise.reject(refreshError);
     } finally {

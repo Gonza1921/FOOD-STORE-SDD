@@ -6,7 +6,7 @@
  *   Mobile  : [Hamburger → Drawer] [Main with Topbar + Outlet]
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from '@/widgets/Sidebar/Sidebar';
 import { useAuthStore } from '@/features/auth/store';
@@ -35,11 +35,17 @@ export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
   const totalItems = useCartStore((s) => s.totalItems());
 
   const pageTitle = routeTitles[location.pathname] || 'Food Store';
   const initials = user?.nombre?.charAt(0)?.toUpperCase() || '?';
+
+  const handleLogout = useCallback(() => {
+    logout();
+    localStorage.removeItem('food-store-auth');
+    navigate('/login', { replace: true });
+  }, [logout, navigate]);
 
   return (
     <div className="flex min-h-screen bg-surface">
@@ -90,6 +96,22 @@ export default function AppLayout() {
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}
+            </button>
+
+            {/* Logout button */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-on-surface-variant hover:bg-error-container/20 hover:text-error transition-all duration-200"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: '22px', fontVariationSettings: '"wght" 500' }}
+              >
+                logout
+              </span>
             </button>
 
             <div className="flex h-9 w-9 items-center justify-center rounded-full gradient-brand text-white text-xs font-semibold shadow-sm">

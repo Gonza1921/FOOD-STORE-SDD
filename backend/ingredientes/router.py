@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/v1/ingredientes", tags=["ingredientes"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[IngredienteOut],
     dependencies=[Depends(require_role(["ADMIN"]))],
 )
@@ -52,7 +52,7 @@ async def get_ingrediente(id: int):
 
 
 @router.post(
-    "/",
+    "",
     response_model=IngredienteOut,
     status_code=status.HTTP_201_CREATED,
     dependencies=[Depends(require_role(["ADMIN"]))],

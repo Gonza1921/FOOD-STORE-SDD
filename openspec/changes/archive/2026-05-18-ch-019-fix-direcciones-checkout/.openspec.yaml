@@ -1,0 +1,18 @@
+change_id: ch-019
+title: "Fix direcciones CRUD y checkout — bugs de conexión y ruta"
+status: archived
+created: 2026-05-18
+archived: 2026-05-18
+type: fix
+complexity: medium
+actor: CLIENTE
+tags:
+  - direcciones
+  - checkout
+  - bugfix
+  - frontend
+  - backend
+  - sqlmodel
+impact:
+  - backend: models, repository
+  - frontend: router, direcciones componente

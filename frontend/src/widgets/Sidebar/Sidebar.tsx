@@ -3,7 +3,7 @@
  * Responsive: desktop glass sidebar, mobile slide-out drawer.
  */
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/features/auth/store';
 import { useCartStore } from '@/features/cart/store';
 
@@ -107,9 +107,16 @@ function BrandSection() {
 }
 
 function UserSection() {
-  const { user } = useAuthStore();
+  const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   const userRoles = user?.roles || [];
   const initials = user?.nombre?.charAt(0)?.toUpperCase() || '?';
+
+  const handleLogout = () => {
+    logout();
+    localStorage.removeItem('food-store-auth');
+    navigate('/login', { replace: true });
+  };
 
   return (
     <div className="px-5 py-4 border-t border-outline-variant/10">
@@ -126,6 +133,20 @@ function UserSection() {
           </p>
         </div>
       </div>
+      {/* Logout button */}
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="mt-3 flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-on-surface-variant hover:bg-error-container/20 hover:text-error transition-all duration-200"
+      >
+        <span
+          className="material-symbols-outlined flex h-8 w-8 items-center justify-center rounded-lg bg-surface-container/80 text-[18px]"
+          style={{ fontVariationSettings: '"wght" 400' }}
+        >
+          logout
+        </span>
+        <span>Cerrar sesión</span>
+      </button>
     </div>
   );
 }
