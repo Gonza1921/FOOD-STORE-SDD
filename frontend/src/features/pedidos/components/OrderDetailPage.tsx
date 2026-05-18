@@ -118,30 +118,30 @@ export function OrderDetailPage() {
           Volver a mis pedidos
         </button>
 
-        {/* ── Order Header ── */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h1 className="text-[24px] leading-[32px] font-semibold text-on-surface">
-                Pedido #{order.id}
-              </h1>
-              <p className="text-sm text-on-surface-variant mt-1">
-                {new Date(order.creado_en).toLocaleDateString('es-AR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </p>
-            </div>
-            <span
-              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium self-start ${getStatusBadgeClasses(order.estado)}`}
-            >
-              {getStatusLabel(order.estado)}
-            </span>
-          </div>
-        </div>
+         {/* ── Order Header ── */}
+         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
+           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+             <div>
+               <h1 className="text-[24px] leading-[32px] font-semibold text-on-surface">
+                 Pedido #{order.id}
+               </h1>
+               <p className="text-sm text-on-surface-variant mt-1">
+                 {new Date(order.creado_en).toLocaleDateString('es-AR', {
+                   year: 'numeric',
+                   month: 'long',
+                   day: 'numeric',
+                   hour: '2-digit',
+                   minute: '2-digit',
+                 })}
+               </p>
+             </div>
+             <span
+               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium self-start ${getStatusBadgeClasses(order.estado)}`}
+             >
+               {getStatusLabel(order.estado)}
+             </span>
+           </div>
+         </div>
 
         {/* ── Items Section ── */}
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
