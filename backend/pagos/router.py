@@ -52,7 +52,7 @@ async def webhook_verification():
 
 
 @router.get(
-    "/{pedido_id}",
+    "{pedido_id}",
     response_model=PagoResponse,
     summary="Get payment status",
     description="Get the payment record for an order"
