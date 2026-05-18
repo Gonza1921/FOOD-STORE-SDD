@@ -140,7 +140,7 @@ class PedidoService:
                 raise ValidationError("La dirección de entrega no existe o no te pertenece")
 
             # Generate direccion snapshot (JSON string)
-            direccion_snapshot = f"{direccion.calle_linea1}, {direccion.ciudad}"
+            direccion_snapshot = f"{direccion.linea1}, {direccion.ciudad}"
 
             # ---- Validate forma_pago_id ----
             # For now, valid forms are: 1=Efectivo, 2=Tarjeta, 3=MercadoPago
