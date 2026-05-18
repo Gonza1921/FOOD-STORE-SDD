@@ -11,7 +11,7 @@ Usage:
             return result.scalar_one_or_none()
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Any, Generic, Optional, TypeVar
 
 from sqlalchemy import func
@@ -164,7 +164,7 @@ class BaseRepository(Generic[ModelType]):
 
         if self._has_soft_delete():
             # Soft delete — timestamp instead of removal
-            obj.deleted_at = datetime.now(timezone.utc)  # type: ignore[union-attr]
+            obj.deleted_at = datetime.utcnow()  # type: ignore[union-attr]
             self.session.add(obj)
         else:
             # Hard delete — physically remove the row
