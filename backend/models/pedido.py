@@ -11,6 +11,7 @@ from sqlmodel import SQLModel, Field, Relationship
 class FormaPago(SQLModel, table=True):
     """Payment method catalog - fixed values"""
     
+    __tablename__ = "forma_pago"  # Must match migration table name
     __table_args__ = {"extend_existing": True}
     codigo: str = Field(primary_key=True, max_length=20)
     descripcion: str = Field(max_length=200)
@@ -20,6 +21,7 @@ class FormaPago(SQLModel, table=True):
 class EstadoPedido(SQLModel, table=True):
     """Order state catalog - FSM states"""
     
+    __tablename__ = "estado_pedido"  # Must match migration table name
     __table_args__ = {"extend_existing": True}
     codigo: str = Field(primary_key=True, max_length=20)
     descripcion: str = Field(max_length=200)
