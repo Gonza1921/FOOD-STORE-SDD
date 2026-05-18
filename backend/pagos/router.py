@@ -52,7 +52,7 @@ async def webhook_verification():
 
 
 @router.get(
-    "{pedido_id}",
+    "/{pedido_id}",
     response_model=PagoResponse,
     summary="Get payment status",
     description="Get the payment record for an order"
@@ -78,7 +78,7 @@ async def get_pago(pedido_id: int, current_user: Usuario) -> PagoResponse:
     )
 
 
-@router.post("webhook", summary="MercadoPago webhook")
+@router.post("/webhook", summary="MercadoPago webhook")
 async def webhook(request: Request) -> PlainTextResponse:
     """MercadoPago IPN webhook endpoint (public, no auth)."""
     try:
