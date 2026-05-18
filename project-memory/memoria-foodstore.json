@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "exported_at": "2026-05-17 23:00:44",
+  "exported_at": "2026-05-17 23:42:22",
   "sessions": [
     {
       "id": "ses_35f2c6b52ffegmrOwdVmpNbG0n",
@@ -9152,6 +9152,52 @@
       "last_seen_at": "2026-05-17 22:56:05",
       "created_at": "2026-05-17 22:56:05",
       "updated_at": "2026-05-17 22:56:05"
+    },
+    {
+      "id": 507,
+      "sync_id": "obs-a61b137b1d9f643d",
+      "session_id": "2026-05-17-session",
+      "type": "session_summary",
+      "title": "Session summary: FOOD-STORE-SDD",
+      "content": "## Goal\nCompletar CH-017-pendientes-finales al 100%: planeación (proposal, specs, design, tasks) + implementación completa backend + frontend + tests + exportar memoria y pushear.\n\n## Instructions\n- Commits convencionales en español (infinitivo)\n- Sesión larga con delegación paralela para máxima velocidad\n- Al final: engram export + commit + push\n\n## Discoveries\n- EstadoPedido no es enum en el modelo legacy — usa strings directamente\n- admin/router.py legacy usaba get_db() sin commit → datos se perdían al cerrar sesión. Con UnitOfWork se corrige automáticamente\n- decode_access_token se llama verify_token en security.py (no coincide con el nombre del design)\n- slowapi decorators son incondicionales — feature flags no aplican a rate limits directamente\n- El frontend necesitó un endpoint GET /ingredientes/publico porque el GET /ingredientes requiere ADMIN\n\n## Accomplished\n- ✅ CH-017 planeación completa: proposal, 6 specs (2 nuevas + 4 delta), design con 8 decisiones técnicas, 42 tasks\n- ✅ Detalle público producto: endpoint GET /{id}/publico + ProductoDetailPage + ruta\n- ✅ Filtro alérgenos: subquery NOT EXISTS en catálogo + checkboxes frontend\n- ✅ Price check: PriceConflictError + validación en create_pedido + modal 409 frontend\n- ✅ Métricas admin: top productos (SUM DetallePedido) + ventas por período (DATE_TRUNC)\n- ✅ Rate limiting: registro 3/hora/IP + pedidos 10/hora/user (JWT)\n- ✅ Refactor admin routers a UnitOfWork (get_db() → UoW)\n- ✅ Frontend completo: catálogo con filtros, detalle, price check, dashboard widgets\n- ✅ 73 tests en 7 archivos nuevos\n- ✅ Memoria exportada a project-memory/memoria-foodstore.json\n- ✅ Todo commiteado y pusheado a main\n\n## Next Steps\n- CH-017 está completo — considerar archivo formal con /opsx:archive\n- Posibles mejoras futuras: US-060 Configuración del sistema, specs faltantes de admin, validación de stock en tiempo real\n\n## Relevant Files\n- openspec/changes/ch-017-pendientes-finales/ — todos los artefactos\n- backend/productos/repository.py — get_public_by_id + get_public_paginated con excluir_alergenos\n- backend/pedidos/service.py — price check en create_pedido\n- backend/admin/metrics_service.py — get_top_productos + get_ventas_periodo\n- backend/core/rate_limit.py — limiter_register + limiter_pedidos\n- backend/tests/ — 7 nuevos archivos de test\n- frontend/src/pages/ProductoDetailPage.tsx — nueva página\n- frontend/src/pages/PublicCatalogPage.tsx — checkboxes alérgenos\n- frontend/src/pages/CheckoutPage.tsx — modal 409\n- frontend/src/features/admin/pages/AdminDashboardPage.tsx — widgets nuevos\n- project-memory/memoria-foodstore.json — memoria exportada",
+      "project": "FOOD-STORE-SDD",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-17 23:01:59",
+      "created_at": "2026-05-17 23:01:59",
+      "updated_at": "2026-05-17 23:01:59"
+    },
+    {
+      "id": 508,
+      "sync_id": "obs-6fff6e7038b6062f",
+      "session_id": "manual-save-FOOD-STORE-SDD",
+      "type": "architecture",
+      "title": "CH-018: Configuracion del sistema (US-060)",
+      "content": "**What**: Implemented US-060 — system configuration key-value table editable by ADMIN\n**Why**: Parameters like costo_envio, pedido_minimo, limite_stock_bajo were hardcoded; needed dynamic config without redeploy\n**Where**: \n- backend/models/configuracion.py — SQLModel Configuracion (clave PK, valor, descripcion, actualizado_en)\n- backend/admin/config_router.py — GET/PUT /api/v1/admin/configuracion (solo ADMIN)\n- backend/migrations/versions/007_add_configuracion.py — migration + seed (6 defaults)\n- frontend/src/features/admin/hooks/useAdminConfiguracion.ts — TanStack Query hook\n- frontend/src/features/admin/components/ConfigSection.tsx — inline editing component\n- frontend/src/features/admin/pages/AdminDashboardPage.tsx — integrated ConfigSection\n- frontend/src/shared/api/endpoints.ts — API.ADMIN.CONFIGURACION constant\n**Learned**: PUT endpoint uses list[UpdateConfigItem] with Pydantic validation; inline editing pattern with Enter/Escape keys; archive warning about missing delta specs is non-blocking for simple changes",
+      "project": "FOOD-STORE-SDD",
+      "scope": "project",
+      "topic_key": "opsx/ch-018-configuracion-sistema/completed",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-17 23:31:44",
+      "created_at": "2026-05-17 23:31:44",
+      "updated_at": "2026-05-17 23:31:44"
+    },
+    {
+      "id": 509,
+      "sync_id": "obs-fbef8ab381227e81",
+      "session_id": "manual-save-FOOD-STORE-SDD",
+      "type": "session_summary",
+      "title": "Session summary: FOOD-STORE-SDD",
+      "content": "## Goal\nImplementar US-060 (Configuración del Sistema) como CH-018 — último change pendiente para dejar el proyecto 100%.\n\n## Instructions\n- Commits en español, formato conventional, verbos en infinitivo\n- Full OPSX cycle: propose → design → tasks → implement → archive → push\n- Sin delta specs para cambios simples (non-blocking warning)\n\n## Discoveries\n- PUT endpoint con list[UpdateConfigItem] requiere Pydantic validation — no usar list[dict]\n- No hay base de datos corriendo — migración creada manualmente como revision Alembic\n- `openspec archive` requiere `--yes` si hay tareas sin marcar\n- Material Symbols cargado desde Google Fonts CDN en index.html\n\n## Accomplished\n- ✅ CH-018 creado e implementado completo (~1 hora total)\n- ✅ Backend: modelo Configuracion (SQLModel), router GET/PUT, migración 007_con seed\n- ✅ Frontend: hook useAdminConfiguracion, ConfigSection con inline editing, integrado en AdminDashboardPage\n- ✅ Archivos compilados sin errores de sintaxis Python\n- ✅ Commitedo, archivado y pusheado a origin/main\n\n## Next Steps\n- ✅ Proyecto FOOD-STORE-SDD 100% completo (78/78 user stories implementadas)\n- US-060 es la última user story del sistema\n\n## Relevant Files\n- backend/models/configuracion.py — Nuevo modelo clave-valor\n- backend/admin/config_router.py — GET/PUT endpoints\n- backend/migrations/versions/007_add_configuracion.py — Migración + seed\n- frontend/src/features/admin/hooks/useAdminConfiguracion.ts — Hook con query + mutation\n- frontend/src/features/admin/components/ConfigSection.tsx — Componente de edición inline\n- frontend/src/features/admin/pages/AdminDashboardPage.tsx — Integración de ConfigSection\n- frontend/src/shared/api/endpoints.ts — API.ADMIN.CONFIGURACION",
+      "project": "FOOD-STORE-SDD",
+      "scope": "project",
+      "revision_count": 1,
+      "duplicate_count": 1,
+      "last_seen_at": "2026-05-17 23:32:02",
+      "created_at": "2026-05-17 23:32:02",
+      "updated_at": "2026-05-17 23:32:02"
     }
   ],
   "prompts": [
@@ -10754,6 +10800,78 @@
       "content": "perfecto ahora engram export project-memory/memoria-foodstore.json y despues commitea y pushea",
       "project": "FOOD-STORE-SDD",
       "created_at": "2026-05-17 23:00:37"
+    },
+    {
+      "id": 201,
+      "sync_id": "prompt-620c8fbf7637b80e",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "si tambien archivalo",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:03:02"
+    },
+    {
+      "id": 202,
+      "sync_id": "prompt-ab3e22f1d2f10dc8",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "lo que hicimos ya quedo todo subido a git??",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:09:27"
+    },
+    {
+      "id": 203,
+      "sync_id": "prompt-f320a960a7c2bbd6",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "bien, cuantos changes quedan del proyecto ?",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:10:59"
+    },
+    {
+      "id": 204,
+      "sync_id": "prompt-67a61daeed37a872",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "y esa que queda es larga? si no la hacemos ahora",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:12:25"
+    },
+    {
+      "id": 205,
+      "sync_id": "prompt-9f423977a30060b6",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "si hagamoslo ahora",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:14:31"
+    },
+    {
+      "id": 206,
+      "sync_id": "prompt-6b425b5ee64fbfb6",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "y exportaste memoria con engram export project-memory/memoria-foodstore.json?",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:33:49"
+    },
+    {
+      "id": 207,
+      "sync_id": "prompt-62c66b81c8a4187c",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "bien entonces ahora uno de mis companeros tiene que correr el proyecto solo tiene que hacer pull y levantarlo y esta todo listo '",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:38:47"
+    },
+    {
+      "id": 208,
+      "sync_id": "prompt-271c66a475f470a2",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "que haria ese script?",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:40:51"
+    },
+    {
+      "id": 209,
+      "sync_id": "prompt-5be78bf7d61618c9",
+      "session_id": "ses_1c7f868a5ffeS71GOboNZRlg65",
+      "content": "nono tranqui, cerremos sesion",
+      "project": "FOOD-STORE-SDD",
+      "created_at": "2026-05-17 23:42:03"
     }
   ]
 }
