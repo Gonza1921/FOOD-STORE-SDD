@@ -64,6 +64,7 @@ class Pedido(SQLModel, table=True):
 class DetallePedido(SQLModel, table=True):
     """Order detail with product snapshots - immutable"""
 
+    __tablename__ = "detalle_pedido"  # Must match migration table name
     __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", index=True)
@@ -88,7 +89,8 @@ class DetallePedido(SQLModel, table=True):
 
 class HistorialEstadoPedido(SQLModel, table=True):
     """Order state transition history - append-only audit trail"""
-    
+
+    __tablename__ = "historial_estado_pedido"  # Must match migration table name
     __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", index=True)
@@ -112,6 +114,7 @@ class HistorialEstadoPedido(SQLModel, table=True):
 class Pago(SQLModel, table=True):
     """Payment entity - MercadoPago integration"""
 
+    __tablename__ = "pago"  # Must match migration table name
     __table_args__ = {"extend_existing": True}
     id: Optional[int] = Field(default=None, primary_key=True)
     pedido_id: int = Field(foreign_key="pedido.id", unique=True, index=True)
