@@ -28,7 +28,7 @@ router = APIRouter(prefix="/api/v1/direcciones", tags=["Direcciones"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=list[DireccionOut],
     summary="Listar mis direcciones",
 )
@@ -55,7 +55,7 @@ async def get_direccion(
 
 
 @router.post(
-    "/",
+    "",
     response_model=DireccionOut,
     status_code=status.HTTP_201_CREATED,
     summary="Crear nueva dirección",
