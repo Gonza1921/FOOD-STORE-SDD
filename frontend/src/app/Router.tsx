@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import {
   LoginPage,
   RegisterPage,
@@ -24,6 +24,7 @@ import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import { PaymentPage } from '@/features/payment/pages/PaymentPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
 import AppLayout from '@/widgets/Layout/AppLayout';
+import HomePage from '@/pages/HomePage';
 
 export default function Router() {
   return (
@@ -37,19 +38,32 @@ export default function Router() {
 
       {/* ── Protected routes (with AppLayout sidebar) ── */}
       <Route element={<AppLayout />}>
+        {/* Root path redirects based on role */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin dashboard - for staff roles */}
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}>
               <DashboardPage />
             </ProtectedRoute>
           }
         />
+
+        {/* Legacy /dashboard also redirects to admin */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
-              <DashboardPage />
+            <ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}>
+              <Navigate to="/admin/dashboard" replace />
             </ProtectedRoute>
           }
         />
