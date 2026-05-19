@@ -18,27 +18,79 @@ export interface SidebarProps {
 }
 
 // ---------------------------------------------------------------------------
-// Navigation items
+// Navigation items — Role-based configuration
 // ---------------------------------------------------------------------------
 
 interface NavItem {
   path: string;
   label: string;
   icon: string;
-  roles: string[];
+  roles: string[]; // Empty = all authenticated users, specific = only those roles
   badge?: 'cart';
 }
 
-const navItems: NavItem[] = [
-  { path: '/', label: 'Dashboard', icon: 'dashboard', roles: [] },
-  { path: '/carrito', label: 'Carrito', icon: 'shopping_cart', roles: [], badge: 'cart' },
-  { path: '/mis-pedidos', label: 'Mis Pedidos', icon: 'receipt_long', roles: [] },
-  { path: '/mis-direcciones', label: 'Mis Direcciones', icon: 'home_pin', roles: [] },
-  { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
-  { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
-  { path: '/admin/ingredientes', label: 'Ingredientes', icon: 'nutrition', roles: ['ADMIN'] },
-  { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
-];
+// Menu configuration organized by user type
+const menuConfig = {
+  // CLIENTE: Basic shopping experience
+  cliente: [
+    { path: '/', label: 'Inicio', icon: 'home', roles: [] },
+    { path: '/carrito', label: 'Carrito', icon: 'shopping_cart', roles: [], badge: 'cart' as const },
+    { path: '/mis-pedidos', label: 'Mis Pedidos', icon: 'receipt_long', roles: [] },
+    { path: '/mis-direcciones', label: 'Mis Direcciones', icon: 'home_pin', roles: [] },
+  ],
+
+  // ADMIN: Full access
+  admin: [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN'] },
+    { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
+    { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
+    { path: '/admin/ingredientes', label: 'Ingredientes', icon: 'nutrition', roles: ['ADMIN'] },
+    { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
+    { path: '/admin/usuarios', label: 'Usuarios', icon: 'people', roles: ['ADMIN'] },
+    { path: '/admin/metricas', label: 'Métricas', icon: 'analytics', roles: ['ADMIN'] },
+  ],
+
+  // STOCK: Product management
+  stock: [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'STOCK'] },
+    { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
+  ],
+
+  // PEDIDOS: Order management
+  pedidos: [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'PEDIDOS'] },
+    { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
+  ],
+};
+
+// Flatten menu based on user roles
+function getMenuForRoles(userRoles: string[]): NavItem[] {
+  const items: NavItem[] = [];
+
+  // Always add client items (all authenticated users)
+  items.push(...menuConfig.cliente);
+
+  // Add admin items if user has ADMIN role
+  if (userRoles.includes('ADMIN')) {
+    items.push(...menuConfig.admin);
+  }
+  // Add stock items if user has STOCK role (but not admin - they already see all)
+  else if (userRoles.includes('STOCK')) {
+    items.push(...menuConfig.stock);
+  }
+  // Add pedidos items if user has PEDIDOS role (but not admin - they already see all)
+  else if (userRoles.includes('PEDIDOS')) {
+    items.push(...menuConfig.pedidos);
+  }
+
+  // Remove duplicates by path
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.path)) return false;
+    seen.add(item.path);
+    return true;
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -88,6 +140,10 @@ function NavLinkItem({ item, onClick }: { item: NavItem; onClick?: () => void })
 }
 
 function BrandSection() {
+  const { user } = useAuthStore();
+  const userRoles = user?.roles || [];
+  const isAdmin = userRoles.includes('ADMIN');
+
   return (
     <div className="flex items-center gap-3 px-5 py-6">
       <div className="flex h-11 w-11 items-center justify-center rounded-2xl gradient-brand shadow-glow-sm">
@@ -95,12 +151,14 @@ function BrandSection() {
           className="material-symbols-outlined"
           style={{ fontSize: '22px', fontVariationSettings: '"wght" 600' }}
         >
-          store
+          {isAdmin ? 'admin_panel_settings' : 'store'}
         </span>
       </div>
       <div>
         <h1 className="text-base font-semibold text-on-surface leading-tight">Food Store</h1>
-        <p className="text-xs text-on-surface-variant/70 leading-tight">Admin Panel</p>
+        <p className="text-xs text-on-surface-variant/70 leading-tight">
+          {isAdmin ? 'Panel de Administración' : 'Tienda Online'}
+        </p>
       </div>
     </div>
   );
@@ -155,17 +213,21 @@ function NavSection() {
   const { user } = useAuthStore();
   const userRoles = user?.roles || [];
 
-  const visibleItems = navItems.filter(
-    (item) => item.roles.length === 0 || item.roles.some((role) => userRoles.includes(role)),
-  );
+  // Get menu items based on user roles
+  const navItems = getMenuForRoles(userRoles);
+
+  // Determine section label based on roles
+  const isAdmin = userRoles.includes('ADMIN');
+  const isStaff = userRoles.some((r) => ['STOCK', 'PEDIDOS'].includes(r));
+  const sectionLabel = isAdmin ? 'Panel Admin' : isStaff ? 'Gestión' : 'Navegación';
 
   return (
     <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-thin">
       <p className="px-4 pb-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/40">
-        Navegación
+        {sectionLabel}
       </p>
       <ul className="space-y-1">
-        {visibleItems.map((item) => (
+        {navItems.map((item) => (
           <NavLinkItem key={item.path} item={item} />
         ))}
       </ul>
