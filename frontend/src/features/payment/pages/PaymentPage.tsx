@@ -11,10 +11,35 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { usePaymentStore } from '../store';
 import { useCartStore } from '../../cart/store';
 import { axiosClient } from '@/shared/api/axiosClient';
 import { API } from '@/shared/api/endpoints';
+
+interface ApiErrorDetail {
+  msg: string;
+  loc?: string[];
+  type?: string;
+}
+
+function extractErrorMessage(err: unknown): string {
+  const axiosError = err as AxiosError<{ detail: unknown; message?: string }>;
+  const detail = axiosError.response?.data?.detail;
+  if (detail) {
+    if (Array.isArray(detail)) {
+      return (detail as ApiErrorDetail[]).map((e) => e.msg).join(', ');
+    }
+    if (typeof detail === 'string') {
+      return detail;
+    }
+    return JSON.stringify(detail);
+  }
+  if (axiosError.response?.data?.message) {
+    return axiosError.response.data.message;
+  }
+  return 'Error al iniciar pago';
+}
 
 const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'TEST-4a918b9b-0c2b-4e2b-9e5c-1234567890ab';
 
@@ -54,25 +79,10 @@ export function PaymentPage() {
             autoOpen: true,
           });
         }
-      } catch (err: any) {
-        // Handle FastAPI validation error format properly
-        const detail = err.response?.data?.detail;
-        let msg = 'Error al iniciar pago';
-
-        if (detail) {
-          if (Array.isArray(detail)) {
-            msg = detail.map((e: any) => e.msg).join(', ');
-          } else if (typeof detail === 'string') {
-            msg = detail;
-          } else {
-            msg = JSON.stringify(detail);
-          }
-        } else if (err.response?.data?.message) {
-          msg = err.response.data.message;
-        }
-
-        console.error('Payment error:', err.response?.data);
-        setError(msg);
+      } catch (err: unknown) {
+        // eslint-disable-next-line no-console
+        console.error('Payment error:', err);
+        setError(extractErrorMessage(err));
         setLoading(false);
       }
     };
@@ -148,8 +158,3 @@ export function PaymentPage() {
   );
 }
 
-declare global {
-  interface Window {
-    MercadoPago: any;
-  }
-}

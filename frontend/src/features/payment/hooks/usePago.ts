@@ -1,7 +1,32 @@
 import { useState } from 'react';
+import type { AxiosError } from 'axios';
 import { usePaymentStore } from '../store';
 import { axiosClient } from '@/shared/api/axiosClient';
 import { API } from '@/shared/api/endpoints';
+
+interface ApiErrorDetail {
+  msg: string;
+  loc?: string[];
+  type?: string;
+}
+
+function extractErrorMessage(err: unknown): string {
+  const axiosError = err as AxiosError<{ detail: unknown; message?: string }>;
+  const detail = axiosError.response?.data?.detail;
+  if (detail) {
+    if (Array.isArray(detail)) {
+      return (detail as ApiErrorDetail[]).map((e) => e.msg).join(', ');
+    }
+    if (typeof detail === 'string') {
+      return detail;
+    }
+    return JSON.stringify(detail);
+  }
+  if (axiosError.response?.data?.message) {
+    return axiosError.response.data.message;
+  }
+  return 'Error al crear preferencia de pago';
+}
 
 interface CrearPreferenciaResponse {
   preference_id: string;
@@ -27,26 +52,10 @@ export function usePago() {
       setPreference(preference_id);
       setLoading(false);
       return init_point;
-    } catch (error: any) {
-      // Handle FastAPI validation error format properly
-      const detail = error.response?.data?.detail;
-      let message = 'Error al crear preferencia de pago';
-
-      if (detail) {
-        if (Array.isArray(detail)) {
-          // FastAPI returns array of validation errors
-          message = detail.map((e: any) => e.msg).join(', ');
-        } else if (typeof detail === 'string') {
-          message = detail;
-        } else {
-          message = JSON.stringify(detail);
-        }
-      } else if (error.response?.data?.message) {
-        message = error.response.data.message;
-      }
-
-      console.error('Error creating preference:', error.response?.data);
-      setError(message);
+    } catch (err: unknown) {
+      // eslint-disable-next-line no-console
+      console.error('Error creating preference:', err);
+      setError(extractErrorMessage(err));
       setLoading(false);
       return null;
     }
@@ -66,8 +75,9 @@ export function usePago() {
       } else {
         updatePaymentStatus('pending');
       }
-    } catch (error: any) {
-      console.error('Error verificando pago:', error);
+    } catch (err: unknown) {
+      // eslint-disable-next-line no-console
+      console.error('Error verificando pago:', err);
     }
   };
 

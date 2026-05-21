@@ -72,10 +72,27 @@ export function initMercadoPago(publicKey: string): void {
 }
 
 /**
- * Type definitions for global MercadoPago object
+ * MercadoPago SDK type definitions
  */
+
+export interface MercadoPagoCheckoutOptions {
+  preference: { id: string };
+  render?: { container: string; label?: string };
+  autoOpen?: boolean;
+}
+
+export interface MercadoPagoInstance {
+  checkout: (options: MercadoPagoCheckoutOptions) => void;
+  setPublishableKey: (key: string) => void;
+}
+
+export interface MercadoPagoConstructor {
+  (publicKey: string, options?: { locale?: string }): MercadoPagoInstance;
+  setPublishableKey: (key: string) => void;
+}
+
 declare global {
   interface Window {
-    MercadoPago: any;
+    MercadoPago?: MercadoPagoConstructor;
   }
 }
