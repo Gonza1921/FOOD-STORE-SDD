@@ -9,7 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-from passlib.hash import bcrypt
+import bcrypt as bcrypt_lib
 
 
 # revision identifiers, used by Alembic.
@@ -34,7 +34,7 @@ def upgrade() -> None:
     """)
 
     # Generate bcrypt hash for seed user password
-    password_hash = bcrypt.hash("cocina123")
+    password_hash = bcrypt_lib.hashpw(b"cocina123", bcrypt_lib.gensalt()).decode()
 
     # Insert seed user and assign role (idempotent via email)
     op.execute(
