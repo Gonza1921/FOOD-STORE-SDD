@@ -32,7 +32,7 @@ skip_if_no_db = pytest.mark.skipif(
 # ===========================================================================
 
 
-def register_and_login(email: str, password: str = "TestPass123!") -> dict:
+def register_and_login(email: str, password: str = "TestPass123!", client=client) -> dict:
     """Register a test user and return access token + user data."""
     # Register
     client.post(
@@ -101,21 +101,22 @@ class TestGetPerfil:
         """Should return nombre, apellido, email, telefono, creado_en."""
         import uuid
         email = f"get-perfil-{uuid.uuid4().hex[:8]}@test.com"
-        auth = register_and_login(email)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, client=client)
+            token = auth["accessToken"]
 
-        response = client.get(
-            "/api/v1/usuarios/perfil",
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["email"] == email
-        assert data["nombre"] == "Test"
-        assert data["apellido"] == "User"
-        assert "telefono" in data
-        assert "creado_en" in data
-        assert "id" in data
+            response = client.get(
+                "/api/v1/usuarios/perfil",
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["email"] == email
+            assert data["nombre"] == "Test"
+            assert data["apellido"] == "User"
+            assert "telefono" in data
+            assert "creadoEn" in data
+            assert "id" in data
 
 
 # ===========================================================================
@@ -131,62 +132,65 @@ class TestUpdatePerfil:
         """Should update nombre, apellido, telefono."""
         import uuid
         email = f"update-perfil-{uuid.uuid4().hex[:8]}@test.com"
-        auth = register_and_login(email)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, client=client)
+            token = auth["accessToken"]
 
-        response = client.put(
-            "/api/v1/usuarios/perfil",
-            json={
-                "nombre": "Juan Carlos",
-                "apellido": "Pérez López",
-                "telefono": "+5491123456789",
-            },
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["nombre"] == "Juan Carlos"
-        assert data["apellido"] == "Pérez López"
-        assert data["telefono"] == "+5491123456789"
-        assert data["email"] == email  # email unchanged
+            response = client.put(
+                "/api/v1/usuarios/perfil",
+                json={
+                    "nombre": "Juan Carlos",
+                    "apellido": "Pérez López",
+                    "telefono": "+5491123456789",
+                },
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["nombre"] == "Juan Carlos"
+            assert data["apellido"] == "Pérez López"
+            assert data["telefono"] == "+5491123456789"
+            assert data["email"] == email  # email unchanged
 
     @skip_if_no_db
     def test_email_is_immutable(self):
         """Email should NOT change after PUT (email is the user identifier)."""
         import uuid
         email = f"email-immutable-{uuid.uuid4().hex[:8]}@test.com"
-        auth = register_and_login(email)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, client=client)
+            token = auth["accessToken"]
 
-        # Attempt to change email
-        response = client.put(
-            "/api/v1/usuarios/perfil",
-            json={"email": "hacked@evil.com"},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        # Should succeed but email stays the same
-        assert response.status_code == 200
-        data = response.json()
-        assert data["email"] == email  # immutable!
-        assert data["email"] != "hacked@evil.com"
+            # Attempt to change email
+            response = client.put(
+                "/api/v1/usuarios/perfil",
+                json={"email": "hacked@evil.com"},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            # Should succeed but email stays the same
+            assert response.status_code == 200
+            data = response.json()
+            assert data["email"] == email  # immutable!
+            assert data["email"] != "hacked@evil.com"
 
     @skip_if_no_db
     def test_empty_update_returns_current_profile(self):
         """PUT sin campos (empty JSON) should return current profile without error."""
         import uuid
         email = f"empty-update-{uuid.uuid4().hex[:8]}@test.com"
-        auth = register_and_login(email)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, client=client)
+            token = auth["accessToken"]
 
-        response = client.put(
-            "/api/v1/usuarios/perfil",
-            json={},
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert data["email"] == email
-        assert data["nombre"] == "Test"
+            response = client.put(
+                "/api/v1/usuarios/perfil",
+                json={},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["email"] == email
+            assert data["nombre"] == "Test"
 
 
 # ===========================================================================
@@ -203,55 +207,57 @@ class TestCambiarContrasena:
         import uuid
         email = f"change-pw-{uuid.uuid4().hex[:8]}@test.com"
         password = "OldPass123!"
-        auth = register_and_login(email, password)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, password, client=client)
+            token = auth["accessToken"]
 
-        # Change password
-        response = client.post(
-            "/api/v1/usuarios/perfil/cambiar-contrasena",
-            json={
-                "contrasena_actual": password,
-                "nueva_contrasena": "NewPass456!",
-            },
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert "message" in data
-        assert "contraseña" in data["message"].lower()
+            # Change password
+            response = client.post(
+                "/api/v1/usuarios/perfil/cambiar-contrasena",
+                json={
+                    "contrasena_actual": password,
+                    "nueva_contrasena": "NewPass456!",
+                },
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "message" in data
+            assert "contraseña" in data["message"].lower()
 
-        # Verify old password no longer works
-        login_response = client.post(
-            "/api/v1/auth/login",
-            json={"email": email, "password": password},
-        )
-        assert login_response.status_code == 401
+            # Verify old password no longer works
+            login_response = client.post(
+                "/api/v1/auth/login",
+                json={"email": email, "password": password},
+            )
+            assert login_response.status_code == 401
 
-        # Verify new password works
-        login_response = client.post(
-            "/api/v1/auth/login",
-            json={"email": email, "password": "NewPass456!"},
-        )
-        assert login_response.status_code == 200
+            # Verify new password works
+            login_response = client.post(
+                "/api/v1/auth/login",
+                json={"email": email, "password": "NewPass456!"},
+            )
+            assert login_response.status_code == 200
 
     @skip_if_no_db
     def test_cambiar_contrasena_wrong_current_password_returns_400(self):
         """Should reject with 400 INVALID_PASSWORD on wrong current password."""
         import uuid
         email = f"wrong-pw-{uuid.uuid4().hex[:8]}@test.com"
-        auth = register_and_login(email)
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            auth = register_and_login(email, client=client)
+            token = auth["accessToken"]
 
-        response = client.post(
-            "/api/v1/usuarios/perfil/cambiar-contrasena",
-            json={
-                "contrasena_actual": "WrongPassword!",
-                "nueva_contrasena": "NewPass456!",
-            },
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        assert response.status_code == 400
-        data = response.json()
-        # Should indicate invalid password
-        error_str = str(data).lower()
-        assert "contraseña" in error_str or "password" in error_str
+            response = client.post(
+                "/api/v1/usuarios/perfil/cambiar-contrasena",
+                json={
+                    "contrasena_actual": "WrongPassword!",
+                    "nueva_contrasena": "NewPass456!",
+                },
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            assert response.status_code == 400
+            data = response.json()
+            # Should indicate invalid password
+            error_str = str(data).lower()
+            assert "contraseña" in error_str or "password" in error_str

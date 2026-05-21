@@ -184,30 +184,31 @@ class TestCreatePedido:
     @skip_if_no_db
     def test_create_pedido_success(self):
         """Crear pedido exitosamente (DB requerida)."""
-        import uuid
-        email = f"pedido-create-{uuid.uuid4().hex[:8]}@test.com"
-        register_response = client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        auth = register_response.json()
+        with TestClient(app) as client:
+            import uuid
+            email = f"pedido-create-{uuid.uuid4().hex[:8]}@test.com"
+            register_response = client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = register_response.json()
 
-        response = client.post(
-            "/api/v1/pedidos",
-            json={
-                "items": [{"producto_id": 1, "cantidad": 1, "precio_carrito": 10.00}],
-                "direccion_id": 1,
-                "forma_pago_id": 1,
-            },
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        # May fail due to missing data, but should not be 401/403
-        assert response.status_code not in (401, 403)
+            response = client.post(
+                "/api/v1/pedidos",
+                json={
+                    "items": [{"producto_id": 1, "cantidad": 1, "precio_carrito": 10.00}],
+                    "direccion_id": 1,
+                    "forma_pago_id": 1,
+                },
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            # May fail due to missing data, but should not be 401/403
+            assert response.status_code not in (401, 403)
 
 
 class TestGetPedidos:
@@ -216,27 +217,28 @@ class TestGetPedidos:
     @skip_if_no_db
     def test_list_pedidos_with_auth(self):
         """Listar pedidos con auth exitoso."""
-        import uuid
-        email = f"pedido-list-{uuid.uuid4().hex[:8]}@test.com"
-        register_response = client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        auth = register_response.json()
+        with TestClient(app) as client:
+            import uuid
+            email = f"pedido-list-{uuid.uuid4().hex[:8]}@test.com"
+            register_response = client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = register_response.json()
 
-        response = client.get(
-            "/api/v1/pedidos",
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert "items" in data
-        assert "total" in data
+            response = client.get(
+                "/api/v1/pedidos",
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert "items" in data
+            assert "total" in data
 
 
 # ===========================================================================
@@ -250,23 +252,34 @@ class TestRateLimit:
     @skip_if_no_db
     def test_rate_limit_on_create(self):
         """Rate limit after many requests (10/h) — needs DB + actual tokens."""
-        import uuid
-        email = f"ratelimit-{uuid.uuid4().hex[:8]}@test.com"
-        register_response = client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        auth = register_response.json()
-        token = auth["accessToken"]
+        with TestClient(app) as client:
+            import uuid
+            email = f"ratelimit-{uuid.uuid4().hex[:8]}@test.com"
+            register_response = client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = register_response.json()
+            token = auth["accessToken"]
 
-        # Make 11 rapid requests — 11th should be rate limited
-        for _ in range(10):
-            client.post(
+            # Make 11 rapid requests — 11th should be rate limited
+            for _ in range(10):
+                client.post(
+                    "/api/v1/pedidos",
+                    json={
+                        "items": [{"producto_id": 1, "cantidad": 1, "precio_carrito": 10.00}],
+                        "direccion_id": 1,
+                        "forma_pago_id": 1,
+                    },
+                    headers={"Authorization": f"Bearer {token}"},
+                )
+
+            response = client.post(
                 "/api/v1/pedidos",
                 json={
                     "items": [{"producto_id": 1, "cantidad": 1, "precio_carrito": 10.00}],
@@ -275,16 +288,6 @@ class TestRateLimit:
                 },
                 headers={"Authorization": f"Bearer {token}"},
             )
-
-        response = client.post(
-            "/api/v1/pedidos",
-            json={
-                "items": [{"producto_id": 1, "cantidad": 1, "precio_carrito": 10.00}],
-                "direccion_id": 1,
-                "forma_pago_id": 1,
-            },
-            headers={"Authorization": f"Bearer {token}"},
-        )
-        # May get 429 rate limit or 400/500 for other reasons
-        # The key is it shouldn't be 201 (new order)
-        assert response.status_code != 201
+            # May get 429 rate limit or 400/500 for other reasons
+            # The key is it shouldn't be 201 (new order)
+            assert response.status_code != 201

@@ -273,79 +273,82 @@ class TestMetricsRouterAuth:
     @skip_if_no_db
     def test_get_top_productos_client_role_returns_403(self):
         """CLIENT intenta obtener top productos → 403."""
-        import uuid
-        email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
-        auth_resp = client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        auth = auth_resp.json()
-        response = client.get(
-            "/api/v1/admin/metricas/productos-top",
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as client:
+            import uuid
+            email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
+            auth_resp = client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = auth_resp.json()
+            response = client.get(
+                "/api/v1/admin/metricas/productos-top",
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_get_ventas_periodo_client_role_returns_403(self):
         """CLIENT intenta obtener ventas → 403."""
-        import uuid
-        email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
-        auth_resp = client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        auth = auth_resp.json()
-        response = client.get(
-            "/api/v1/admin/metricas/ventas",
-            params={"desde": "2026-01-01", "hasta": "2026-12-31"},
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as client:
+            import uuid
+            email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
+            auth_resp = client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = auth_resp.json()
+            response = client.get(
+                "/api/v1/admin/metricas/ventas",
+                params={"desde": "2026-01-01", "hasta": "2026-12-31"},
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_get_ventas_periodo_invalid_granularity_returns_422(self):
         """Granularidad inválida desde router → 422."""
-        import uuid
-        # Need admin token for this — register user
-        email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
-        client.post(
-            "/api/v1/auth/register",
-            json={
-                "nombre": "Test",
-                "apellido": "User",
-                "email": email,
-                "password": "TestPass123!",
-            },
-        )
-        login_resp = client.post(
-            "/api/v1/auth/login",
-            json={"email": email, "password": "TestPass123!"},
-        )
-        auth = login_resp.json()
+        with TestClient(app) as client:
+            import uuid
+            # Need admin token for this — register user
+            email = f"admin-test-{uuid.uuid4().hex[:8]}@test.com"
+            client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            login_resp = client.post(
+                "/api/v1/auth/login",
+                json={"email": email, "password": "TestPass123!"},
+            )
+            auth = login_resp.json()
 
-        response = client.get(
-            "/api/v1/admin/metricas/ventas",
-            params={
-                "desde": "2026-01-01",
-                "hasta": "2026-12-31",
-                "granularidad": "year",
-            },
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        # With CLIENT role, we get 403 before granularity validation
-        # This test verifies the 403 (auth is checked first)
-        assert response.status_code == 403
+            response = client.get(
+                "/api/v1/admin/metricas/ventas",
+                params={
+                    "desde": "2026-01-01",
+                    "hasta": "2026-12-31",
+                    "granularidad": "year",
+                },
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            # With CLIENT role, we get 403 before granularity validation
+            # This test verifies the 403 (auth is checked first)
+            assert response.status_code == 403
 
 
 class TestMetricsFeatureFlag:

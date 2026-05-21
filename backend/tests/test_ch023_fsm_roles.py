@@ -643,3 +643,55 @@ class TestFSMGranularAuth:
                 assert response.status_code == 403
         finally:
             app.dependency_overrides.pop(get_current_user, None)
+
+
+# ===========================================================================
+# Tests: Integration — WebSocket /api/v1/cocina/ws (require DB)
+# ===========================================================================
+
+
+skip_if_no_db = pytest.mark.skipif(
+    not __import__("os").getenv("DATABASE_URL"),
+    reason="Requires DATABASE_URL environment variable",
+)
+
+
+class TestCocinaWebSocket:
+    """Integration tests for WebSocket /api/v1/cocina/ws (require DB)."""
+
+    client = TestClient(app)
+
+    @skip_if_no_db
+    def test_websocket_connect_and_pong(self):
+        """Connect to WS with valid token, send PONG, verify connection sticks."""
+        response = self.client.post(
+            "/api/v1/auth/login",
+            json={"email": "cocina@foodstore.com", "password": "cocina123"},
+        )
+        assert response.status_code == 200
+        token = response.json()["accessToken"]
+
+        with self.client.websocket_connect(
+            f"/api/v1/cocina/ws?token={token}",
+        ) as ws:
+            # Send PONG to confirm keepalive works
+            ws.send_json({"tipo": "PONG"})
+            # If we get here without exception, connection was accepted and
+            # the PONG was processed
+            assert True
+
+    @skip_if_no_db
+    def test_websocket_without_token_rejected(self):
+        """Connect to WS without token → connection rejected."""
+        with pytest.raises(Exception):
+            with self.client.websocket_connect("/api/v1/cocina/ws") as ws:
+                ws.send_json({"tipo": "PONG"})
+
+    @skip_if_no_db
+    def test_websocket_with_invalid_token_rejected(self):
+        """Connect to WS with invalid token → connection rejected."""
+        with pytest.raises(Exception):
+            with self.client.websocket_connect(
+                "/api/v1/cocina/ws?token=token-falso-invalido",
+            ) as ws:
+                ws.send_json({"tipo": "PONG"})
