@@ -231,11 +231,11 @@ async def confirmar_pedido(
     """
     service = PedidoService()
 
-    # Confirm pedido (with stock decrement) - es_admin=True since require_role validated
+    # Confirm pedido (with stock decrement)
     pedido = await service.confirmar_pedido(
         pedido_id=pedido_id,
         usuario_id=current_user.id,
-        es_admin=True,
+        usuario_actual=current_user,
     )
 
     return PedidoResponse(**_build_pedido_response(pedido))
@@ -249,25 +249,26 @@ async def confirmar_pedido(
 async def update_estado_pedido(
     pedido_id: int = Path(..., gt=0, description="ID del pedido"),
     estado_data: PedidoEstadoUpdate = Body(...),
-    current_user: Usuario = Depends(require_role(["ADMIN", "PEDIDOS"])),
+    current_user: Usuario = Depends(require_role(["ADMIN", "PEDIDOS", "COCINA"])),
 ) -> PedidoResponse:
     """Cambiar el estado de un pedido.
 
     Validaciones:
-    - Solo admins pueden cambiar estados
     - Debe seguir las reglas FSM (transiciones válidas)
+    - El rol del usuario determina qué transiciones puede ejecutar
+      (COCINA solo puede CONFIRMADO->EN_PREP y EN_PREP->EN_CAMINO)
     - No se puede modificar desde estados terminales
 
-    Requiere rol: ADMIN o PEDIDOS
+    Requiere rol: ADMIN, PEDIDOS o COCINA
     """
     service = PedidoService()
 
-    # Transition state
+    # Transition state — role validation is done inside the service
     pedido = await service.transicionar_estado(
         pedido_id=pedido_id,
         nuevo_estado=estado_data.estado,
         usuario_id=current_user.id,
-        es_admin=True,
+        usuario_actual=current_user,
     )
 
     return PedidoResponse(**_build_pedido_response(pedido))
@@ -349,30 +350,22 @@ async def cancelar_pedido(
     """
     from backend.core.dependencies import require_role
 
-    # Check if user is admin
+    # Admin/PEDIDOS path: re-validate with require_role
     es_admin = any(
         rol in ["ADMIN", "PEDIDOS"]
         for rol in getattr(current_user, "roles", [])
     )
-
-    # If admin, validate role
     if es_admin:
-        # Re-validate with require_role for admin endpoints
-        admin_user = await require_role(["ADMIN", "PEDIDOS"])(current_user)
-        es_admin = True
-        current_user = admin_user
-    else:
-        # Regular user - verify ownership happens in service
-        es_admin = False
+        current_user = await require_role(["ADMIN", "PEDIDOS"])(current_user)
 
     service = PedidoService()
 
-    # Cancel pedido
+    # Cancel pedido — role validation is done inside the service
     pedido = await service.cancelar_pedido(
         pedido_id=pedido_id,
         observacion=cancel_data.observacion,
         usuario_id=current_user.id,
-        es_admin=es_admin,
+        usuario_actual=current_user,
     )
 
     return PedidoResponse(**_build_pedido_response(pedido))

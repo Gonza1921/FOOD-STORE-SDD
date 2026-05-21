@@ -30,6 +30,7 @@ from backend.admin.router import router as admin_router
 from backend.admin.usuarios_router import router as admin_usuarios_router
 from backend.admin.metrics_router import router as admin_metrics_router
 from backend.admin.config_router import router as admin_config_router
+from backend.cocina.router import router as cocina_router
 from backend.routers import health
 
 # Configure logging
@@ -203,6 +204,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception):
 
 
 # Register routers
+app.include_router(cocina_router)
 app.include_router(health.router, tags=["health"])
 app.include_router(auth_router)
 app.include_router(categorias_router)
