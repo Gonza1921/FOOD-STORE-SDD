@@ -1,7 +1,6 @@
 #!/bin/bash
-# engram-sync.sh - Wrapper para engram-sync.js en Linux/Mac
+# engram-sync.sh - Wrapper para engram-sync.cjs en Linux/Mac
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-node "$SCRIPT_DIR/engram-sync.js" "$@"
+node "$SCRIPT_DIR/engram-sync.cjs" "$@"

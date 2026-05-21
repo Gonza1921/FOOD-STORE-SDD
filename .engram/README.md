@@ -9,7 +9,7 @@ Este directorio contiene la memoria compartida del equipo usando **Engram**, un 
 ├── README.md              ← Este archivo
 ├── vault.json             ← Exportación de la memoria compartida (VERSIONADA EN GIT)
 ├── .gitignore             ← Ignora archivos temporales
-├── engram-sync.js         ← Script Node.js para sincronización
+├── engram-sync.cjs        ← Script Node.js para sincronización (CommonJS)
 ├── engram-sync.bat        ← Wrapper Windows
 └── engram-sync.sh         ← Wrapper Linux/Mac
 ```
@@ -36,13 +36,13 @@ git push
 
 **Para nuevos miembros:**
 ```bash
-node .engram/engram-sync.js --import
-node .engram/engram-sync.js --status
+node .engram/engram-sync.cjs --import
+node .engram/engram-sync.cjs --status
 ```
 
 **Para compartir tu trabajo:**
 ```bash
-node .engram/engram-sync.js --export
+node .engram/engram-sync.cjs --export
 git add .engram/vault.json
 git commit -m "docs(memory): export team vault"
 git push
@@ -112,10 +112,10 @@ npm run engram:help      # ❓ Muestra ayuda
 ### Con node directo
 
 ```bash
-node .engram/engram-sync.js --export    # 📤 Exporta
-node .engram/engram-sync.js --import    # 📥 Importa
-node .engram/engram-sync.js --status    # 📊 Estado
-node .engram/engram-sync.js --help      # ❓ Ayuda
+node .engram/engram-sync.cjs --export    # 📤 Exporta
+node .engram/engram-sync.cjs --import    # 📥 Importa
+node .engram/engram-sync.cjs --status    # 📊 Estado
+node .engram/engram-sync.cjs --help      # ❓ Ayuda
 ```
 
 ### Comandos engram nativos

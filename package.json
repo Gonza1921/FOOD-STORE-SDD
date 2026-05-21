@@ -5,10 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "engram:export": "node .engram/engram-sync.js --export",
-    "engram:import": "node .engram/engram-sync.js --import",
-    "engram:status": "node .engram/engram-sync.js --status",
-    "engram:help": "node .engram/engram-sync.js --help",
+    "engram:export": "node .engram/engram-sync.cjs --export",
+    "engram:import": "node .engram/engram-sync.cjs --import",
+    "engram:status": "node .engram/engram-sync.cjs --status",
+    "engram:help": "node .engram/engram-sync.cjs --help",
     "dev": "echo 'Run: cd frontend && pnpm dev'",
     "build": "echo 'Run: cd frontend && pnpm build'",
     "test": "echo 'Run: cd backend && pytest'"
