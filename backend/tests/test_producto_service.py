@@ -451,7 +451,7 @@ class TestCatalogoPublico:
         )
         assert len(items) == 1
         assert total == 1
-        mock_repo.get_public_paginated.assert_called_once_with(0, 20, "pizza", 1)
+        mock_repo.get_public_paginated.assert_called_once_with(0, 20, "pizza", 1, None)
 
     @patch("backend.productos.service.UnitOfWork")
     async def test_catalogo_publico_sin_resultados(

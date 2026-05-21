@@ -262,6 +262,9 @@ class TestUpdateDireccion:
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
 
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
+
         mock_dir = _make_mock_direccion(id=1, alias="Casa")
         mock_repo.find_by_usuario_and_id = AsyncMock(return_value=mock_dir)
 
@@ -287,6 +290,9 @@ class TestUpdateDireccion:
         mock_uow_instance.session.flush = AsyncMock()
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
+
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
 
         mock_dir = _make_mock_direccion(id=2, alias="Nueva", es_principal=False)
         mock_repo.find_by_usuario_and_id = AsyncMock(return_value=mock_dir)

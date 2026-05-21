@@ -269,8 +269,13 @@ class TestUpdateCategoria:
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
 
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
+
         mock_categoria = _make_mock_categoria(id=1, nombre="Viejo Nombre")
         mock_repo.get_by_id = AsyncMock(return_value=mock_categoria)
+        mock_repo.find_by_nombre_and_parent = AsyncMock(return_value=None)
+        mock_repo.get_descendant_ids = AsyncMock(return_value=[])
 
         data = CategoriaUpdate(nombre="Nuevo Nombre")
         categoria = await categoria_service.update(1, data)
@@ -292,9 +297,13 @@ class TestUpdateCategoria:
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
 
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
+
         mock_categoria = _make_mock_categoria(id=1, nombre="Hija", parent_id=5)
         mock_repo.get_by_id = AsyncMock(return_value=mock_categoria)
         mock_repo.get_descendant_ids = AsyncMock(return_value=[3, 4])
+        mock_repo.find_by_nombre_and_parent = AsyncMock(return_value=None)
 
         # Cambiar a parent_id=2 (válido, no es descendiente)
         data = CategoriaUpdate(parent_id=2)

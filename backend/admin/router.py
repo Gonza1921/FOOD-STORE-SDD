@@ -5,7 +5,7 @@ from sqlalchemy import select, func, text
 
 from backend.core.dependencies import require_role
 from backend.core.unit_of_work import UnitOfWork
-from backend.models.pedido import Pedido, EstadoPedido
+from backend.models.pedido import Pedido
 from backend.models.producto import Producto
 
 router = APIRouter(prefix="/admin/metrics", tags=["Admin Metrics"])
@@ -35,13 +35,13 @@ async def get_metrics(
 
         # Pedidos pendientes
         pendiente = await uow.session.scalar(
-            select(func.count(Pedido.id)).where(Pedido.estado == EstadoPedido.PENDIENTE)
+            select(func.count(Pedido.id)).where(Pedido.estado_codigo == "PENDIENTE")
         )
 
         # Ingresos totales (ENTREGADO + CONFIRMADO)
         ingresos_result = await uow.session.execute(
             select(func.sum(Pedido.total)).where(
-                Pedido.estado.in_([EstadoPedido.ENTREGADO, EstadoPedido.CONFIRMADO])
+                Pedido.estado_codigo.in_(["ENTREGADO", "CONFIRMADO"])
             )
         )
         ingresos_totales = ingresos_result.scalar() or 0
@@ -51,11 +51,15 @@ async def get_metrics(
             select(func.count(Producto.id)).where(Producto.stock_cantidad <= 10)
         )
 
-        # Distribución por estado
+        # Distribución por estado - use raw SQL for clarity
         estado_dist = await uow.session.execute(
-            select(Pedido.estado, func.count(Pedido.id)).group_by(Pedido.estado)
+            text("""
+                SELECT estado_codigo, COUNT(*) as count
+                FROM pedido
+                GROUP BY estado_codigo
+            """)
         )
-        pedidos_por_estado = {row[0].value: row[1] for row in estado_dist.fetchall()}
+        pedidos_por_estado = {row[0]: row[1] for row in estado_dist.fetchall()}
 
         # Ingresos por día - últimos 30 días
         ingresos_dia_result = await uow.session.execute(
@@ -63,7 +67,7 @@ async def get_metrics(
                 func.date(Pedido.creado_en).label("fecha"),
                 func.sum(Pedido.total).label("total"),
             ).where(
-                Pedido.estado.in_([EstadoPedido.ENTREGADO, EstadoPedido.CONFIRMADO]),
+                Pedido.estado_codigo.in_(["ENTREGADO", "CONFIRMADO"]),
                 Pedido.creado_en >= fecha_30_dias,
             ).group_by(func.date(Pedido.creado_en)).order_by(func.date(Pedido.creado_en))
         )
