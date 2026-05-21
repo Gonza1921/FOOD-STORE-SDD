@@ -257,6 +257,9 @@ class TestUpdateIngrediente:
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
 
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
+
         mock_ing = _make_mock_ingrediente(id=1, nombre="Viejo")
         mock_repo.get_by_id = AsyncMock(return_value=mock_ing)
 
@@ -280,6 +283,9 @@ class TestUpdateIngrediente:
         mock_uow_instance.session.flush = AsyncMock()
         mock_uow_instance.session.refresh = AsyncMock()
         mock_uow_class.return_value = mock_uow_instance
+
+        # Set up mock_repo.session to match the uow.session mocks
+        mock_repo.session = mock_uow_instance.session
 
         mock_ing = _make_mock_ingrediente(id=1, nombre="Leche", es_alergeno=False)
         mock_repo.get_by_id = AsyncMock(return_value=mock_ing)

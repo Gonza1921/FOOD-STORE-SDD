@@ -177,14 +177,24 @@ class TestCTERecursive:
         """Test that we can query categories hierarchically"""
         session = SessionLocal()
         try:
-            # Create hierarchical categories
-            session.execute(
+            # Insert root category first to get the ID
+            root_result = session.execute(
                 text("""
                     INSERT INTO categoria (nombre, descripcion, parent_id, creado_en, actualizado_en)
+                    VALUES ('Comidas', 'Todas las comidas', NULL, NOW(), NOW())
+                    RETURNING id
+                """)
+            )
+            session.commit()
+            root_id = root_result.scalar()
+            
+            # Insert child categories using the returned root ID
+            session.execute(
+                text(f"""
+                    INSERT INTO categoria (nombre, descripcion, parent_id, creado_en, actualizado_en)
                     VALUES 
-                    ('Comidas', 'Todas las comidas', NULL, NOW(), NOW()),
-                    ('Rapidas', 'Comidas rapidas', 1, NOW(), NOW()),
-                    ('Hamburguesas', 'Tipo hamburguesa', 2, NOW(), NOW())
+                    ('Rapidas', 'Comidas rapidas', {root_id}, NOW(), NOW()),
+                    ('Hamburguesas', 'Tipo hamburguesa', {root_id}, NOW(), NOW())
                 """)
             )
             session.commit()

@@ -55,7 +55,7 @@ def mock_uow():
 class TestMetricsService:
     """MetricsService unit tests with mocked UnitOfWork."""
 
-    @patch("backend.admin.metrics_service.UnitOfWork")
+    @patch("backend.admin.router.UnitOfWork")
     async def test_get_metricas_dashboard(self, mock_uow_class, mock_uow):
         """Obtener métricas del dashboard exitosamente."""
         from backend.admin.router import get_metrics
@@ -66,32 +66,44 @@ class TestMetricsService:
         mock_uow_instance.session = MagicMock()
         mock_uow_class.return_value = mock_uow_instance
 
+        # Mock scalar calls: total_pedidos, pendiente, stock_bajo
         mock_uow_instance.session.scalar = AsyncMock(side_effect=[100, 10, 5])
-        mock_result = MagicMock()
-        mock_result.fetchall.return_value = [
+        
+        # Mock execute calls: ingresos, estado_dist, ingresos_dia, tendencia
+        mock_ingresos = MagicMock()
+        mock_ingresos.scalar.return_value = 5000.0
+        
+        mock_estado_dist = MagicMock()
+        mock_estado_dist.fetchall.return_value = [
             ("PENDIENTE", 30),
             ("CONFIRMADO", 25),
             ("ENTREGADO", 40),
             ("CANCELADO", 5),
         ]
-        mock_result2 = MagicMock()
-        mock_result2.fetchall.return_value = [
+        
+        mock_ingresos_dia = MagicMock()
+        mock_ingresos_dia.fetchall.return_value = [
             (date(2026, 5, 1), 5000.0),
         ]
-        mock_result3 = MagicMock()
-        mock_result3.fetchall.return_value = [
+        
+        mock_tendencia = MagicMock()
+        mock_tendencia.fetchall.return_value = [
             (date(2026, 5, 10), 15),
         ]
+        
         mock_uow_instance.session.execute = AsyncMock(
-            side_effect=[mock_result, mock_result2, mock_result3]
+            side_effect=[mock_ingresos, mock_estado_dist, mock_ingresos_dia, mock_tendencia]
         )
 
         result = await get_metrics()
 
         assert result is not None
         assert result["totalPedidos"] == 100
-        assert "ingresosTotales" in result
+        assert result["pedidosPendientes"] == 10
+        assert result["productosStockBajo"] == 5
+        assert result["ingresosTotales"] == 5000.0
         assert "pedidosPorEstado" in result
+        assert result["pedidosPorEstado"]["PENDIENTE"] == 30
 
     @patch("backend.admin.metrics_service.UnitOfWork")
     async def test_get_top_productos(self, mock_uow_class, mock_uow):
