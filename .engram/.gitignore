@@ -1,0 +1,17 @@
+# Engram vault configuration
+# Solo compartimos vault.json, no los archivos temporales de SQLite
+
+# Archivos temporales de engram (local cache)
+*.db
+*.db-shm
+*.db-wal
+.engram.lock
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Excepciones: estos SÍ se comitean
+!vault.json
+!README.md
+!.gitignore

@@ -1,0 +1,131 @@
+{
+  "memories": [
+    {
+      "id": "48a92809-5725-4f74-992b-3fefbda160e0",
+      "type": "episodic",
+      "content": "Se implement├│ ch-012 Panel de Administraci├│n con dashboard, KPIs, gr├íficos y CRUD de usuarios",
+      "summary": "Se implement├│ ch-012 Panel de Administraci├│n con dashboard, KPIs, gr├íficos y CRUD de usuarios",
+      "source": {
+        "type": "conversation",
+        "evidence": [],
+        "timestamp": "2026-05-15T04:21:00.074Z"
+      },
+      "createdAt": "2026-05-15T04:21:00.074Z",
+      "lastAccessedAt": "2026-05-15T04:21:00.074Z",
+      "lastModifiedAt": "2026-05-15T04:21:00.074Z",
+      "accessCount": 0,
+      "validFrom": "2026-05-15T04:21:00.074Z",
+      "salience": 0.35,
+      "confidence": 0.8,
+      "stability": 1,
+      "entities": [
+        "Panel",
+        "Administraci",
+        "KPIs",
+        "CRUD"
+      ],
+      "topics": [],
+      "status": "active",
+      "visibility": "owner_agents",
+      "scope": "both"
+    },
+    {
+      "id": "a1863bfd-5864-44b7-b66a-7c1a96816524",
+      "type": "episodic",
+      "content": "Resumen: Migraci├│n npm ÔåÆ pnpm completada, documentaci├│n actualizada, commits subidos.",
+      "summary": "Resumen: Migraci├│n npm ÔåÆ pnpm completada, documentaci├│n actualizada, commits subidos.",
+      "source": {
+        "type": "conversation",
+        "evidence": [],
+        "timestamp": "2026-05-15T13:06:09.811Z"
+      },
+      "createdAt": "2026-05-15T13:06:09.811Z",
+      "lastAccessedAt": "2026-05-15T13:06:09.811Z",
+      "lastModifiedAt": "2026-05-15T13:06:09.811Z",
+      "accessCount": 0,
+      "validFrom": "2026-05-15T13:06:09.811Z",
+      "salience": 0.35,
+      "confidence": 0.8,
+      "stability": 1,
+      "entities": [
+        "Migraci",
+        "Npm"
+      ],
+      "topics": [],
+      "status": "active",
+      "visibility": "owner_agents",
+      "scope": "both"
+    }
+  ],
+  "edges": [],
+  "entities": [
+    {
+      "id": "5cb1d7bc-76fb-4ed1-8dca-95683a328d03",
+      "name": "Panel",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T04:21:00.084Z",
+      "lastSeen": "2026-05-15T04:21:00.084Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    },
+    {
+      "id": "c09db291-4834-4ad0-94aa-510156dcaf64",
+      "name": "Administraci",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T04:21:00.086Z",
+      "lastSeen": "2026-05-15T04:21:00.086Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    },
+    {
+      "id": "300a87a4-f1a6-4a02-be10-b767873e20b3",
+      "name": "KPIs",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T04:21:00.087Z",
+      "lastSeen": "2026-05-15T04:21:00.087Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    },
+    {
+      "id": "088cb71a-c76c-416f-9f4d-d4528c5575d8",
+      "name": "CRUD",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T04:21:00.089Z",
+      "lastSeen": "2026-05-15T04:21:00.089Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    },
+    {
+      "id": "7e6642e8-69a9-433c-bc0c-f2745e3cab9c",
+      "name": "Migraci",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T13:06:09.816Z",
+      "lastSeen": "2026-05-15T13:06:09.816Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    },
+    {
+      "id": "c45dbe91-d2a4-4143-afd7-c18860173164",
+      "name": "Npm",
+      "type": "unknown",
+      "aliases": [],
+      "properties": {},
+      "firstSeen": "2026-05-15T13:06:09.818Z",
+      "lastSeen": "2026-05-15T13:06:09.818Z",
+      "memoryCount": 1,
+      "importance": 0.5
+    }
+  ]
+}
+(node:1608) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
