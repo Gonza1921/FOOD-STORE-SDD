@@ -1,0 +1,20 @@
+/**
+ * Component placeholders - to be implemented
+ */
+
+// Components to be implemented:
+// - MainMenu.tsx
+// - ProjectBrowser.tsx
+// - SearchInterface.tsx
+// - ObservationViewer.tsx
+// - StatsDashboard.tsx
+// - ExportDialog.tsx
+//
+// Common components:
+// - Navigation.tsx
+// - LoadingSpinner.tsx
+// - ConfirmDialog.tsx
+// - TextInput.tsx
+// - TableView.tsx
+
+export {};
