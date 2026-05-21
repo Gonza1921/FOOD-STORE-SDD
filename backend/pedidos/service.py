@@ -12,17 +12,23 @@ Architecture: Router → Service → UnitOfWork → Repository → Model
 Matches patterns used in: auth, categorias, ingredientes, productos
 """
 
+import logging
 from decimal import Decimal
 from typing import Optional
 
+from fastapi import HTTPException, status
 from sqlmodel import select
+
+logger = logging.getLogger(__name__)
 
 from backend.core.config import settings
 from backend.core.exceptions import ConflictError, NotFoundError, PriceConflictError, ValidationError
 from backend.core.unit_of_work import UnitOfWork
+from backend.core.websocket_manager import websocket_manager
 from backend.models.pedido import Pedido, DetallePedido, HistorialEstadoPedido
 from backend.models.producto import Producto
 from backend.models.direccion import DireccionEntrega
+from backend.models.usuario import Usuario
 from .repository import PedidoRepository
 
 
@@ -71,12 +77,117 @@ class FSMTransiciones:
         return len(cls.TRANSICIONES.get(estado, [])) == 0
 
 
+# ========================================================================
+# Role-based Transition Authorization
+# ========================================================================
+
+# Maps (desde, hasta) -> set of role codes allowed to execute that transition.
+# An empty set means the transition is system-only (e.g. webhook).
+TRANSICIONES_POR_ROL: dict[tuple[str, str], set[str]] = {
+    ("PENDIENTE", "CONFIRMADO"): set(),          # System only (webhook pago)
+    ("PENDIENTE", "CANCELADO"): {"CLIENT", "PEDIDOS", "ADMIN"},
+    ("CONFIRMADO", "EN_PREP"):  {"COCINA", "PEDIDOS", "ADMIN"},
+    ("CONFIRMADO", "CANCELADO"): {"PEDIDOS", "ADMIN"},
+    ("EN_PREP", "EN_CAMINO"):   {"COCINA", "PEDIDOS", "ADMIN"},
+    ("EN_PREP", "CANCELADO"):   {"ADMIN"},
+    ("EN_CAMINO", "ENTREGADO"): {"PEDIDOS", "ADMIN"},
+}
+
+# Maps (desde, hasta) -> event type for WebSocket broadcast
+MAPA_EVENTOS_COCINA: dict[tuple[str, str], str] = {
+    ("PENDIENTE", "CONFIRMADO"): "PEDIDO_CONFIRMADO",
+    ("CONFIRMADO", "EN_PREP"):   "PEDIDO_EN_PREPARACION",
+    ("EN_PREP", "EN_CAMINO"):    "PEDIDO_EN_CAMINO",
+}
+
+
 class PedidoService:
     """PedidoService — business logic for Pedido CRUD with FSM and stock.
 
     All DB operations run inside UnitOfWork for atomicity.
     No direct session access — always through repositories inside UoW.
     """
+
+    # ========================================================================
+    # Role validation for FSM transitions
+    # ========================================================================
+
+    @staticmethod
+    def _validar_rol_transicion(
+        desde: str,
+        hasta: str,
+        roles: set[str],
+    ) -> bool:
+        """Check if any of the given roles is allowed for a transition.
+
+        Args:
+            desde: Current state code.
+            hasta: Target state code.
+            roles: Role codes of the requesting user.
+
+        Returns:
+            ``True`` if the user has at least one role that can execute
+            this transition, ``False`` otherwise.
+        """
+        permitidos = TRANSICIONES_POR_ROL.get((desde, hasta))
+        if permitidos is None:
+            return False  # Transition not in the map (invalid or system-only)
+        if not permitidos:
+            return False  # System-only transition (empty set)
+        return bool(roles & permitidos)
+
+    @staticmethod
+    def _determinar_tipo_evento_cocina(
+        desde: str,
+        hasta: str,
+    ) -> Optional[str]:
+        """Determine the WebSocket event type for a transition.
+
+        Returns:
+            Event type string, or ``None`` if the transition doesn't
+            concern the KDS (e.g. ENTREGADO or non-cocina states).
+        """
+        # Cancellation while in cocina-relevant states
+        if hasta == "CANCELADO" and desde in ("CONFIRMADO", "EN_PREP"):
+            return "PEDIDO_CANCELADO"
+        # Other transitions
+        return MAPA_EVENTOS_COCINA.get((desde, hasta))
+
+    async def _publicar_evento_cocina(
+        self,
+        desde: str,
+        hasta: str,
+        pedido_id: int,
+    ) -> None:
+        """Publish a KDS event to connected WebSocket clients.
+
+        Best-effort: if the broadcast fails, the error is logged but
+        the transition is NOT rolled back.
+
+        Args:
+            desde: Previous state.
+            hasta: New state.
+            pedido_id: Pedido ID.
+        """
+        tipo_evento = self._determinar_tipo_evento_cocina(desde, hasta)
+        if tipo_evento is None:
+            return  # Not a KDS-relevant transition
+
+        try:
+            await websocket_manager.broadcast_event(
+                event_type=tipo_evento,
+                payload={
+                    "pedido_id": pedido_id,
+                    "estado_anterior": desde,
+                    "estado_nuevo": hasta,
+                },
+            )
+        except Exception:
+            logger.exception(
+                "Failed to broadcast KDS event %s for pedido %d",
+                tipo_evento,
+                pedido_id,
+            )
 
     # ========================================================================
     # Create operation (create_pedido) — with stock validation
@@ -293,17 +404,21 @@ class PedidoService:
         self,
         pedido_id: int,
         usuario_id: int,
-        es_admin: bool = False,
+        usuario_actual: Optional[Usuario] = None,
     ) -> Pedido:
         """Confirm a pedido and decrement stock.
 
-        This is a special transition: PENDIENTE -> CONFIRMADO
+        This is a special transition: PENDIENTE -> CONFIRMADO.
+        Only ADMIN or PEDIDOS can confirm (system via webhook uses
+        ``confirmar_pedido_webhook`` instead).
+
         Also performs stock validation and decrement.
 
         Args:
             pedido_id: Pedido ID to confirm.
             usuario_id: User requesting the action.
-            es_admin: If True, bypass user ownership check.
+            usuario_actual: User object for role validation. ``None`` means
+                system operation (not used here — webhook has its own method).
 
         Returns:
             Updated Pedido with CONFIRMADO state.
@@ -317,7 +432,7 @@ class PedidoService:
             pedido_id=pedido_id,
             nuevo_estado=FSMEstados.CONFIRMADO,
             usuario_id=usuario_id,
-            es_admin=es_admin,
+            usuario_actual=usuario_actual,
             descontar_stock=True,
         )
 
@@ -415,6 +530,13 @@ class PedidoService:
         result = await uow.session.execute(statement=stmt)
         pedido.detalles = list(result.scalars().all())  # type: ignore[attr-defined]
 
+        # ---- Publish event to KDS (best-effort) ----
+        await self._publicar_evento_cocina(
+            desde=estado_anterior,
+            hasta=FSMEstados.CONFIRMADO,
+            pedido_id=pedido.id,
+        )
+
         return pedido
 
 
@@ -423,17 +545,17 @@ class PedidoService:
         pedido_id: int,
         nuevo_estado: str,
         usuario_id: int,
-        es_admin: bool = False,
+        usuario_actual: Optional[Usuario] = None,
     ) -> Pedido:
-        """Transition pedido to a new state (admin only).
+        """Transition pedido to a new state with role validation.
 
-        Validates FSM rules and permissions.
+        Validates FSM rules and role-based permissions.
 
         Args:
             pedido_id: Pedido ID to transition.
             nuevo_estado: Target state (must be valid FSM transition).
-            usuario_id: User requesting the action (must be admin).
-            es_admin: If True, allow state transitions.
+            usuario_id: User requesting the action (for historial).
+            usuario_actual: User object for role validation.
 
         Returns:
             Updated Pedido with new state.
@@ -446,7 +568,7 @@ class PedidoService:
             pedido_id=pedido_id,
             nuevo_estado=nuevo_estado,
             usuario_id=usuario_id,
-            es_admin=es_admin,
+            usuario_actual=usuario_actual,
             descontar_stock=False,
         )
 
@@ -455,7 +577,7 @@ class PedidoService:
         pedido_id: int,
         nuevo_estado: str,
         usuario_id: int,
-        es_admin: bool = False,
+        usuario_actual: Optional[Usuario] = None,
         descontar_stock: bool = False,
     ) -> Pedido:
         """Internal method for state transitions with FSM validation.
@@ -463,8 +585,9 @@ class PedidoService:
         Args:
             pedido_id: Pedido ID.
             nuevo_estado: Target state code.
-            usuario_id: User requesting.
-            es_admin: If True, bypass ownership check.
+            usuario_id: User requesting (ID for historial).
+            usuario_actual: User object for role validation. ``None`` means
+                system operation (webhook) — skips role check.
             descontar_stock: If True, decrement stock on transition.
 
         Returns:
@@ -474,10 +597,8 @@ class PedidoService:
             NotFoundError: If pedido not found.
             ValidationError: If not authorized or invalid transition.
             ConflictError: If stock insufficient.
+            HTTPException 403: If user's role not authorized for this transition.
         """
-        if not es_admin:
-            raise ValidationError("Solo un administrador puede cambiar el estado del pedido")
-
         if nuevo_estado not in FSMTransiciones.TRANSICIONES:
             raise ValidationError(f"Estado '{nuevo_estado}' no es válido")
 
@@ -506,6 +627,23 @@ class PedidoService:
                     f"El pedido está en estado terminal '{estado_anterior}' "
                     "y no puede ser modificado"
                 )
+
+            # ---- Role-based authorization ----
+            # Validate that the user's roles allow this specific transition.
+            # If usuario_actual is None, it's a system operation (webhook),
+            # and we skip the role check.
+            if usuario_actual is not None:
+                user_roles = {rol.codigo for rol in usuario_actual.roles}
+                if not self._validar_rol_transicion(
+                    estado_anterior, nuevo_estado, user_roles
+                ):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail=(
+                            f"Rol no autorizado para la transición "
+                            f"'{estado_anterior}' → '{nuevo_estado}'"
+                        ),
+                    )
 
             # ---- Stock decrement (only on PENDIENTE -> CONFIRMADO) ----
             if descontar_stock:
@@ -554,6 +692,13 @@ class PedidoService:
             stmt = select(DetallePedido).where(DetallePedido.pedido_id == pedido.id)
             result = await uow.session.execute(statement=stmt)
             pedido.detalles = list(result.scalars().all())  # type: ignore[attr-defined]
+
+            # ---- Publish event to KDS (best-effort) ----
+            await self._publicar_evento_cocina(
+                desde=estado_anterior,
+                hasta=nuevo_estado,
+                pedido_id=pedido.id,
+            )
 
             return pedido
 
@@ -660,13 +805,14 @@ class PedidoService:
         pedido_id: int,
         observacion: str,
         usuario_id: int,
-        es_admin: bool = False,
+        usuario_actual: Optional[Usuario] = None,
     ) -> Pedido:
         """Cancel a pedido with observation.
 
         Validations:
         - User can cancel their own pedidos in PENDIENTE state
-        - Admin can cancel pedidos in PENDIENTE, CONFIRMADO, EN_PREP states
+        - Admin/PEDIDOS can cancel pedidos in PENDIENTE, CONFIRMADO, EN_PREP states
+        - COCINA cannot cancel (only admins/pedidos or the client themselves)
         - Cannot cancel from terminal states (ENTREGADO, CANCELADO)
         - Observation is mandatory
         - Stock is restored if pedido was CONFIRMED or EN_PREP
@@ -675,7 +821,8 @@ class PedidoService:
             pedido_id: Pedido ID to cancel.
             observacion: Reason for cancellation (mandatory).
             usuario_id: User requesting cancellation.
-            es_admin: If True, allow broader cancellation rights.
+            usuario_actual: User object for role validation. ``None`` means
+                system operation (not used here — cancellations are user-initiated).
 
         Returns:
             Updated Pedido with CANCELADO state.
@@ -686,6 +833,11 @@ class PedidoService:
         """
         if not observacion or not observacion.strip():
             raise ValidationError("La observación es obligatoria al cancelar")
+
+        es_admin = False
+        if usuario_actual is not None:
+            user_roles = {rol.codigo for rol in usuario_actual.roles}
+            es_admin = bool(user_roles & {"ADMIN", "PEDIDOS"})
 
         async with UnitOfWork() as uow:
             repo = uow.register("pedidos", PedidoRepository, Pedido)
