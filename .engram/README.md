@@ -6,14 +6,49 @@ Este directorio contiene la memoria compartida del equipo usando **Engram**, un 
 
 ```
 .engram/
-├── README.md       ← Este archivo
-├── vault.json      ← Exportación de la memoria compartida
-└── SETUP.md        ← Instrucciones de setup (próximamente)
+├── README.md              ← Este archivo
+├── vault.json             ← Exportación de la memoria compartida (VERSIONADA EN GIT)
+├── .gitignore             ← Ignora archivos temporales
+├── engram-sync.js         ← Script Node.js para sincronización
+├── engram-sync.bat        ← Wrapper Windows
+└── engram-sync.sh         ← Wrapper Linux/Mac
 ```
 
 ## 🚀 Cómo usar
 
-### Para nuevos miembros del equipo
+### ⚡ OPCIÓN 1: Uso rápido con npm scripts (RECOMENDADO)
+
+**Para nuevos miembros:**
+```bash
+npm run engram:import    # Importa memoria del equipo
+npm run engram:status    # Verifica estado
+```
+
+**Para compartir tu trabajo:**
+```bash
+npm run engram:export    # Exporta tu memoria local
+git add .engram/vault.json
+git commit -m "docs(memory): export team vault"
+git push
+```
+
+### 🔧 OPCIÓN 2: Uso directo con engram-sync
+
+**Para nuevos miembros:**
+```bash
+node .engram/engram-sync.js --import
+node .engram/engram-sync.js --status
+```
+
+**Para compartir tu trabajo:**
+```bash
+node .engram/engram-sync.js --export
+git add .engram/vault.json
+git commit -m "docs(memory): export team vault"
+git push
+```
+
+### 📦 OPCIÓN 3: Uso manual tradicional
 
 1. **Clonar el repo**
    ```bash
@@ -29,28 +64,7 @@ Este directorio contiene la memoria compartida del equipo usando **Engram**, un 
 3. **Verificar que se importó correctamente**
    ```bash
    engram stats
-   # Debe mostrar las memories del equipo
    ```
-
-### Para compartir nuevas memories
-
-Después de completar una tarea importante:
-
-1. **Exporta tu memoria local**
-   ```bash
-   engram export > .engram/vault.json
-   ```
-
-2. **Commitea y pushea**
-   ```bash
-   git add .engram/vault.json
-   git commit -m "docs(memory): export updated team engram vault"
-   git push
-   ```
-
-3. **Comunica al equipo**
-   - Avisa en Slack/Discord que se actualizó la memoria
-   - Pide que todos hagan `git pull` y `engram import .engram/vault.json`
 
 ## 📊 Contenido actual
 
@@ -66,23 +80,45 @@ Entities:        6
 - ✅ CH-012 Panel de Administración (Dashboard, KPIs, CRUD usuarios)
 - ✅ Migración npm → pnpm completada
 
-## 🔄 Flujo de trabajo
+## 🔄 Flujo de trabajo simplificado
 
 ```
-Agente implementa feature
-    ↓
-Guardar en memoria (mem_save, mem_session_summary)
-    ↓
-Exportar: engram export > .engram/vault.json
-    ↓
-Commit + Push
-    ↓
-Equipo: git pull + engram import
-    ↓
-Próximo agente tiene contexto de sesión anterior
+1. Trabajas y completas tasks
+   ↓
+2. Guardas en memoria:  mem_save "Lo que aprendiste"
+   ↓
+3. Exportas tu trabajo:  npm run engram:export
+   ↓
+4. Commiteas:          git add .engram/vault.json && git commit -m "..."
+   ↓
+5. Pusheas:            git push
+   ↓
+6. Equipo recibe:      git pull && npm run engram:import
+   ↓
+7. ¡Contexto compartido! Próxima sesión tiene el conocimiento
 ```
 
-## ⚙️ Comandos útiles
+## ⚙️ Comandos disponibles
+
+### Con npm (recomendado)
+
+```bash
+npm run engram:export    # 📤 Exporta memoria local a vault.json
+npm run engram:import    # 📥 Importa vault.json a memoria local
+npm run engram:status    # 📊 Muestra estado de sincronización
+npm run engram:help      # ❓ Muestra ayuda
+```
+
+### Con node directo
+
+```bash
+node .engram/engram-sync.js --export    # 📤 Exporta
+node .engram/engram-sync.js --import    # 📥 Importa
+node .engram/engram-sync.js --status    # 📊 Estado
+node .engram/engram-sync.js --help      # ❓ Ayuda
+```
+
+### Comandos engram nativos
 
 ```bash
 # Ver todas las memories
@@ -91,7 +127,7 @@ engram stats
 # Buscar información específica
 engram search "CH-012"
 
-# Ver memoria detallada por ID
+# Ver memoria detallada por tema
 engram recall "admin dashboard"
 
 # Health check

@@ -1,0 +1,28 @@
+{
+  "name": "food-store-sdd",
+  "version": "1.0.0",
+  "description": "Food Store - E-commerce platform with FastAPI backend and React frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "engram:export": "node .engram/engram-sync.js --export",
+    "engram:import": "node .engram/engram-sync.js --import",
+    "engram:status": "node .engram/engram-sync.js --status",
+    "engram:help": "node .engram/engram-sync.js --help",
+    "dev": "echo 'Run: cd frontend && pnpm dev'",
+    "build": "echo 'Run: cd frontend && pnpm build'",
+    "test": "echo 'Run: cd backend && pytest'"
+  },
+  "keywords": [
+    "food-store",
+    "ecommerce",
+    "fastapi",
+    "react",
+    "engram"
+  ],
+  "author": "Food Store Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
