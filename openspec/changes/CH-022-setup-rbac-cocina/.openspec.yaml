@@ -1,0 +1,15 @@
+name: CH-022-setup-rbac-cocina
+title: Setup RBAC — Rol Cocinero + Seed
+description: >
+  Crear el rol COCINA en la base de datos, actualizar la tabla RBAC y permitir
+  asignación del nuevo rol a usuarios. Base para el Kitchen Display System.
+status: pending
+priority: high
+complexity: small
+estimated_hours: 8
+dependencies:
+  - C-02-auth
+  - C-04-productos
+author: ""
+created_at: "2026-05-21"
+updated_at: "2026-05-21"

@@ -1,0 +1,17 @@
+name: CH-023-backend-websocket-fsm
+title: Backend WebSocket + FSM Delta
+description: >
+  Implementar infraestructura de tiempo real (WebSocket + pub/sub en proceso),
+  delta del FSM para autorización por rol, y endpoints REST/WebSocket de cocina.
+status: pending
+priority: high
+complexity: large
+estimated_hours: 32
+dependencies:
+  - C-02-auth
+  - C-08-pedidos
+  - C-09-pagos
+  - CH-022-setup-rbac-cocina
+author: ""
+created_at: "2026-05-21"
+updated_at: "2026-05-21"

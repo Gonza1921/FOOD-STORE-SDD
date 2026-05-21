@@ -1,0 +1,16 @@
+name: CH-024-frontend-kds-cocina
+title: Frontend KDS + UI Cocina
+description: >
+  Crear la pantalla de Kitchen Display System con React: layout de 2 columnas,
+  integración WebSocket + polling, timer de urgencia, guardrails de ruta.
+status: pending
+priority: high
+complexity: large
+estimated_hours: 28
+dependencies:
+  - C-02-auth
+  - CH-022-setup-rbac-cocina
+  - CH-023-backend-websocket-fsm
+author: ""
+created_at: "2026-05-21"
+updated_at: "2026-05-21"
