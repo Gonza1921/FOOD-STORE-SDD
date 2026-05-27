@@ -17,3 +17,4 @@ export { OrdersPage, OrderDetailPage, AdminOrdersPage } from '@/features/pedidos
 export { DireccionesListPage } from '@/features/direcciones';
 export { default as OrderConfirmationPage } from './OrderConfirmationPage';
 export { default as PaymentResultPage } from './PaymentResultPage';
+export { default as CocinaPage } from './CocinaPage';
