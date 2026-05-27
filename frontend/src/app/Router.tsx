@@ -4,6 +4,8 @@ import {
   RegisterPage,
   UnauthorizedPage,
   DashboardPage,
+  CategoriesPage,
+  CategoryDetailPage,
   CategoriesAdminPage,
   IngredientsAdminPage,
   ProductsAdminPage,
@@ -24,20 +26,28 @@ import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
 import { PaymentPage } from '@/features/payment/pages/PaymentPage';
 import ProtectedRoute from '@/features/auth/components/ProtectedRoute';
-import AppLayout from '@/widgets/Layout/AppLayout';
+import AdminLayout from '@/widgets/Layout/AdminLayout';
+import CustomerLayout from '@/widgets/Layout/CustomerLayout';
+import PublicLayout from '@/widgets/Layout/PublicLayout';
 import HomePage from '@/pages/HomePage';
 
 export default function Router() {
   return (
     <Routes>
-      {/* ── Public routes (no layout) ── */}
+      {/* ── Auth pages (no layout) ── */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegisterPage />} />
       <Route path="/acceso-denegado" element={<UnauthorizedPage />} />
-      <Route path="/catalogo" element={<PublicCatalogPage />} />
-      <Route path="/productos/:id" element={<ProductoDetailPage />} />
 
-      {/* ── KDS Cocina (full-screen, no sidebar) ── */}
+      {/* ── Public routes (PublicLayout, no auth required) ── */}
+      <Route element={<PublicLayout />}>
+        <Route path="/catalogo" element={<PublicCatalogPage />} />
+        <Route path="/productos/:id" element={<ProductoDetailPage />} />
+        <Route path="/categorias" element={<CategoriesPage />} />
+        <Route path="/categorias/:slug" element={<CategoryDetailPage />} />
+      </Route>
+
+      {/* ── KDS Cocina (full-screen, no sidebar, no layout) ── */}
       <Route
         path="/cocina"
         element={
@@ -47,185 +57,47 @@ export default function Router() {
         }
       />
 
-      {/* ── Protected routes (with AppLayout sidebar) ── */}
-      <Route element={<AppLayout />}>
-        {/* Root path redirects based on role */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
+      {/* ── Customer routes (CustomerLayout, CLIENT role or any authenticated) ── */}
+      <Route element={<ProtectedRoute><CustomerLayout /></ProtectedRoute>}>
+        {/* Root path — role-based redirect handled by HomePage */}
+        <Route path="/" element={<HomePage />} />
 
-        {/* Admin dashboard - for staff roles */}
-        <Route
-          path="/admin/dashboard"
-          element={
-            <ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Cart & checkout */}
+        <Route path="/carrito" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
 
-        {/* Legacy /dashboard also redirects to admin */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}>
-              <Navigate to="/admin/dashboard" replace />
-            </ProtectedRoute>
-          }
-        />
+        {/* Profile */}
+        <Route path="/mi-perfil" element={<PerfilPage />} />
 
-        {/* Admin routes (ADMIN role) */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute roles={['ADMIN']}>
-              <AdminDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/usuarios"
-          element={
-            <ProtectedRoute roles={['ADMIN']}>
-              <AdminUsuariosPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/productos"
-          element={
-            <ProtectedRoute roles={['ADMIN', 'STOCK']}>
-              <ProductsAdminPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/categorias"
-          element={
-            <ProtectedRoute roles={['ADMIN']}>
-              <CategoriesAdminPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/ingredientes"
-          element={
-            <ProtectedRoute roles={['ADMIN']}>
-              <IngredientsAdminPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Cart route */}
-        <Route
-          path="/carrito"
-          element={
-            <ProtectedRoute>
-              <CartPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Checkout route */}
-        <Route
-          path="/checkout"
-          element={
-            <ProtectedRoute>
-              <CheckoutPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Profile route */}
-        <Route
-          path="/mi-perfil"
-          element={
-            <ProtectedRoute>
-              <PerfilPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Payment route - MercadoPago checkout */}
-        <Route
-          path="/pagar/:pedidoId"
-          element={
-            <ProtectedRoute>
-              <PaymentPage />
-            </ProtectedRoute>
-          }
-        />
+        {/* Payment routes */}
+        <Route path="/pagar/:pedidoId" element={<PaymentPage />} />
+        <Route path="/confirmacion/:pedidoId" element={<OrderConfirmationPage />} />
+        <Route path="/pago/resultado/:pedidoId" element={<PaymentResultPage />} />
 
         {/* User address routes */}
-        <Route
-          path="/mis-direcciones"
-          element={
-            <ProtectedRoute>
-              <DireccionesListPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mis-direcciones/nueva"
-          element={
-            <ProtectedRoute>
-              <DireccionesListPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Order confirmation route (post-checkout) */}
-        <Route
-          path="/confirmacion/:pedidoId"
-          element={
-            <ProtectedRoute>
-              <OrderConfirmationPage />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Payment result route (return from MercadoPago) */}
-        <Route
-          path="/pago/resultado/:pedidoId"
-          element={
-            <ProtectedRoute>
-              <PaymentResultPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/mis-direcciones" element={<DireccionesListPage />} />
+        <Route path="/mis-direcciones/nueva" element={<DireccionesListPage />} />
 
         {/* User order routes */}
-        <Route
-          path="/mis-pedidos"
-          element={
-            <ProtectedRoute>
-              <OrdersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/mis-pedidos/:id"
-          element={
-            <ProtectedRoute>
-              <OrderDetailPage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/mis-pedidos" element={<OrdersPage />} />
+        <Route path="/mis-pedidos/:id" element={<OrderDetailPage />} />
+      </Route>
 
-        {/* Admin order routes */}
-        <Route
-          path="/admin/pedidos"
-          element={
-            <ProtectedRoute roles={['ADMIN', 'PEDIDOS']}>
-              <AdminOrdersPage />
-            </ProtectedRoute>
-          }
-        />
+      {/* ── Admin routes (AdminLayout, staff roles only) ── */}
+      <Route element={<ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}><AdminLayout /></ProtectedRoute>}>
+        {/* Legacy /dashboard redirect */}
+        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+
+        {/* Admin dashboard */}
+        <Route path="/admin/dashboard" element={<DashboardPage />} />
+
+        {/* Admin root */}
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/usuarios" element={<AdminUsuariosPage />} />
+        <Route path="/admin/productos" element={<ProductsAdminPage />} />
+        <Route path="/admin/categorias" element={<CategoriesAdminPage />} />
+        <Route path="/admin/ingredientes" element={<IngredientsAdminPage />} />
+        <Route path="/admin/pedidos" element={<AdminOrdersPage />} />
       </Route>
 
       {/* ── 404 catch-all ── */}

@@ -15,6 +15,8 @@ export { ProductsAdminPage } from '@/features/products';
 
 export { OrdersPage, OrderDetailPage, AdminOrdersPage } from '@/features/pedidos';
 export { DireccionesListPage } from '@/features/direcciones';
+export { default as CategoriesPage } from './CategoriesPage';
+export { default as CategoryDetailPage } from './CategoryDetailPage';
 export { default as OrderConfirmationPage } from './OrderConfirmationPage';
 export { default as PaymentResultPage } from './PaymentResultPage';
 export { default as CocinaPage } from './CocinaPage';

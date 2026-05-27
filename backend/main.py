@@ -20,6 +20,7 @@ from backend.core.exceptions import APIError, PriceConflictError
 from backend.core.rate_limit import limiter
 from backend.auth.router import router as auth_router
 from backend.categorias.router import router as categorias_router
+from backend.categorias.public.router import router as categorias_publicas_router
 from backend.ingredientes.router import router as ingredientes_router
 from backend.productos.router import router as productos_router
 from backend.pedidos.router import router as pedidos_router
@@ -208,6 +209,7 @@ app.include_router(cocina_router)
 app.include_router(health.router, tags=["health"])
 app.include_router(auth_router)
 app.include_router(categorias_router)
+app.include_router(categorias_publicas_router)
 app.include_router(ingredientes_router)
 app.include_router(productos_router)
 app.include_router(pedidos_router)

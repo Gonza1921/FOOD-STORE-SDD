@@ -5,11 +5,17 @@ from typing import Optional, TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
+from slugify import slugify as slugify_fn
 
 if TYPE_CHECKING:
     from .producto import Producto
 
 from .producto_categoria import ProductoCategoria  # noqa: E402 — needed at runtime for link_model
+
+
+def generar_slug(nombre: str) -> str:
+    """Generate a URL-friendly slug from a category name."""
+    return slugify_fn(nombre, lowercase=True, max_length=100)
 
 
 class Categoria(SQLModel, table=True):
@@ -20,6 +26,7 @@ class Categoria(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str = Field(max_length=100, index=True)
+    slug: str = Field(unique=True, index=True, max_length=100)
     descripcion: Optional[str] = Field(default=None, max_length=200)
 
     # Self-referencing for hierarchy
