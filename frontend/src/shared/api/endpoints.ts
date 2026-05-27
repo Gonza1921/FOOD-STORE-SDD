@@ -68,4 +68,7 @@ export const API = {
     DETALLE: (pedidoId: number): string => `/pagos/${pedidoId}`,
     WEBHOOK: '/pagos/webhook',
   },
+  COCINA: {
+    PEDIDOS_LIST: '/cocina/pedidos',
+  },
 } as const;

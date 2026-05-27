@@ -61,6 +61,11 @@ const menuConfig = {
     { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'PEDIDOS'] },
     { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
   ],
+
+  // COCINA: Kitchen Display
+  cocina: [
+    { path: '/cocina', label: 'Cocina', icon: 'restaurant', roles: ['COCINA', 'PEDIDOS', 'ADMIN'] },
+  ],
 };
 
 // Flatten menu based on user roles
@@ -81,6 +86,11 @@ function getMenuForRoles(userRoles: string[]): NavItem[] {
   // Add pedidos items if user has PEDIDOS role (but not admin - they already see all)
   else if (userRoles.includes('PEDIDOS')) {
     items.push(...menuConfig.pedidos);
+  }
+
+  // Add cocina items if user has COCINA role (regardless of other roles)
+  if (userRoles.includes('COCINA')) {
+    items.push(...menuConfig.cocina);
   }
 
   // Remove duplicates by path
@@ -219,7 +229,8 @@ function NavSection() {
   // Determine section label based on roles
   const isAdmin = userRoles.includes('ADMIN');
   const isStaff = userRoles.some((r) => ['STOCK', 'PEDIDOS'].includes(r));
-  const sectionLabel = isAdmin ? 'Panel Admin' : isStaff ? 'Gestión' : 'Navegación';
+  const isCocina = userRoles.includes('COCINA') && !isAdmin && !isStaff;
+  const sectionLabel = isAdmin ? 'Panel Admin' : isStaff ? 'Gestión' : isCocina ? 'Cocina' : 'Navegación';
 
   return (
     <nav className="flex-1 px-3 py-4 overflow-y-auto scrollbar-thin">

@@ -18,6 +18,7 @@ import {
   PerfilPage,
   OrderConfirmationPage,
   PaymentResultPage,
+  CocinaPage,
 } from '@/pages/index';
 import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
 import AdminUsuariosPage from '@/features/admin/pages/AdminUsuariosPage';
@@ -35,6 +36,16 @@ export default function Router() {
       <Route path="/acceso-denegado" element={<UnauthorizedPage />} />
       <Route path="/catalogo" element={<PublicCatalogPage />} />
       <Route path="/productos/:id" element={<ProductoDetailPage />} />
+
+      {/* ── KDS Cocina (full-screen, no sidebar) ── */}
+      <Route
+        path="/cocina"
+        element={
+          <ProtectedRoute roles={['COCINA', 'PEDIDOS', 'ADMIN']}>
+            <CocinaPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* ── Protected routes (with AppLayout sidebar) ── */}
       <Route element={<AppLayout />}>
