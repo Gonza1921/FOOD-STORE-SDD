@@ -85,17 +85,20 @@
 
 ## Fase 6: Frontend - Integración en ProductCatalog
 
-- [ ] 6.1 Crear o actualizar componente `ProductCatalog.tsx` integrando todos los hooks
-- [ ] 6.2 Renderizar `PriceRangeFilter` y `SortDropdown` en sidebar
-- [ ] 6.3 Conectar cambios de filtro a Zustand store (triggers re-fetch automático)
-- [ ] 6.4 Mostrar spinner "Cargando..." mientras `useProducts` fetcha (isLoading)
-- [ ] 6.5 Mostrar mensaje "No hay productos que coincidan" cuando `items.length === 0`
-- [ ] 6.6 Implementar paginación: botones "Anterior/Siguiente" con disabled cuando `!has_prev` o `!has_next`
-- [ ] 6.7 Mostrar contador: "Página X de Y" calculado dinámicamente
-- [ ] 6.8 Agregar botón "Limpiar filtros" que llama `clearFilters()` y resetea UI
+- [x] 6.1 Crear o actualizar componente `ProductCatalog.tsx` integrando todos los hooks
+- [x] 6.2 Renderizar `PriceRangeFilter` y `SortDropdown` en sidebar
+- [x] 6.3 Conectar cambios de filtro a Zustand store (triggers re-fetch automático)
+- [x] 6.4 Mostrar spinner "Cargando..." mientras `useProducts` fetcha (isLoading)
+- [x] 6.5 Mostrar mensaje "No hay productos que coincidan" cuando `items.length === 0`
+- [x] 6.6 Implementar paginación: botones "Anterior/Siguiente" con disabled cuando `!has_prev` o `!has_next`
+- [x] 6.7 Mostrar contador: "Página X de Y" calculado dinámicamente
+- [x] 6.8 Agregar botón "Limpiar filtros" que llama `clearFilters()` y resetea UI
 
 **Archivos afectados:**
-- `frontend/src/pages/ProductCatalog.tsx` — crear o modificar (integración completa)
+- `frontend/src/pages/ProductCatalogPage.tsx` — crear (integración completa)
+- `frontend/src/app/Router.tsx` — agregar ruta /productos
+- `frontend/src/widgets/Navbar/Navbar.tsx` — agregar enlace de navegación
+- `frontend/src/pages/index.ts` — exportar ProductCatalogPage
 
 **Criterio de éxito:** Filtros aplican sin recarga, paginación mantiene filtros, localStorage persiste.
 
@@ -103,13 +106,13 @@
 
 ## Fase 7: Testing Backend
 
-- [ ] 7.1 Escribir test unitario: `test_filter_price_min_max()` valida que solo items en rango se retornan
-- [ ] 7.2 Escribir test unitario: `test_sort_by_price_asc()` valida ordenamiento ascendente
-- [ ] 7.3 Escribir test unitario: `test_sort_by_reciente()` valida ordenamiento por fecha descendente
-- [ ] 7.4 Escribir test unitario: `test_precio_min_mayor_max_devuelve_400()` valida rechazo de rangos inválidos
-- [ ] 7.5 Escribir test unitario: `test_sort_by_invalido_devuelve_400()` valida enum validation
-- [ ] 7.6 Escribir test integración: `test_filtro_precio_con_alergenos_combinados()` valida AND lógico
-- [ ] 7.7 Escribir test integración: `test_paginacion_mantiene_filtros()` valida que página 2 heredda filtros página 1
+- [x] 7.1 Escribir test unitario: `test_filter_price_min_max()` valida que solo items en rango se retornan
+- [x] 7.2 Escribir test unitario: `test_sort_by_price_asc()` valida ordenamiento ascendente
+- [x] 7.3 Escribir test unitario: `test_sort_by_reciente()` valida ordenamiento por fecha descendente
+- [x] 7.4 Escribir test unitario: `test_precio_min_mayor_max_devuelve_400()` valida rechazo de rangos inválidos
+- [x] 7.5 Escribir test unitario: `test_sort_by_invalido_devuelve_400()` valida enum validation
+- [x] 7.6 Escribir test integración: `test_filtro_precio_con_alergenos_combinados()` valida AND lógico
+- [x] 7.7 Escribir test integración: `test_paginacion_mantiene_filtros()` valida que página 2 heredda filtros página 1
 
 **Archivos afectados:**
 - `backend/productos/tests/test_repositories.py` — agregar tests
