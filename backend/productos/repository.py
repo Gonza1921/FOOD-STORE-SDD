@@ -132,15 +132,21 @@ class ProductoRepository(BaseRepository[Producto]):
         limit: int = 20,
         search: Optional[str] = None,
         categoria_id: Optional[int] = None,
+        price_min: Optional[int] = None,
+        price_max: Optional[int] = None,
+        sort_by: str = "reciente",
         excluir_alergenos: Optional[list[int]] = None,
     ) -> tuple[list[Producto], int]:
-        """Get public catalog (disponible=true, not deleted) with optional filters.
+        """Get public catalog (disponible=true, not deleted) with filters and sorting.
 
         Args:
             skip: Number of records to skip.
             limit: Maximum records to return.
             search: Search term to filter by nombre or descripcion.
             categoria_id: Optional category ID to filter by.
+            price_min: Optional minimum price in cents (inclusive).
+            price_max: Optional maximum price in cents (inclusive).
+            sort_by: Sorting option: 'price_asc', 'price_desc', 'nombre_asc', 'nombre_desc', 'reciente'.
             excluir_alergenos: Optional list of ingredient IDs to exclude.
                 Products containing ANY of these ingredients are filtered out.
 
@@ -165,6 +171,12 @@ class ProductoRepository(BaseRepository[Producto]):
                 Producto.nombre.ilike(f"%{search}%")
                 | Producto.descripcion.ilike(f"%{search}%")
             )
+        
+        # Optional price range filter
+        if price_min is not None:
+            statement = statement.where(Producto.precio_base >= price_min)
+        if price_max is not None:
+            statement = statement.where(Producto.precio_base <= price_max)
 
         # Optional allergen exclusion (subquery NOT EXISTS)
         if excluir_alergenos:
@@ -177,6 +189,18 @@ class ProductoRepository(BaseRepository[Producto]):
                 .correlate(Producto)
             )
             statement = statement.where(not_(exists(allergen_subq)))
+        
+        # Apply sorting
+        if sort_by == "price_asc":
+            statement = statement.order_by(Producto.precio_base.asc())
+        elif sort_by == "price_desc":
+            statement = statement.order_by(Producto.precio_base.desc())
+        elif sort_by == "nombre_asc":
+            statement = statement.order_by(Producto.nombre.asc())
+        elif sort_by == "nombre_desc":
+            statement = statement.order_by(Producto.nombre.desc())
+        else:  # reciente (default)
+            statement = statement.order_by(Producto.creado_en.desc())
 
         # Eager load relations
         statement = statement.options(
@@ -201,6 +225,10 @@ class ProductoRepository(BaseRepository[Producto]):
                 Producto.nombre.ilike(f"%{search}%")
                 | Producto.descripcion.ilike(f"%{search}%")
             )
+        if price_min is not None:
+            count_statement = count_statement.where(Producto.precio_base >= price_min)
+        if price_max is not None:
+            count_statement = count_statement.where(Producto.precio_base <= price_max)
         if excluir_alergenos:
             allergen_subq = (
                 select(ProductoIngrediente.producto_id)

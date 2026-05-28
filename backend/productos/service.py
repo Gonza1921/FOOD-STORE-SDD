@@ -91,24 +91,50 @@ class ProductoService:
         limit: int = 20,
         search: Optional[str] = None,
         categoria_id: Optional[int] = None,
+        price_min: Optional[int] = None,
+        price_max: Optional[int] = None,
+        sort_by: str = "reciente",
         excluir_alergenos: Optional[list[int]] = None,
     ) -> tuple[list[Producto], int]:
-        """Get public catalog (disponible=true, not deleted) with filters.
+        """Get public catalog (disponible=true, not deleted) with filters and sorting.
 
         Args:
-            skip: Number of records to skip.
-            limit: Maximum records to return.
+            skip: Number of records to skip (offset).
+            limit: Maximum records to return (max 100).
             search: Search term to filter by nombre or descripcion.
             categoria_id: Optional category ID to filter by.
+            price_min: Optional minimum price in cents (inclusive).
+            price_max: Optional maximum price in cents (inclusive).
+            sort_by: Sorting option: 'price_asc', 'price_desc', 'nombre_asc', 'nombre_desc', 'reciente'.
             excluir_alergenos: Optional list of ingredient IDs to exclude.
 
         Returns:
             Tuple of (list of Producto, total count).
+
+        Raises:
+            ValueError: If price_min > price_max, sort_by invalid, or invalid params.
         """
+        # ---- Validation ----
+        
+        # Validate price range
+        if price_min is not None and price_max is not None:
+            if price_min > price_max:
+                raise ValidationError("price_min debe ser menor o igual a price_max")
+        
+        # Validate sort_by enum
+        valid_sorts = {"price_asc", "price_desc", "nombre_asc", "nombre_desc", "reciente"}
+        if sort_by not in valid_sorts:
+            raise ValidationError(
+                f"sort_by debe ser uno de: {', '.join(sorted(valid_sorts))}"
+            )
+        
+        # Cap limit to maximum 100
+        limit = min(limit, 100)
+        
         async with UnitOfWork() as uow:
             repo = uow.register("productos", ProductoRepository, Producto)
             return await repo.get_public_paginated(
-                skip, limit, search, categoria_id, excluir_alergenos
+                skip, limit, search, categoria_id, price_min, price_max, sort_by, excluir_alergenos
             )
 
     # ========================================================================
