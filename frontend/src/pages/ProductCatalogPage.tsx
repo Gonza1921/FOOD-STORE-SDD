@@ -13,35 +13,22 @@
  * - "No hay productos" message when results empty
  */
 
-import { useEffect, useState } from 'react';
+import React from 'react';
 import { useProductFilters } from '@/features/products/useProductFilters';
 import { FilterContainer } from '@/features/products/FilterContainer';
 import { ProductList } from '@/features/products/ProductList';
-import { usePublicCatalog } from '@/features/products/hooks/usePublicCatalog';
+import { useProducts } from '@/shared/hooks/useProducts';
 
 export default function ProductCatalogPage() {
   // Get filters from Zustand store
   const filters = useProductFilters();
-  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate store from localStorage on mount
-  useEffect(() => {
-    // Small delay to ensure Zustand has persisted state
-    const timer = setTimeout(() => setIsHydrated(true), 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Convert page number to skip for backend query (1-indexed to 0-indexed)
-  const skip = (filters.page - 1) * 20; // limit = 20 hardcoded per spec
-  const limit = 20;
-
-  // Fetch products with current filters
-  const { data, isLoading, isError, refetch } = usePublicCatalog({
-    skip,
-    limit,
-    // precio_min and precio_max in cents (if set)
-    precio_min: filters.price_min,
-    precio_max: filters.price_max,
+  // Build filter params from Zustand store
+  const { data: items, total, page, has_next, has_prev, isLoading, error, refetch } = useProducts({
+    page: filters.page,
+    limit: 20,
+    price_min: filters.price_min,
+    price_max: filters.price_max,
     sort_by: filters.sort_by,
     categoria_id: filters.categoria_id,
   });
@@ -59,7 +46,13 @@ export default function ProductCatalogPage() {
     filters.clearFilters();
   };
 
-  // Don't render until store is hydrated from localStorage
+  // Don't render until store is hydrated from localStorage (wait 1 tick)
+  const [isHydrated, setIsHydrated] = React.useState(false);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsHydrated(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!isHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-surface">
@@ -111,7 +104,7 @@ export default function ProductCatalogPage() {
             )}
 
             {/* Error state */}
-            {isError && (
+            {error && (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-error-container mb-4">
                   <span
@@ -123,7 +116,7 @@ export default function ProductCatalogPage() {
                 </div>
                 <p className="text-on-surface font-medium mb-2">Error al cargar productos</p>
                 <p className="text-sm text-on-surface-variant mb-4">
-                  Ocurrió un error al buscar los productos. Intenta nuevamente.
+                  {error.message || 'Ocurrió un error al buscar los productos. Intenta nuevamente.'}
                 </p>
                 <button
                   onClick={() => refetch()}
@@ -136,15 +129,15 @@ export default function ProductCatalogPage() {
             )}
 
             {/* Products list (success state) */}
-            {!isLoading && !isError && data ? (
+            {!isLoading && !error ? (
               <>
                 <ProductList
-                  items={data.items || []}
-                  total={data.total || 0}
-                  page={filters.page}
-                  limit={limit}
-                  has_next={(data.total || 0) > (filters.page * limit)}
-                  has_prev={filters.page > 1}
+                  items={items}
+                  total={total}
+                  page={page}
+                  limit={20}
+                  has_next={has_next}
+                  has_prev={has_prev}
                   onPageChange={handlePageChange}
                   isLoading={isLoading}
                 />
