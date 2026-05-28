@@ -124,16 +124,18 @@
 
 ## Fase 8: Testing Frontend
 
-- [ ] 8.1 Escribir test: `useProducts` hook debería retornar items cuando fetch exitoso (Vitest + msw)
-- [ ] 8.2 Escribir test: `useProductFilters` store debería persistir en localStorage
-- [ ] 8.3 Escribir test: `PriceRangeFilter` debería deshabilitar botón cuando min > max
-- [ ] 8.4 Escribir test: `SortDropdown` debería renderizar todas 5 opciones
-- [ ] 8.5 Escribir test: `ProductCatalog` debería mostrar "No hay productos" cuando array vacío
+- [x] 8.1 Escribir test: `useProducts` hook debería retornar items cuando fetch exitoso (Vitest + msw)
+- [x] 8.2 Escribir test: `useProductFilters` store debería persistir en localStorage
+- [x] 8.3 Escribir test: `PriceRangeFilter` debería deshabilitar botón cuando min > max
+- [x] 8.4 Escribir test: `SortDropdown` debería renderizar todas 5 opciones
+- [x] 8.5 Escribir test: `ProductCatalogPage` debería mostrar "No hay productos" cuando array vacío
 
 **Archivos afectados:**
 - `frontend/src/features/products/__tests__/useProducts.test.ts` — crear
 - `frontend/src/features/products/__tests__/useProductFilters.test.ts` — crear
 - `frontend/src/features/products/components/__tests__/PriceRangeFilter.test.tsx` — crear
+- `frontend/src/features/products/__tests__/SortDropdown.test.tsx` — crear
+- `frontend/src/features/products/__tests__/ProductCatalogPage.test.tsx` — crear
 
 **Criterio de éxito:** Todos los tests pasen (pnpm test, cobertura >75%).
 
@@ -141,11 +143,11 @@
 
 ## Fase 9: Pruebas E2E (Playwright)
 
-- [ ] 9.1 Escribir E2E: Navegar a ProductCatalog, aplicar filtro precio, verificar resultados filtrados
-- [ ] 9.2 Escribir E2E: Cambiar ordenamiento, verificar que productos se re-renderizen (sin recarga)
-- [ ] 9.3 Escribir E2E: Aplicar filtro, recargar página, verificar localStorage restaura filtros
-- [ ] 9.4 Escribir E2E: Cambiar página con filtros aplicados, verificar "Anterior" habilitado en página 2
-- [ ] 9.5 Escribir E2E: Hacer clic "Limpiar filtros", verificar inputs vacíos y todos los productos mostrados
+- [x] 9.1 Escribir E2E: Navegar a ProductCatalog, aplicar filtro precio, verificar resultados filtrados
+- [x] 9.2 Escribir E2E: Cambiar ordenamiento, verificar que productos se re-renderizen (sin recarga)
+- [x] 9.3 Escribir E2E: Aplicar filtro, recargar página, verificar localStorage restaura filtros
+- [x] 9.4 Escribir E2E: Cambiar página con filtros aplicados, verificar "Anterior" habilitado en página 2
+- [x] 9.5 Escribir E2E: Hacer clic "Limpiar filtros", verificar inputs vacíos y todos los productos mostrados
 
 **Archivos afectados:**
 - `frontend/e2e/tests/product-filters.e2e.ts` — crear
@@ -156,18 +158,18 @@
 
 ## Fase 10: Verificación de Performance y Pulido
 
-- [ ] 10.1 Verificar query latencia con índices: `EXPLAIN ANALYZE` en Postgres muestra index usage
-- [ ] 10.2 Validar que queries completadas en <500ms (95th percentile)
-- [ ] 10.3 Verificar que TanStack Query deduplicada requests idénticos en ventana de 5 minutos
-- [ ] 10.4 Revisar console.log o warnings en frontend (sin errores)
-- [ ] 10.5 Verificar accesibilidad: labels de inputs, aria-labels en botones, keyboard navigation
-- [ ] 10.6 Verificar responsive design: desktop (3 cols sidebar), tablet (2 cols), mobile (stack vertical)
-- [ ] 10.7 Actualizar documentación: README en `backend/README.md` con ejemplos de filtro
-- [ ] 10.8 Documentar schema `PaginatedProductList` en docstring del router
+- [x] 10.1 Verificar query latencia con índices: `EXPLAIN ANALYZE` en Postgres muestra index usage
+- [x] 10.2 Validar que queries completadas en <500ms (95th percentile)
+- [x] 10.3 Verificar que TanStack Query deduplicada requests idénticos en ventana de 5 minutos
+- [x] 10.4 Revisar console.log o warnings en frontend (sin errores)
+- [x] 10.5 Verificar accesibilidad: labels de inputs, aria-labels en botones, keyboard navigation
+- [x] 10.6 Verificar responsive design: desktop (3 cols sidebar), tablet (2 cols), mobile (stack vertical)
+- [x] 10.7 Actualizar documentación: README en `backend/README.md` con ejemplos de filtro
+- [x] 10.8 Documentar schema `PaginatedProductList` en docstring del router
 
 **Archivos afectados:**
-- `backend/README.md` — agregar ejemplos
-- Docstrings en `backend/productos/router.py`
+- `backend/README.md` — agregar sección "Product Filtering API (CH-029)"
+- Docstrings en `backend/productos/router.py` — actualizar con schema completo
 
 **Criterio de éxito:** Queries <500ms, sin console errors, accessible en todos los dispositivos.
 
