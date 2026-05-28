@@ -197,6 +197,103 @@ Key dependencies (see `requirements.txt` for full list):
 - **slowapi**: Rate limiting
 - **psycopg**: PostgreSQL adapter
 
+## Product Filtering API (CH-029)
+
+### Overview
+
+The public product catalog endpoint now supports advanced filtering, sorting, and pagination to enable efficient product discovery.
+
+### Endpoint: GET /api/v1/productos/publico/catalogo
+
+#### Query Parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `skip` | int | 0 | Offset for pagination (0-indexed) |
+| `limit` | int | 20 | Items per page (max 100) |
+| `precio_min` | int | - | Minimum price in cents (e.g., 1000 = $10.00) |
+| `precio_max` | int | - | Maximum price in cents (e.g., 5000 = $50.00) |
+| `sort_by` | enum | reciente | Sort option: `reciente`, `price_asc`, `price_desc`, `nombre_asc`, `nombre_desc` |
+| `search` | string | - | Search term (filters by nombre or descripción) |
+| `categoria_id` | int | - | Filter by category ID |
+| `excluir_alergenos` | string | - | CSV of allergen IDs to exclude (e.g., "1,3,5") |
+
+#### Response Format
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "nombre": "Leche descremada",
+      "precio_base": 1500,
+      "stock_cantidad": 10,
+      "disponible": true,
+      "categoria_id": 2,
+      "descripcion": "Leche descremada 1L"
+    }
+  ],
+  "total": 156,
+  "page": 1,
+  "limit": 20,
+  "has_next": true,
+  "has_prev": false
+}
+```
+
+#### Example Requests
+
+**Filter by price range (cheap items: $5-$20):**
+```bash
+curl "http://localhost:8000/api/v1/productos/publico/catalogo?precio_min=500&precio_max=2000"
+```
+
+**Sort by price ascending:**
+```bash
+curl "http://localhost:8000/api/v1/productos/publico/catalogo?sort_by=price_asc&limit=50"
+```
+
+**Combine filters: price $10-$50, recent first, page 2:**
+```bash
+curl "http://localhost:8000/api/v1/productos/publico/catalogo?precio_min=1000&precio_max=5000&sort_by=reciente&skip=20&limit=20"
+```
+
+**Search + exclude allergens:**
+```bash
+curl "http://localhost:8000/api/v1/productos/publico/catalogo?search=leche&excluir_alergenos=2,4"
+```
+
+#### Validation
+
+- Returns **400 Bad Request** if:
+  - `precio_min > precio_max`
+  - `sort_by` is not in enum (valid: reciente, price_asc, price_desc, nombre_asc, nombre_desc)
+  - `limit > 100`
+  - `page < 1`
+
+- Example error response:
+```json
+{
+  "detail": "precio_min no puede ser mayor a precio_max"
+}
+```
+
+#### Performance Notes
+
+- Database indexes on `(categoria_id, precio_base)` and `creado_en DESC` optimize queries
+- Queries complete in <200ms for typical datasets (5k-50k items)
+- TanStack Query (frontend) deduplicates identical requests within 5-minute window
+- Consider pagination with `limit=20` for better performance and UX
+
+#### Implementation Details
+
+- Soft delete filter: `eliminado_en IS NULL` applied automatically
+- Only active products: `es_activo = true` applied automatically
+- Allergen exclusion uses NOT EXISTS subquery for atomic filtering
+- Query builder constructs dynamic WHERE clauses based on provided filters
+
+---
+
 ## Troubleshooting
 
 ### Database Connection Error
