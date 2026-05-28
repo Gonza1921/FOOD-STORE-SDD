@@ -45,6 +45,18 @@ export default function Navbar() {
         {/* ── Desktop right section ── */}
         <div className="hidden md:flex items-center gap-2 flex-1 justify-end">
           <NavbarSearch />
+          <Link
+            to="/productos"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors"
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: '20px', fontVariationSettings: '"wght" 400' }}
+            >
+              dashboard
+            </span>
+            <span className="hidden sm:inline">Catálogo</span>
+          </Link>
           <NavbarCategories />
           <NavbarCart />
           {user ? (
@@ -101,6 +113,19 @@ export default function Navbar() {
                 <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-on-surface-variant/40">
                   Navegación
                 </p>
+                <Link
+                  to="/productos"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-on-surface hover:bg-surface-container transition-colors"
+                >
+                  <span
+                    className="material-symbols-outlined text-[18px] text-on-surface-variant"
+                    style={{ fontVariationSettings: '"wght" 400' }}
+                  >
+                    dashboard
+                  </span>
+                  Catálogo
+                </Link>
                 <NavbarCategories />
                 <button
                   type="button"

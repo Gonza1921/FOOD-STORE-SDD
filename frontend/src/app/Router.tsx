@@ -10,6 +10,7 @@ import {
   IngredientsAdminPage,
   ProductsAdminPage,
   PublicCatalogPage,
+  ProductCatalogPage,
   ProductoDetailPage,
   OrdersPage,
   OrderDetailPage,
@@ -42,6 +43,7 @@ export default function Router() {
       {/* ── Public routes (PublicLayout, no auth required) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/catalogo" element={<PublicCatalogPage />} />
+        <Route path="/productos" element={<ProductCatalogPage />} />
         <Route path="/productos/:id" element={<ProductoDetailPage />} />
         <Route path="/categorias" element={<CategoriesPage />} />
         <Route path="/categorias/:slug" element={<CategoryDetailPage />} />

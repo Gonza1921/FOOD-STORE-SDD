@@ -140,7 +140,7 @@ async def get_productos(
 async def get_catalogo_publico(
     skip: int = Query(0, ge=0, description="Offset para paginación"),
     limit: int = Query(
-        100, gt=0, le=1000, description="Limit para paginación (max 1000)"
+        20, gt=0, le=100, description="Limit para paginación (max 100, default 20)"
     ),
     search: Optional[str] = Query(
         None, max_length=200, description="Buscar en nombre/descripción"
@@ -148,12 +148,22 @@ async def get_catalogo_publico(
     categoria_id: Optional[int] = Query(
         None, gt=0, description="Filtrar por categoría"
     ),
+    price_min: Optional[int] = Query(
+        None, ge=0, description="Precio mínimo en centavos (ej: 1000 = $10.00)"
+    ),
+    price_max: Optional[int] = Query(
+        None, ge=0, description="Precio máximo en centavos (ej: 5000 = $50.00)"
+    ),
+    sort_by: str = Query(
+        "reciente",
+        description="Ordenamiento: reciente, nombre_asc, nombre_desc, price_asc, price_desc",
+    ),
     excluir_alergenos: Optional[str] = Query(
         None,
         description="Excluir productos que contengan estos ingredientes (CSV de IDs, ej: 1,3,7)",
     ),
 ) -> ProductoOutPublicList:
-    """Obtener catálogo público de productos (SIN autenticación).
+    """Obtener catálogo público de productos con filtros y ordenamiento (SIN autenticación).
 
     Filtros automáticos: disponible=true, deleted_at IS NULL
     """
@@ -174,13 +184,20 @@ async def get_catalogo_publico(
             )
 
     service = ProductoService()
-    items, total = await service.get_public_paginated(
-        skip=skip,
-        limit=limit,
-        search=search,
-        categoria_id=categoria_id,
-        excluir_alergenos=alergenos_ids,
-    )
+    
+    try:
+        items, total = await service.get_public_paginated(
+            skip=skip,
+            limit=limit,
+            search=search,
+            categoria_id=categoria_id,
+            price_min=price_min,
+            price_max=price_max,
+            sort_by=sort_by,
+            excluir_alergenos=alergenos_ids,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     return ProductoOutPublicList(
         items=[ProductoOutPublic.model_validate(item) for item in items],

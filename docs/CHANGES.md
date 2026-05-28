@@ -41,6 +41,7 @@ Cada change es **atómico y versionable**: tiene proposal.md, design.md, tasks.m
 | | CH-021 | Ingredientes y alérgenos | US-011, US-012, US-013, US-014 | Catalog | CH-020 |
 | | CH-022 | Productos CRUD | US-015, US-016, US-017, US-020, US-022 | Catalog | CH-021 |
 | | CH-023 | Catálogo público | US-018, US-019, US-023 | Catalog | CH-022 |
+| | **CH-029** 🔥 | **Filtros y ordenamiento** | **—** | **Catalog** | **CH-023** |
 | **3** | CH-030 | Direcciones de entrega | US-024, US-025, US-026, US-027, US-028 | Orders | CH-012 |
 | | CH-031 | Carrito de compras | US-029 a US-034 | Orders | CH-023 |
 | | CH-032 | Creación de pedidos | US-035, US-036, US-037, US-038 | Orders | CH-031 |
@@ -585,6 +586,47 @@ app/
 - [ ] Filtro alérgenos: ?excluirAlergenos=1,3,7 (IDs de ingredientes)
 - [ ] No requiere autenticación
 - [ ] Incluye stock > 0 en respuesta (booleano, sin cantidad exacta)
+
+---
+
+### 🟢 CH-029: Filtros y Ordenamiento de Productos (EXT)
+
+**Nombre en kebab-case**: `product-filters-sorting`
+
+**Funcionalidad que cubre**:
+- Endpoint GET `/api/v1/public/productos` extendido con filtros `price_min`, `price_max`, `sort_by`
+- Paginación server-side: 20 items/página con metadatos `has_next`, `has_prev`, `total`
+- 5 opciones de ordenamiento: precio asc/desc, nombre asc/desc, más reciente
+- PriceRangeFilter: componente con inputs min/max validación inline
+- SortDropdown: 5 opciones con labels en español
+- Hook `useProducts` con TanStack Query: refetch automático en cambio de filtros
+- Zustand store `useProductFilters` con persistencia en localStorage
+- ProductCatalogPage: nueva página separada de CategoryDetailPage
+- Estados: loading spinner, empty state, error toast, botón retry
+- Compatibilidad total con filtro de alérgenos existente (AND lógico)
+- Índice compuesto DB: `(categoria_id, precio_base)` + índice `creado_en DESC`
+
+**Historias de usuario que implementa**:
+- (No asociada a US específica — mejora de catálogo público CH-023)
+
+**De qué otros changes depende**:
+- ✅ CH-023 (catálogo público — endpoint base existente)
+
+**Por qué depende**:
+- Extiende el endpoint público de productos con nuevos parámetros de query
+
+**Criterios de aceptación clave**:
+- [x] Backend acepta `price_min`, `price_max`, `sort_by` sin errores
+- [x] Frontend renderiza PriceRangeFilter + SortDropdown funcionales
+- [x] Filtros se aplican sin recarga de página (TanStack Query)
+- [x] Índice compuesto `(categoria_id, precio_base)` creado y en uso
+- [x] Paginación funciona correctamente (20 items/página)
+- [x] Validación rechaza price_min > price_max con HTTP 400
+- [x] localStorage persiste filtros entre refreshes
+- [x] Compatibilidad alérgenos mantiene 100% funcional (no regression)
+- [x] Mensaje "Sin resultados" renderiza cuando hay 0 items
+- [x] 15 tests backend pasando, TypeScript type-check zero errors
+- [x] Migration `010_add_producto_price_indexes.py` creada y aplicada
 
 ---
 

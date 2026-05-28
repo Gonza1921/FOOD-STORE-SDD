@@ -24,6 +24,22 @@
       "sessions": 1,
       "memories": 4,
       "prompts": 9
+    },
+    {
+      "id": "c31fd055",
+      "created_by": "gonzi",
+      "created_at": "2026-05-28T12:30:32Z",
+      "sessions": 0,
+      "memories": 7,
+      "prompts": 3
+    },
+    {
+      "id": "d2544b9c",
+      "created_by": "gonzi",
+      "created_at": "2026-05-28T14:54:53Z",
+      "sessions": 3,
+      "memories": 9,
+      "prompts": 5
     }
   ]
 }
