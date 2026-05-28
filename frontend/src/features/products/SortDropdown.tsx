@@ -1,5 +1,5 @@
 import React from 'react';
-import { useProductFilters } from '../useProductFilters';
+import { useProductFilters } from './useProductFilters';
 
 type SortOption = 'reciente' | 'nombre_asc' | 'nombre_desc' | 'price_asc' | 'price_desc';
 
@@ -20,8 +20,8 @@ const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
  * - Updates Zustand store on change
  */
 export function SortDropdown(): React.ReactElement {
-  const sort_by = useProductFilters((state) => state.sort_by);
-  const setFilters = useProductFilters((state) => state.setFilters);
+  const sort_by = useProductFilters((state: any) => state.sort_by);
+  const setFilters = useProductFilters((state: any) => state.setFilters);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value as SortOption;

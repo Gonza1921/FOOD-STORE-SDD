@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/shared/api';
+import { axiosClient as api } from '@/shared/api';
 
 /**
  * ProductFilters — Interface for filtering and sorting products

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useProductFilters } from '../useProductFilters';
+import { useProductFilters } from './useProductFilters';
 
 /**
  * ClearFiltersButton — Component to reset all filters to defaults

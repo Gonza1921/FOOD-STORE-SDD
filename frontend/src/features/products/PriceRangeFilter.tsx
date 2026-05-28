@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useProductFilters } from '../useProductFilters';
+import { useProductFilters } from './useProductFilters';
 
 /**
  * PriceRangeFilter — Component for filtering products by price range
@@ -11,7 +11,7 @@ import { useProductFilters } from '../useProductFilters';
  * - Integration with Zustand store
  */
 export function PriceRangeFilter(): React.ReactElement {
-  const setFilters = useProductFilters((state) => state.setFilters);
+  const setFilters = useProductFilters((state: any) => state.setFilters);
   
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
