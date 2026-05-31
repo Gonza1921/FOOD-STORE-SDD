@@ -3,6 +3,7 @@
 Provides:
 - ``get_pedidos_cocina()``: Fetch active kitchen orders (CONFIRMADO, EN_PREP)
   ordered by time-in-state (oldest first), with items and client info.
+- ``toggle_disponibilidad()``: Toggle product availability (PATCH endpoint).
 """
 
 from datetime import datetime, timezone
@@ -19,8 +20,10 @@ from backend.models.pedido import (
     HistorialEstadoPedido,
     Pedido,
 )
+from backend.models.producto import Producto
 from backend.models.usuario import Usuario
 from backend.pedidos.repository import PedidoRepository
+from backend.productos.repository import ProductoRepository
 
 
 class CocinaService:
@@ -72,6 +75,7 @@ class CocinaService:
                     else None,
                     "items": [
                         {
+                            "producto_id": d.producto_id,
                             "nombre_snapshot": d.nombre_snapshot,
                             "cantidad": d.cantidad,
                             "precio_snapshot": float(d.precio_snapshot),
@@ -157,3 +161,27 @@ class CocinaService:
         if user.apellido:
             parts.append(user.apellido)
         return " ".join(parts) if parts else f"Usuario #{usuario_id}"
+
+    async def toggle_disponibilidad(
+        self, producto_id: int, disponible: bool
+    ) -> Producto:
+        """Toggle the availability of a product.
+
+        Uses ``ProductoRepository.update()`` which internally checks that the
+        product exists and is **not** soft-deleted. If the product was
+        soft-deleted or does not exist, ``NotFoundError`` is raised.
+
+        Args:
+            producto_id: ID of the product to update.
+            disponible: New availability state.
+
+        Returns:
+            The updated ``Producto`` instance.
+
+        Raises:
+            NotFoundError: Product does not exist or was soft-deleted.
+        """
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+            producto = await repo.update(producto_id, {"disponible": disponible})
+            return producto
