@@ -2,20 +2,22 @@
 
 Endpoints:
 - ``GET /api/v1/cocina/pedidos`` — REST fallback for KDS (carga inicial + polling).
+- ``PATCH /api/v1/cocina/productos/{id}/disponibilidad`` — Toggle product availability.
 - ``WS /api/v1/cocina/ws?token=<JWT>`` — WebSocket for real-time updates.
 """
 
 import logging
 
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, status, Query, WebSocket, WebSocketDisconnect
 from jose import JWTError
 
 from backend.core.dependencies import require_role
+from backend.core.exceptions import NotFoundError
 from backend.core.security import verify_token
 from backend.core.websocket_manager import websocket_manager
 from backend.models.usuario import Usuario
 
-from .schemas import PedidoCocinaResponse
+from .schemas import DisponibilidadResponse, PatchDisponibilidadRequest, PedidoCocinaResponse
 from .service import CocinaService
 
 logger = logging.getLogger(__name__)
@@ -51,6 +53,50 @@ async def listar_pedidos_cocina(
     """
     service = CocinaService()
     return await service.get_pedidos_cocina()
+
+
+# ============================================================================
+# PATCH endpoint — toggle product availability
+# ============================================================================
+
+
+@router.patch(
+    "/productos/{producto_id}/disponibilidad",
+    response_model=DisponibilidadResponse,
+    summary="Cambiar disponibilidad de un producto",
+)
+async def toggle_disponibilidad(
+    producto_id: int,
+    body: PatchDisponibilidadRequest,
+    current_user: Usuario = Depends(require_role(["COCINA", "ADMIN"])),
+) -> DisponibilidadResponse:
+    """Cambia el estado de disponibilidad de un producto.
+
+    Permite a usuarios con rol COCINA o ADMIN marcar un producto como
+    disponible / no disponible. El producto debe existir y **no** estar
+    eliminado (soft-delete).
+
+    Raises:
+        404: Producto no encontrado o soft-deleted.
+        403: Usuario sin rol COCINA o ADMIN.
+    """
+    service = CocinaService()
+
+    try:
+        producto = await service.toggle_disponibilidad(
+            producto_id, body.disponible
+        )
+    except NotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Producto no encontrado",
+        ) from exc
+
+    return DisponibilidadResponse(
+        id=producto.id,
+        nombre=producto.nombre,
+        disponible=producto.disponible,
+    )
 
 
 # ============================================================================

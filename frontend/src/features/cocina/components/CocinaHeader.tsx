@@ -1,7 +1,11 @@
+import { SoundToggle } from './SoundToggle';
 import type { ConnectionStatus } from '../types';
 
 interface CocinaHeaderProps {
   connectionStatus: ConnectionStatus;
+  isMuted?: boolean;
+  onToggleSound?: () => void;
+  flashNewOrder?: boolean;
 }
 
 function StatusIndicator({ connectionStatus }: { connectionStatus: ConnectionStatus }) {
@@ -40,11 +44,20 @@ function StatusIndicator({ connectionStatus }: { connectionStatus: ConnectionSta
   }
 }
 
-export function CocinaHeader({ connectionStatus }: CocinaHeaderProps) {
+export function CocinaHeader({ connectionStatus, isMuted, onToggleSound, flashNewOrder }: CocinaHeaderProps) {
   return (
-    <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-surface-container-lowest/70 backdrop-blur-xl border-b border-outline-variant/10">
+    <header
+      className={`sticky top-0 z-30 flex items-center justify-between px-6 py-4 bg-surface-container-lowest/70 backdrop-blur-xl border-b border-outline-variant/10 transition-all duration-300 ${
+        flashNewOrder ? 'animate-pulse bg-green-900/30' : ''
+      }`}
+    >
       <h1 className="text-xl font-bold text-on-surface tracking-tight">Cocina</h1>
-      <StatusIndicator connectionStatus={connectionStatus} />
+      <div className="flex items-center gap-4">
+        {onToggleSound && (
+          <SoundToggle isMuted={isMuted ?? false} onToggle={onToggleSound} />
+        )}
+        <StatusIndicator connectionStatus={connectionStatus} />
+      </div>
     </header>
   );
 }

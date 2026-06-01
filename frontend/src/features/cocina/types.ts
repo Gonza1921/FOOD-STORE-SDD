@@ -1,8 +1,12 @@
 export type ConnectionStatus = 'live' | 'reconnecting' | 'polling' | 'disconnected';
 
+/** Callback fired when a new pedido arrives via WebSocket (PEDIDO_CONFIRMADO). */
+export type OnNuevoPedidoCallback = (pedidoId: number) => void;
+
 export type UrgencyLevel = 'normal' | 'warning' | 'urgent';
 
 export interface CocinaPedidoItem {
+  producto_id: number;
   nombre_snapshot: string;
   cantidad: number;
   precio_snapshot: number;
