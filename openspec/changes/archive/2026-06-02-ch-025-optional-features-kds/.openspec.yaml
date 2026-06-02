@@ -1,0 +1,14 @@
+name: CH-025-optional-features-kds
+title: Optional Features — KDS Phase 2
+description: >
+  Features opcionales del KDS: alerta sonora, urgencia mejorada, y marcar
+  producto como no disponible desde la pantalla de cocina.
+status: pending
+priority: medium
+complexity: small
+estimated_hours: 12
+dependencies:
+  - CH-024-frontend-kds-cocina
+author: ""
+created_at: "2026-05-21"
+updated_at: "2026-05-21"
