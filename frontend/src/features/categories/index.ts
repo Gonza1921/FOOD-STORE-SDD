@@ -1,5 +1,12 @@
 export { useCategories } from './hooks/useCategories';
 export type { Category, CategoryFormData, UseCategoriesReturn } from './hooks/useCategories';
+export { usePublicCategories } from './hooks/usePublicCategories';
+export type { PublicCategory, UsePublicCategoriesReturn } from './hooks/usePublicCategories';
+export { useCategoryDetail } from './hooks/useCategoryDetail';
+export type { CategoryDetail, ProductoPublicRef, UseCategoryDetailReturn } from './hooks/useCategoryDetail';
 export { CategoryForm } from './components/CategoryForm';
 export { CategoryList } from './components/CategoryList';
+export { default as CategoryCard } from './components/CategoryCard';
+export { default as BreadcrumbNav } from './components/BreadcrumbNav';
+export { default as CategorySidebar } from './components/CategorySidebar';
 export { CategoriesAdminPage } from './pages/CategoriesAdminPage';

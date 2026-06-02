@@ -33,11 +33,13 @@ skip_if_no_db = pytest.mark.skipif(
 # ===========================================================================
 
 
-def get_client_token() -> dict:
+def get_client_token(test_client=None) -> dict:
     """Register a CLIENT user and return tokens."""
     import uuid
+
+    tc = test_client or client
     email = f"client-{uuid.uuid4().hex[:8]}@cattest.com"
-    response = client.post(
+    response = tc.post(
         "/api/v1/auth/register",
         json={
             "nombre": "Test",
@@ -96,51 +98,56 @@ class TestRBAC:
     @skip_if_no_db
     def test_list_categorias_client_role_returns_403(self):
         """CLIENT intenta listar → 403."""
-        auth = get_client_token()
-        response = client.get(
-            "/api/v1/categorias/",
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as tc:
+            auth = get_client_token(tc)
+            response = tc.get(
+                "/api/v1/categorias/",
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_get_categoria_client_role_returns_403(self):
         """CLIENT intenta obtener → 403."""
-        auth = get_client_token()
-        response = client.get(
-            "/api/v1/categorias/1",
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as tc:
+            auth = get_client_token(tc)
+            response = tc.get(
+                "/api/v1/categorias/1",
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_create_categoria_client_role_returns_403(self):
         """CLIENT intenta crear → 403."""
-        auth = get_client_token()
-        response = client.post(
-            "/api/v1/categorias/",
-            json={"nombre": "Test"},
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as tc:
+            auth = get_client_token(tc)
+            response = tc.post(
+                "/api/v1/categorias/",
+                json={"nombre": "Test"},
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_update_categoria_client_role_returns_403(self):
         """CLIENT intenta actualizar → 403."""
-        auth = get_client_token()
-        response = client.put(
-            "/api/v1/categorias/1",
-            json={"nombre": "Updated"},
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as tc:
+            auth = get_client_token(tc)
+            response = tc.put(
+                "/api/v1/categorias/1",
+                json={"nombre": "Updated"},
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
     @skip_if_no_db
     def test_delete_categoria_client_role_returns_403(self):
         """CLIENT intenta eliminar → 403."""
-        auth = get_client_token()
-        response = client.delete(
-            "/api/v1/categorias/1",
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as tc:
+            auth = get_client_token(tc)
+            response = tc.delete(
+                "/api/v1/categorias/1",
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403

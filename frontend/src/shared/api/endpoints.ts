@@ -41,6 +41,10 @@ export const API = {
     UPDATE: (id: number): string => `/categorias/${id}`,
     DELETE: (id: number): string => `/categorias/${id}`,
   },
+  CATEGORIES_PUBLIC: {
+    LIST: '/categorias/publicas',
+    DETAIL: (slug: string): string => `/categorias/publicas/${slug}`,
+  },
   INGREDIENTS: {
     LIST: '/ingredientes',
     DETAIL: (id: number): string => `/ingredientes/${id}`,
@@ -67,5 +71,8 @@ export const API = {
     CREAR_PREFERENCIA: '/pagos/crear-preferencia',
     DETALLE: (pedidoId: number): string => `/pagos/${pedidoId}`,
     WEBHOOK: '/pagos/webhook',
+  },
+  COCINA: {
+    PEDIDOS_LIST: '/cocina/pedidos',
   },
 } as const;

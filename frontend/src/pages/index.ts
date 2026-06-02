@@ -3,6 +3,7 @@ export { default as RegisterPage } from './RegisterPage';
 export { default as UnauthorizedPage } from './UnauthorizedPage';
 export { default as DashboardPage } from './DashboardPage';
 export { default as PublicCatalogPage } from './PublicCatalogPage';
+export { default as ProductCatalogPage } from './ProductCatalogPage';
 export { default as ProductoDetailPage } from './ProductoDetailPage';
 export { default as CheckoutPage } from './CheckoutPage';
 export { default as CartPage } from './CartPage';
@@ -15,5 +16,8 @@ export { ProductsAdminPage } from '@/features/products';
 
 export { OrdersPage, OrderDetailPage, AdminOrdersPage } from '@/features/pedidos';
 export { DireccionesListPage } from '@/features/direcciones';
+export { default as CategoriesPage } from './CategoriesPage';
+export { default as CategoryDetailPage } from './CategoryDetailPage';
 export { default as OrderConfirmationPage } from './OrderConfirmationPage';
 export { default as PaymentResultPage } from './PaymentResultPage';
+export { default as CocinaPage } from './CocinaPage';

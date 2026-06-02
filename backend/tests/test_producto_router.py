@@ -79,13 +79,25 @@ class TestCreateProducto:
     @skip_if_no_db
     def test_create_producto_client_role_returns_403(self):
         """CLIENT role no puede crear productos → 403."""
-        auth = get_client_token()
-        response = client.post(
-            "/api/v1/productos",
-            json={"nombre": "Test", "precio_base": "10.00", "categoria_id": 1},
-            headers={"Authorization": f"Bearer {auth['accessToken']}"},
-        )
-        assert response.status_code == 403
+        with TestClient(app) as ctx_client:
+            import uuid
+            email = f"client-{uuid.uuid4().hex[:8]}@test.com"
+            reg_response = ctx_client.post(
+                "/api/v1/auth/register",
+                json={
+                    "nombre": "Test",
+                    "apellido": "User",
+                    "email": email,
+                    "password": "TestPass123!",
+                },
+            )
+            auth = reg_response.json()
+            response = ctx_client.post(
+                "/api/v1/productos",
+                json={"nombre": "Test", "precio_base": "10.00", "categoria_id": 1},
+                headers={"Authorization": f"Bearer {auth['accessToken']}"},
+            )
+            assert response.status_code == 403
 
 
 class TestListProductos:

@@ -25,42 +25,43 @@ export function CheckoutPage() {
 
   // Initialize MercadoPago SDK
   useEffect(() => {
-    if (!mpInitialized.current) {
-      const initSDK = async () => {
-        try {
-          await loadMercadoPagoSDK();
-          initMercadoPago(PUBLIC_KEY);
-          mpInitialized.current = true;
-          initializeCheckout();
-        } catch (err) {
-          console.error('Failed to load MercadoPago SDK:', err);
+    if (mpInitialized.current) return;
+
+    const initSDK = async () => {
+      try {
+        await loadMercadoPagoSDK();
+        initMercadoPago(PUBLIC_KEY);
+        mpInitialized.current = true;
+
+        // After SDK loaded, create preference and open checkout
+        if (!pedidoId || checkoutStep !== 'idle') return;
+
+        const initPoint = await crearPreferencia(pedidoId);
+        if (initPoint && window.MercadoPago) {
+          const mp = window.MercadoPago(PUBLIC_KEY, {
+            locale: 'es-AR',
+          });
+
+          // preferenceId is set by crearPreferencia before returning initPoint
+          mp.checkout({
+            preference: {
+              id: preferenceId!,
+            },
+            render: {
+              container: '#mp-container',
+              label: 'Pagar con MercadoPago',
+            },
+            autoOpen: true,
+          });
         }
-      };
-      initSDK();
-    }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to initialize MercadoPago:', err);
+      }
+    };
+    initSDK();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [PUBLIC_KEY]);
-
-  const initializeCheckout = async () => {
-    if (!pedidoId || checkoutStep !== 'idle') return;
-
-    const initPoint = await crearPreferencia(pedidoId);
-    if (initPoint && window.MercadoPago) {
-      const mp = window.MercadoPago(PUBLIC_KEY, {
-        locale: 'es-AR',
-      });
-
-      mp.checkout({
-        preference: {
-          id: preferenceId,
-        },
-        render: {
-          container: '#mp-container',
-          label: 'Pagar con MercadoPago',
-        },
-        autoOpen: true,
-      });
-    }
-  };
 
   // Check payment status periodically
   useEffect(() => {
@@ -175,9 +176,3 @@ export function CheckoutPage() {
   );
 }
 
-// Extend Window interface for MercadoPago
-declare global {
-  interface Window {
-    MercadoPago: any;
-  }
-}

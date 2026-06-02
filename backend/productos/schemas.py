@@ -282,3 +282,13 @@ class ProductoOutPublicList(BaseModel):
     def total_pages(self) -> int:
         """Calculate total pages"""
         return (self.total + self.limit - 1) // self.limit if self.limit > 0 else 1
+    
+    @property
+    def has_next(self) -> bool:
+        """Check if there is a next page"""
+        return self.page < self.total_pages
+    
+    @property
+    def has_prev(self) -> bool:
+        """Check if there is a previous page"""
+        return self.page > 1
