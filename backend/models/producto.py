@@ -27,6 +27,7 @@ class Producto(SQLModel, table=True):
     descripcion: Optional[str] = Field(default=None)
     precio_base: Decimal = Field(max_digits=10, decimal_places=2)
     stock_cantidad: int = Field(default=0, ge=0)
+    stock_minimo: int = Field(default=10, ge=0)
     disponible: bool = Field(default=True)
 
     # FK to primary category (can have multiple via M2M)

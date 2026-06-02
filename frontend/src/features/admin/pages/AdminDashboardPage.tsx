@@ -1,13 +1,22 @@
 import { useAdminMetrics } from '../hooks/useAdminMetrics';
+import { useDashboardPeriod } from '../hooks/useDashboardPeriod';
 import { MetricCard } from '../components/MetricCard';
-import { ChartBar, ChartLine, ChartPie } from '../components/Charts';
+import { ChartLine, ChartPie } from '../components/Charts';
 import { TopProductosTable } from '../components/TopProductosTable';
 import { VentasPeriodoChart } from '../components/VentasPeriodoChart';
 import ConfigSection from '../components/ConfigSection';
+import { LowStockAlerts } from '../components/LowStockAlerts';
+import { RecentOrdersTable } from '../components/RecentOrdersTable';
+import { RecentCustomersTable } from '../components/RecentCustomersTable';
+import { StaffMetrics } from '../components/StaffMetrics';
+import { DateRangeFilter } from '../components/DateRangeFilter';
+import { QuickActions } from '../components/QuickActions';
+import { SalesTrendChart } from '../components/SalesTrendChart';
 import Skeleton from '@/shared/ui/Skeleton';
 
 export default function AdminDashboardPage() {
-  const { data: metrics, isLoading, error } = useAdminMetrics();
+  const { period } = useDashboardPeriod();
+  const { data: metrics, isLoading, error } = useAdminMetrics(period);
 
   if (isLoading) {
     return (
@@ -35,50 +44,48 @@ export default function AdminDashboardPage() {
     );
   }
 
+  const t = metrics?.tendencias;
+
   return (
     <div className="p-6 space-y-6">
+      {/* Date range filter */}
+      <DateRangeFilter />
+
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Total de Pedidos"
           value={metrics?.totalPedidos ?? 0}
           icon="shopping_bag"
-        />
-        <MetricCard
-          title="Pedidos Pendientes"
-          value={metrics?.pedidosPendientes ?? 0}
-          icon="pending"
+          trend={t?.pedidos?.cambio !== undefined ? (t.pedidos.cambio > 0 ? 'up' : 'down') : undefined}
+          trendValue={t?.pedidos?.cambio !== undefined ? `${t.pedidos.cambio > 0 ? '+' : ''}${t.pedidos.cambio}%` : undefined}
         />
         <MetricCard
           title="Ingresos Totales"
           value={`$${(metrics?.ingresosTotales ?? 0).toLocaleString('es-AR')}`}
           icon="payments"
+          trend={t?.ingresos?.cambio !== undefined ? (t.ingresos.cambio > 0 ? 'up' : 'down') : undefined}
+          trendValue={t?.ingresos?.cambio !== undefined ? `${t.ingresos.cambio > 0 ? '+' : ''}${t.ingresos.cambio}%` : undefined}
         />
         <MetricCard
-          title="Stock Bajo"
-          value={metrics?.productosStockBajo ?? 0}
-          icon="inventory_2"
-          subtitle="Productos con menos de 10 unidades"
+          title="Total Clientes"
+          value={metrics?.totalClientes ?? 0}
+          icon="people"
+          trend={t?.clientes?.cambio !== undefined ? (t.clientes.cambio > 0 ? 'up' : 'down') : undefined}
+          trendValue={t?.clientes?.cambio !== undefined ? `${t.clientes.cambio > 0 ? '+' : ''}${t.clientes.cambio}%` : undefined}
+        />
+        <MetricCard
+          title="Ticket Promedio"
+          value={`$${(metrics?.ticketPromedio ?? 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}`}
+          icon="receipt"
+          trend={t?.ticketPromedio?.cambio !== undefined ? (t.ticketPromedio.cambio > 0 ? 'up' : 'down') : undefined}
+          trendValue={t?.ticketPromedio?.cambio !== undefined ? `${t.ticketPromedio.cambio > 0 ? '+' : ''}${t.ticketPromedio.cambio}%` : undefined}
         />
       </div>
 
-      {/* Gráficos */}
+      {/* Sales trend + Order status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Ingresos por período */}
-        <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant/20">
-          <h3 className="text-lg font-semibold text-on-surface mb-4">
-            Ingresos por Período (Últimos 30 días)
-          </h3>
-          {metrics?.ingresosPorDia?.length ? (
-            <ChartBar data={metrics.ingresosPorDia} dataKey="total" nameKey="fecha" height={250} />
-          ) : (
-            <div className="h-64 flex items-center justify-center text-on-surface-variant">
-              Sin datos disponibles
-            </div>
-          )}
-        </div>
-
-        {/* Pedidos por estado */}
+        <SalesTrendChart periodo={period} />
         <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant/20">
           <h3 className="text-lg font-semibold text-on-surface mb-4">
             Pedidos por Estado
@@ -93,10 +100,10 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Tendencia de pedidos */}
+      {/* Order trend */}
       <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant/20">
         <h3 className="text-lg font-semibold text-on-surface mb-4">
-          Tendencia de Pedidos (Últimos 7 días)
+          Tendencia de Pedidos ({period === 'today' ? 'Hoy' : period === '7d' ? 'Últimos 7 días' : period === '30d' ? 'Últimos 30 días' : 'Personalizado'})
         </h3>
         {metrics?.tendenciaPedidos?.length ? (
           <ChartLine data={metrics.tendenciaPedidos} dataKey="total" nameKey="fecha" height={250} />
@@ -107,11 +114,26 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* Nuevos widgets */}
+      {/* Top products + Low stock */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TopProductosTable />
-        <VentasPeriodoChart />
+        <LowStockAlerts />
       </div>
+
+      {/* Recent orders + Recent customers */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RecentOrdersTable periodo={period} />
+        <RecentCustomersTable />
+      </div>
+
+      {/* Staff metrics + Quick actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <StaffMetrics periodo={period} />
+        <QuickActions />
+      </div>
+
+      {/* Ventas por período */}
+      <VentasPeriodoChart />
 
       {/* Configuración del sistema */}
       <ConfigSection />
