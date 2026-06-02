@@ -1,22 +1,46 @@
 /**
- * OrderDetailPage — Single order detail view with premium glass UI.
- * Shows order header, items table, and total summary.
+ * OrderDetailPage — Single order detail view with real-time tracking.
+ * Shows order header, timeline, ETA, items table, and total summary.
  * Path: /mis-pedidos/:id
  */
 
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { usePedidoDetail } from '../hooks/usePedidoDetail';
 import { getStatusBadgeClasses, getStatusLabel } from './statusBadge';
+import { useOrderWebSocket, useOrderTrackingStore } from '@/features/orders';
+import {
+  OrderTimeline,
+  OrderEstimatedTime,
+  LiveUpdatesIndicator,
+} from '@/features/orders/components';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const pedidoId = parseInt(id || '0', 10);
 
-  const { data: order, isLoading, isError, error } = usePedidoDetail({
+  const { data: queryOrder, isLoading, isError, error } = usePedidoDetail({
     id: pedidoId,
     enabled: !!pedidoId && pedidoId > 0,
   });
+
+  useOrderWebSocket(pedidoId);
+
+  const liveOrder = useOrderTrackingStore((s) => s.order);
+  const connectionStatus = useOrderTrackingStore((s) => s.connectionStatus);
+
+  const order = liveOrder ?? queryOrder;
+
+  function buildTimestamps(ord: typeof order): Record<string, string> {
+    const ts: Record<string, string> = {};
+    if (!ord) return ts;
+    if ('confirmado_en' in ord && ord.confirmado_en) ts.CONFIRMADO = ord.confirmado_en;
+    if ('en_preparacion_en' in ord && ord.en_preparacion_en) ts.EN_PREPARACION = ord.en_preparacion_en;
+    if ('listo_en' in ord && ord.listo_en) ts.LISTO = ord.listo_en;
+    if ('en_camino_en' in ord && ord.en_camino_en) ts.EN_CAMINO = ord.en_camino_en;
+    if ('entregado_en' in ord && ord.entregado_en) ts.ENTREGADO = ord.entregado_en;
+    return ts;
+  }
 
   // ── Invalid ID ──
   if (!pedidoId || pedidoId <= 0) {
@@ -51,6 +75,8 @@ export function OrderDetailPage() {
           {/* Back button skeleton */}
           <div className="animate-pulse bg-outline-variant/20 rounded-lg h-10 w-32 mb-6" />
           {/* Header skeleton */}
+          <div className="animate-pulse bg-outline-variant/20 rounded-xl h-24 mb-6" />
+          {/* Timeline skeleton */}
           <div className="animate-pulse bg-outline-variant/20 rounded-xl h-24 mb-6" />
           {/* Table skeleton */}
           <div className="animate-pulse bg-outline-variant/20 rounded-xl h-64 mb-6" />
@@ -99,6 +125,7 @@ export function OrderDetailPage() {
 
   // ── Data State ──
   const items = order.items || [];
+  const timestamps = buildTimestamps(order);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -135,13 +162,48 @@ export function OrderDetailPage() {
                  })}
                </p>
              </div>
-             <span
-               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium self-start ${getStatusBadgeClasses(order.estado)}`}
-             >
-               {getStatusLabel(order.estado)}
-             </span>
+             <div className="flex items-center gap-3 self-start">
+               <span
+                 className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusBadgeClasses(order.estado)}`}
+               >
+                 {getStatusLabel(order.estado)}
+               </span>
+               <LiveUpdatesIndicator status={connectionStatus} />
+             </div>
            </div>
          </div>
+
+        {/* ── Timeline Section ── */}
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
+          <OrderTimeline currentState={order.estado} timestamps={timestamps} />
+        </div>
+
+        {/* ── Estimated Time ── */}
+        <div className="mb-6">
+          <OrderEstimatedTime
+            estado={order.estado}
+            creado_en={order.creado_en}
+            timestamps={timestamps}
+          />
+        </div>
+
+        {/* ── Delivery Address ── */}
+        {'direccion_snapshot' in order && order.direccion_snapshot ? (
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
+            <div className="flex items-start gap-3">
+              <span
+                className="material-symbols-outlined text-on-surface-variant mt-0.5"
+                style={{ fontSize: '20px', fontVariationSettings: '"wght" 400' }}
+              >
+                location_on
+              </span>
+              <div>
+                <p className="text-sm font-medium text-on-surface mb-1">Dirección de entrega</p>
+                <p className="text-sm text-on-surface-variant">{order.direccion_snapshot}</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* ── Items Section ── */}
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm p-4 sm:p-6 mb-6">
@@ -172,7 +234,7 @@ export function OrderDetailPage() {
                 {items.map((item) => (
                   <tr key={item.id}>
                     <td className="py-3 text-sm text-on-surface">
-                      Producto #{item.producto_id}
+                      {item.nombre_snapshot || `Producto #${item.producto_id}`}
                     </td>
                     <td className="py-3 text-sm text-on-surface-variant text-right">
                       {item.cantidad}
@@ -198,7 +260,7 @@ export function OrderDetailPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-on-surface truncate">
-                    Producto #{item.producto_id}
+                    {item.nombre_snapshot || `Producto #${item.producto_id}`}
                   </p>
                   <p className="text-xs text-on-surface-variant">
                     {item.cantidad} x ${parseFloat(item.precio_unitario).toFixed(2)}
