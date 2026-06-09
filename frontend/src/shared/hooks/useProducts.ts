@@ -99,7 +99,7 @@ export function useProducts(filters: ProductFilters): UseProductsResult {
       }
 
       const response = await api.get<PaginatedProductList>(
-        `/api/v1/productos/publico/catalogo?${params.toString()}`
+        `/productos/publico/catalogo?${params.toString()}`
       );
       return response.data;
     },
