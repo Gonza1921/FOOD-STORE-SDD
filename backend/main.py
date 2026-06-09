@@ -31,6 +31,7 @@ from backend.admin.router import router as admin_router
 from backend.admin.usuarios_router import router as admin_usuarios_router
 from backend.admin.metrics_router import router as admin_metrics_router
 from backend.admin.config_router import router as admin_config_router
+from backend.admin.analytics_router import router as admin_analytics_router
 from backend.cocina.router import router as cocina_router
 from backend.routers import health
 
@@ -220,6 +221,7 @@ app.include_router(admin_router)
 app.include_router(admin_usuarios_router)
 app.include_router(admin_metrics_router)
 app.include_router(admin_config_router)
+app.include_router(admin_analytics_router)
 
 
 # Root endpoint
