@@ -26,6 +26,14 @@ STATES_SALE = ("CONFIRMADO", "ENTREGADO")
 VALID_PERIODOS = {"7d", "30d", "90d", "1y"}
 
 
+def _round2(val: Decimal) -> Decimal:
+    """Round a Decimal to 2 decimal places.
+
+    Prevents values like 22750.000000000000 from leaking to the frontend.
+    """
+    return val.quantize(Decimal("0.01"))
+
+
 class AnalyticsService:
 
     async def get_dashboard(self, periodo: str = "30d") -> DashboardAnalyticsResponse:
@@ -56,23 +64,23 @@ class AnalyticsService:
         async with UnitOfWork() as uow:
 
             # -- Ventas totales --
-            ventas_totales = (
+            ventas_totales = _round2(
                 await uow.session.scalar(
                     select(func.coalesce(func.sum(Pedido.total), 0)).where(
                         Pedido.estado_codigo.in_(STATES_SALE)
                     )
-                )
-            ) or Decimal("0")
+                ) or Decimal("0")
+            )
 
             # -- Ventas del mes actual --
-            ventas_mes = (
+            ventas_mes = _round2(
                 await uow.session.scalar(
                     select(func.coalesce(func.sum(Pedido.total), 0)).where(
                         Pedido.estado_codigo.in_(STATES_SALE),
                         Pedido.creado_en >= inicio_mes,
                     )
-                )
-            ) or Decimal("0")
+                ) or Decimal("0")
+            )
 
             # -- Pedidos totales --
             pedidos_totales = (
@@ -116,13 +124,13 @@ class AnalyticsService:
             ) or 0
 
             # -- Ticket promedio --
-            ticket_promedio = (
+            ticket_promedio = _round2(
                 await uow.session.scalar(
                     select(func.coalesce(func.avg(Pedido.total), 0)).where(
                         Pedido.estado_codigo.in_(STATES_SALE)
                     )
-                )
-            ) or Decimal("0")
+                ) or Decimal("0")
+            )
 
             # -- Ventas por mes (últimos 12 meses) --
             stmt_ventas_mes = select(
@@ -135,7 +143,7 @@ class AnalyticsService:
 
             result = await uow.session.execute(stmt_ventas_mes)
             ventas_por_mes = [
-                VentasPorMes(mes=row.mes, total=Decimal(str(row.total)))
+                VentasPorMes(mes=row.mes, total=_round2(Decimal(str(row.total))))
                 for row in result.fetchall()
             ]
 
@@ -150,7 +158,7 @@ class AnalyticsService:
 
             result = await uow.session.execute(stmt_ventas_dia)
             ventas_por_dia = [
-                VentasPorDia(fecha=row.fecha, total=Decimal(str(row.total)))
+                VentasPorDia(fecha=row.fecha, total=_round2(Decimal(str(row.total))))
                 for row in result.fetchall()
             ]
 
