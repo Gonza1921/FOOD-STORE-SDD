@@ -91,10 +91,22 @@ function ProductCard({ product }: { product: ProductoOutPublic }): React.ReactEl
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Placeholder image */}
-      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-        <span className="text-4xl">🍛</span>
-      </div>
+      {/* Image */}
+      {product.imagen_url ? (
+        <div className="w-full h-48 overflow-hidden">
+          <img
+            src={product.imagen_url}
+            alt={product.nombre}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+          <span className="material-symbols-outlined text-4xl text-gray-400">
+            image
+          </span>
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-4">

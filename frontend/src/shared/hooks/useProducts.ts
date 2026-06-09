@@ -22,6 +22,7 @@ export interface ProductoOutPublic {
   descripcion?: string;
   precio_base: number;
   disponible: boolean;
+  imagen_url?: string;
   categorias: Array<{ id: number; nombre: string }>;
   ingredientes: Array<{ id: number; nombre: string }>;
 }
