@@ -353,6 +353,74 @@ export function ProductForm({
         </div>
       </div>
 
+      {/* Image Upload */}
+      {isEditMode && product && (
+        <div>
+          <p className={labelStyle}>Imagen del Producto</p>
+          <div className="mt-2 space-y-3">
+            {/* Current image preview */}
+            {product.imagen_url && (
+              <div className="relative inline-block">
+                <img
+                  src={product.imagen_url}
+                  alt="Producto"
+                  className="w-40 h-40 rounded-xl object-cover border border-outline-variant/30"
+                />
+              </div>
+            )}
+            {/* Upload controls */}
+            <div className="flex items-center gap-3">
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  // Max 5MB
+                  if (file.size > 5 * 1024 * 1024) {
+                    setErrors((prev) => ({ ...prev, imagen: 'La imagen no puede superar los 5MB' }));
+                    return;
+                  }
+                  setIsSubmitting(true);
+                  try {
+                    const { uploadProductImage } = await import('../api/endpoints');
+                    const updated = await uploadProductImage(product.id, file);
+                    onSuccess?.(updated);
+                  } catch (err) {
+                    setErrors((prev) => ({ ...prev, imagen: err instanceof Error ? err.message : 'Error al subir imagen' }));
+                  } finally {
+                    setIsSubmitting(false);
+                  }
+                }}
+                className="block text-sm text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700"
+              />
+              {product.imagen_url && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!confirm('¿Eliminar la imagen del producto?')) return;
+                    setIsSubmitting(true);
+                    try {
+                      const { deleteProductImage } = await import('../api/endpoints');
+                      const updated = await deleteProductImage(product.id);
+                      onSuccess?.(updated);
+                    } catch (err) {
+                      setErrors((prev) => ({ ...prev, imagen: err instanceof Error ? err.message : 'Error al eliminar imagen' }));
+                    } finally {
+                      setIsSubmitting(false);
+                    }
+                  }}
+                  className="px-3 py-2 text-sm font-medium text-error bg-error-container/20 border border-error/20 rounded-lg hover:bg-error-container/40 transition-colors"
+                >
+                  Eliminar imagen
+                </button>
+              )}
+            </div>
+            {errors.imagen && <p className={errorTextStyle}>{errors.imagen}</p>}
+          </div>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
         {onCancel && (

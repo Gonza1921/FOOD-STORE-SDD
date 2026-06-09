@@ -38,13 +38,22 @@ import HomePage from '@/pages/HomePage';
 export default function Router() {
   return (
     <Routes>
-      {/* ── Auth pages (no layout) ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          Auth pages (no layout) — always public
+          ═══════════════════════════════════════════════════════════════ */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/registro" element={<RegisterPage />} />
       <Route path="/acceso-denegado" element={<UnauthorizedPage />} />
 
-      {/* ── Public routes (PublicLayout, no auth required) ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          Public store routes — any visitor can browse
+          PublicLayout now includes Navbar + Footer for full experience
+          ═══════════════════════════════════════════════════════════════ */}
       <Route element={<PublicLayout />}>
+        {/* Home page — redirects based on auth state (see HomePage) */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Catalog & browsing */}
         <Route path="/catalogo" element={<PublicCatalogPage />} />
         <Route path="/productos" element={<ProductCatalogPage />} />
         <Route path="/productos/:id" element={<ProductoDetailPage />} />
@@ -52,7 +61,9 @@ export default function Router() {
         <Route path="/categorias/:slug" element={<CategoryDetailPage />} />
       </Route>
 
-      {/* ── KDS Cocina (full-screen, no sidebar, no layout) ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          KDS Cocina (full-screen, no sidebar, no layout)
+          ═══════════════════════════════════════════════════════════════ */}
       <Route
         path="/cocina"
         element={
@@ -62,11 +73,11 @@ export default function Router() {
         }
       />
 
-      {/* ── Customer routes (CustomerLayout, CLIENT role or any authenticated) ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          Protected customer routes — login REQUIRED
+          Cart, checkout, payment, profile, orders, addresses
+          ═══════════════════════════════════════════════════════════════ */}
       <Route element={<ProtectedRoute><CustomerLayout /></ProtectedRoute>}>
-        {/* Root path — role-based redirect handled by HomePage */}
-        <Route path="/" element={<HomePage />} />
-
         {/* Cart & checkout */}
         <Route path="/carrito" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
@@ -79,7 +90,7 @@ export default function Router() {
         <Route path="/confirmacion/:pedidoId" element={<OrderConfirmationPage />} />
         <Route path="/pago/resultado/:pedidoId" element={<PaymentResultPage />} />
 
-        {/* MP return pages (Fase 1 — mensajes visuales sin webhook) */}
+        {/* MP return pages */}
         <Route path="/pago-exitoso" element={<PagoExitosoPage />} />
         <Route path="/pago-pendiente" element={<PagoPendientePage />} />
         <Route path="/pago-fallido" element={<PagoFallidoPage />} />
@@ -93,7 +104,9 @@ export default function Router() {
         <Route path="/mis-pedidos/:id" element={<OrderDetailPage />} />
       </Route>
 
-      {/* ── Admin routes (AdminLayout, staff roles only) ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          Admin routes — staff roles only (ADMIN, STOCK, PEDIDOS)
+          ═══════════════════════════════════════════════════════════════ */}
       <Route element={<ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}><AdminLayout /></ProtectedRoute>}>
         {/* Legacy /dashboard redirect */}
         <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
@@ -110,7 +123,9 @@ export default function Router() {
         <Route path="/admin/pedidos" element={<AdminOrdersPage />} />
       </Route>
 
-      {/* ── 404 catch-all ── */}
+      {/* ═══════════════════════════════════════════════════════════════
+          404 catch-all
+          ═══════════════════════════════════════════════════════════════ */}
       <Route
         path="*"
         element={

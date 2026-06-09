@@ -507,3 +507,58 @@ class ProductoService:
 
             await repo.delete(producto_id)
             return True
+
+    # ========================================================================
+    # Image operations (imagen_url update via Cloudinary)
+    # ========================================================================
+
+    async def update_imagen_url(self, producto_id: int, imagen_url: str) -> Producto:
+        """Update producto imagen_url field (atomic UoW).
+
+        Args:
+            producto_id: Product ID.
+            imagen_url: Cloudinary secure URL to store.
+
+        Returns:
+            Updated Producto (without eager-loaded associations).
+
+        Raises:
+            NotFoundError: If producto not found.
+        """
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
+
+            producto.imagen_url = imagen_url
+            uow.session.add(producto)
+            await uow.session.flush()
+
+            return producto
+
+    async def remove_imagen_url(self, producto_id: int) -> Producto:
+        """Remove producto imagen_url (set to None, atomic UoW).
+
+        Args:
+            producto_id: Product ID.
+
+        Returns:
+            Updated Producto (without eager-loaded associations).
+
+        Raises:
+            NotFoundError: If producto not found.
+        """
+        async with UnitOfWork() as uow:
+            repo = uow.register("productos", ProductoRepository, Producto)
+
+            producto = await repo.get_by_id(producto_id)
+            if not producto:
+                raise NotFoundError(f"Producto {producto_id} no encontrado")
+
+            producto.imagen_url = None
+            uow.session.add(producto)
+            await uow.session.flush()
+
+            return producto

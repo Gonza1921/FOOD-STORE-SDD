@@ -55,6 +55,20 @@ class Settings(BaseSettings):
         description="MercadoPago public key (from MP dashboard)",
     )
 
+    # Cloudinary credentials
+    cloudinary_cloud_name: str = Field(
+        default="",
+        description="Cloudinary cloud name",
+    )
+    cloudinary_api_key: str = Field(
+        default="",
+        description="Cloudinary API key",
+    )
+    cloudinary_api_secret: str = Field(
+        default="",
+        description="Cloudinary API secret",
+    )
+
     # MercadoPago webhook URL (notification_url sent in preference)
     mp_webhook_url: str = Field(
         default="http://localhost:8000/api/v1/pagos/webhook",

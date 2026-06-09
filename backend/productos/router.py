@@ -22,8 +22,9 @@ Matches patterns used in: categorias, ingredientes
 
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, Body, status, File, UploadFile
 
+from backend.core.cloudinary_service import CloudinaryError, CloudinaryService
 from backend.core.config import settings
 from backend.core.dependencies import require_role
 from backend.models.usuario import Usuario
@@ -348,6 +349,155 @@ async def delete_producto(
     """
     service = ProductoService()
     await service.delete(producto_id)
+
+
+# ============================================================================
+# IMAGE ENDPOINT: POST /api/v1/productos/{id}/imagen — Upload/replace image
+# ============================================================================
+
+
+@router.post(
+    "/{producto_id}/imagen",
+    response_model=ProductoOut,
+    status_code=status.HTTP_200_OK,
+    summary="Subir o reemplazar imagen de producto",
+)
+async def upload_producto_imagen(
+    producto_id: int = Path(..., gt=0, description="ID del producto"),
+    file: UploadFile = File(...),
+    current_user: Usuario = Depends(require_role(["STOCK", "ADMIN"])),
+) -> ProductoOut:
+    """Subir o reemplazar imagen de producto (Cloudinary).
+
+    Requiere rol: STOCK o ADMIN
+    Máximo 5MB. Formatos permitidos: jpg, jpeg, png, webp.
+    """
+    # Validate Cloudinary is configured
+    if not CloudinaryService.is_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cloudinary no está configurado. Contacte al administrador.",
+        )
+
+    # Validate file type
+    allowed_mime = {"image/jpeg", "image/png", "image/webp"}
+    if file.content_type not in allowed_mime:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Tipo de archivo no permitido: {file.content_type}. "
+                "Formatos aceptados: jpg, jpeg, png, webp"
+            ),
+        )
+
+    # Read file bytes and validate size (max 5MB)
+    file_bytes = await file.read()
+    max_size = 5 * 1024 * 1024  # 5 MB
+    if len(file_bytes) > max_size:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="La imagen supera el tamaño máximo de 5MB",
+        )
+
+    service = ProductoService()
+
+    # Fetch producto to check existence and get current image URL
+    producto = await service.get_by_id(producto_id)
+    if not producto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Producto {producto_id} no encontrado",
+        )
+
+    cloudinary = CloudinaryService()
+
+    # If product already has an image, delete the old one from Cloudinary
+    if producto.imagen_url:
+        public_id = CloudinaryService.extract_public_id(producto.imagen_url)
+        if public_id:
+            try:
+                await cloudinary.delete_image(public_id)
+            except CloudinaryError as exc:
+                raise HTTPException(
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"Error al eliminar imagen anterior: {exc}",
+                )
+
+    # Upload new image
+    try:
+        url = await cloudinary.upload_image(
+            file_bytes,
+            public_id=f"producto_{producto_id}",
+        )
+    except CloudinaryError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Error al subir imagen: {exc}",
+        )
+
+    # Update DB record
+    producto = await service.update_imagen_url(producto_id, url)
+    producto_out = await service.get_by_id(producto.id)
+    return ProductoOut.model_validate(producto_out)
+
+
+# ============================================================================
+# IMAGE ENDPOINT: DELETE /api/v1/productos/{id}/imagen — Remove image
+# ============================================================================
+
+
+@router.delete(
+    "/{producto_id}/imagen",
+    response_model=ProductoOut,
+    summary="Eliminar imagen de producto",
+)
+async def delete_producto_imagen(
+    producto_id: int = Path(..., gt=0, description="ID del producto"),
+    current_user: Usuario = Depends(require_role(["STOCK", "ADMIN"])),
+) -> ProductoOut:
+    """Eliminar imagen de producto (Cloudinary + DB).
+
+    Requiere rol: STOCK o ADMIN
+    """
+    # Validate Cloudinary is configured
+    if not CloudinaryService.is_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Cloudinary no está configurado. Contacte al administrador.",
+        )
+
+    service = ProductoService()
+
+    # Fetch producto to check existence and get current image
+    producto = await service.get_by_id(producto_id)
+    if not producto:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Producto {producto_id} no encontrado",
+        )
+
+    if not producto.imagen_url:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El producto no tiene una imagen asociada",
+        )
+
+    # Delete from Cloudinary
+    cloudinary = CloudinaryService()
+    public_id = CloudinaryService.extract_public_id(producto.imagen_url)
+    if public_id:
+        try:
+            await cloudinary.delete_image(public_id)
+        except CloudinaryError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Error al eliminar imagen: {exc}",
+            )
+
+    # Update DB record
+    producto = await service.remove_imagen_url(producto_id)
+    producto_out = await service.get_by_id(producto.id)
+    return ProductoOut.model_validate(producto_out)
 
 
 __all__ = ["router"]

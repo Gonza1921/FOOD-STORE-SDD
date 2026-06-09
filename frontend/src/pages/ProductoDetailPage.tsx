@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { usePublicProductoDetail } from '@/features/products';
 import { useCartStore } from '@/features/cart/store';
 import { useUiStore } from '@/features/ui/store';
+import { useAuthStore } from '@/features/auth/store';
+import AuthRequiredModal from '@/features/auth/components/AuthRequiredModal';
 import { Badge, Skeleton, Button } from '@/shared/ui';
 
 export default function ProductoDetailPage() {
@@ -11,7 +13,9 @@ export default function ProductoDetailPage() {
   const { data: product, isLoading, isError } = usePublicProductoDetail(productoId);
   const addItem = useCartStore((s) => s.addItem);
   const addToast = useUiStore((s) => s.addToast);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [justAdded, setJustAdded] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -61,17 +65,24 @@ export default function ProductoDetailPage() {
 
   const handleAddToCart = useCallback(() => {
     if (justAdded) return;
+
+    // If user is not authenticated → show modal instead of adding
+    if (!isAuthenticated()) {
+      setShowAuthModal(true);
+      return;
+    }
+
     addItem({
       productoId: product.id,
       nombre: product.nombre,
       precio: Number(product.precio_base),
-      imagen: '',
+      imagen: product.imagen_url ?? '',
       precioCarrito: Number(product.precio_base),
     });
     addToast({ message: `${product.nombre} agregado al carrito`, type: 'success' });
     setJustAdded(true);
     setTimeout(() => setJustAdded(false), 1500);
-  }, [addItem, addToast, justAdded, product]);
+  }, [addItem, addToast, justAdded, product, isAuthenticated]);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -90,12 +101,22 @@ export default function ProductoDetailPage() {
         </nav>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Image placeholder */}
-          <div className="h-80 rounded-2xl bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center border border-outline-variant/10">
-            <span className="material-symbols-outlined text-outline-variant/50" style={{ fontSize: '80px', fontVariationSettings: '"wght" 200' }}>
-              image
-            </span>
-          </div>
+          {/* Product image */}
+          {product.imagen_url ? (
+            <div className="h-80 rounded-2xl overflow-hidden border border-outline-variant/10">
+              <img
+                src={product.imagen_url}
+                alt={product.nombre}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="h-80 rounded-2xl bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center border border-outline-variant/10">
+              <span className="material-symbols-outlined text-outline-variant/50" style={{ fontSize: '80px', fontVariationSettings: '"wght" 200' }}>
+                image
+              </span>
+            </div>
+          )}
 
           {/* Product info */}
           <div>
@@ -195,6 +216,11 @@ export default function ProductoDetailPage() {
           </div>
         </div>
       </div>
+
+      <AuthRequiredModal
+        open={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 }

@@ -184,6 +184,7 @@ class ProductoOut(BaseModel):
     precio_base: Decimal = Field(..., decimal_places=2)
     stock_cantidad: int
     disponible: bool
+    imagen_url: Optional[str] = None
     categorias: list[CategoriaRef] = Field(default_factory=list)
     ingredientes: list[IngredienteRef] = Field(default_factory=list)
     creado_en: datetime
@@ -230,6 +231,7 @@ class ProductoOutPublic(BaseModel):
     descripcion: Optional[str]
     precio_base: Decimal = Field(..., decimal_places=2)
     disponible: bool
+    imagen_url: Optional[str] = None
     categorias: list[CategoriaRef] = Field(default_factory=list)
     ingredientes: list[IngredienteRef] = Field(default_factory=list)
 
@@ -247,6 +249,7 @@ class ProductoOutPublicDetail(BaseModel):
     descripcion: Optional[str]
     precio_base: Decimal = Field(..., decimal_places=2)
     disponible: bool
+    imagen_url: Optional[str] = None
     categorias: list[CategoriaRef] = Field(default_factory=list)
     ingredientes: list[IngredientePublicRef] = Field(default_factory=list)
 

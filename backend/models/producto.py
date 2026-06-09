@@ -28,6 +28,9 @@ class Producto(SQLModel, table=True):
     precio_base: Decimal = Field(max_digits=10, decimal_places=2)
     stock_cantidad: int = Field(default=0, ge=0)
     disponible: bool = Field(default=True)
+    imagen_url: Optional[str] = Field(
+        default=None, max_length=512, description="Cloudinary image URL"
+    )
 
     # FK to primary category (can have multiple via M2M)
     categoria_id: int = Field(foreign_key="categoria.id", index=True)

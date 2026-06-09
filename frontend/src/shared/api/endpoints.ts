@@ -20,6 +20,8 @@ export const API = {
     SEARCH: '/productos/search',
     BY_CATEGORY: (categoryId: string): string => `/productos/category/${categoryId}`,
     PUBLIC_CATALOG: '/productos/publico/catalogo',
+    UPLOAD_IMAGE: (id: number): string => `/productos/${id}/imagen`,
+    DELETE_IMAGE: (id: number): string => `/productos/${id}/imagen`,
   },
   ORDERS: {
     LIST: '/pedidos',
