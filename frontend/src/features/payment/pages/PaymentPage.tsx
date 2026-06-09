@@ -41,7 +41,7 @@ function extractErrorMessage(err: unknown): string {
   return 'Error al iniciar pago';
 }
 
-const MP_PUBLIC_KEY = import.meta.env.VITE_MP_PUBLIC_KEY || 'TEST-4a918b9b-0c2b-4e2b-9e5c-1234567890ab';
+const MP_PUBLIC_KEY = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
 
 interface PreferenciaResponse {
   preference_id: string;
@@ -51,6 +51,7 @@ interface PreferenciaResponse {
 
 export function PaymentPage() {
   const { pedidoId } = useParams<{ pedidoId: string }>();
+  console.log('🔥 [PaymentPage] SE RENDERIZÓ', { pedidoId });
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,18 +71,41 @@ export function PaymentPage() {
         );
         setLoading(false);
 
+        // ── Logs de depuración ────────────────────────────────────────
+        console.log('MP_PUBLIC_KEY:', MP_PUBLIC_KEY);
+        console.log('window.MercadoPago:', window.MercadoPago);
+        console.log('Response crear-preferencia:', response.data);
+
         // Initialize MercadoPago checkout
-        if (window.MercadoPago) {
+        if (!window.MercadoPago) {
+          const msg = 'El SDK de Mercado Pago no se cargó. Revisá la conexión a internet o recargá la página.';
+          console.error('ERROR:', msg);
+          setError(msg);
+          return;
+        }
+
+        try {
           const mp = window.MercadoPago(MP_PUBLIC_KEY, { locale: 'es-AR' });
+          console.log('Instancia MP:', mp);
+
           mp.checkout({
             preference: { id: response.data.preference_id },
             render: { container: '#mp-checkout-container', label: 'Pagar ahora' },
             autoOpen: true,
           });
+
+          console.log('checkout ejecutado sin error');
+        } catch (err) {
+          console.error('Error creando checkout MP:', err);
         }
       } catch (err: unknown) {
-        // eslint-disable-next-line no-console
-        console.error('Payment error:', err);
+        // 🔍 LOG: respuesta completa del backend para diagnosticar 422
+        console.log('🔍 [PaymentPage] Error completo:', err);
+        const axiosError = err as AxiosError<{ detail: unknown }>;
+        console.log('🔍 [PaymentPage] Response status:', axiosError.response?.status);
+        console.log('🔍 [PaymentPage] Response data:', JSON.stringify(axiosError.response?.data, null, 2));
+        console.log('🔍 [PaymentPage] Mensaje extraído:', extractErrorMessage(err));
+
         setError(extractErrorMessage(err));
         setLoading(false);
       }

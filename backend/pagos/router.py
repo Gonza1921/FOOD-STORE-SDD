@@ -1,7 +1,7 @@
 """Pagos router — API endpoints for MercadoPago integration"""
 
 import logging
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import PlainTextResponse
 
 from backend.core.dependencies import get_current_user
@@ -33,14 +33,17 @@ router = APIRouter(prefix="/api/v1/pagos", tags=["pagos"])
     description="Creates a MercadoPago preference for a pending order"
 )
 async def crear_preferencia(
-    request: CrearPreferenciaRequest,
-    current_user: Usuario,
+    data: CrearPreferenciaRequest,
+    current_user: Usuario = Depends(get_current_user),
 ) -> CrearPreferenciaResponse:
     """Create a payment preference in MercadoPago."""
     service = PagosService()
 
     try:
-        result = await service.crear_preferencia(pedido_id=request.pedido_id)
+        result = await service.crear_preferencia(
+            pedido_id=data.pedido_id,
+            usuario_id=current_user.id
+        )
 
         return CrearPreferenciaResponse(
             preference_id=result["preference_id"],
@@ -57,8 +60,21 @@ async def crear_preferencia(
     "/webhook",
     summary="Webhook verification"
 )
-async def webhook_verification():
-    """MercadoPago sends GET to verify webhook URL."""
+async def webhook_verification(request: Request):
+    """MercadoPago sends GET to verify webhook URL.
+
+    When configured in the MP dashboard, MP sends a GET request with
+    a ``challenge`` query parameter. The endpoint MUST echo it back
+    to confirm the URL is valid.
+    """
+    challenge = request.query_params.get("challenge") or \
+                request.query_params.get("data.challenge")
+
+    if challenge:
+        logger.info(f"MP webhook challenge received: {challenge}")
+        return {"challenge": challenge}
+
+    # Simple health check when no challenge is present
     return {"status": "ok", "message": "Webhook endpoint configured"}
 
 
@@ -96,7 +112,7 @@ async def webhook(request: Request) -> PlainTextResponse:
 )
 async def get_pago(
     pedido_id: int,
-    current_user: Usuario,
+    current_user: Usuario = Depends(get_current_user),
 ) -> PagoResponse:
     """Get payment information for a specific order."""
     service = PagosService()

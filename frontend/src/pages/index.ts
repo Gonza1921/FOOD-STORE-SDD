@@ -21,3 +21,6 @@ export { default as CategoryDetailPage } from './CategoryDetailPage';
 export { default as OrderConfirmationPage } from './OrderConfirmationPage';
 export { default as PaymentResultPage } from './PaymentResultPage';
 export { default as CocinaPage } from './CocinaPage';
+export { default as PagoExitosoPage } from './PagoExitosoPage';
+export { default as PagoPendientePage } from './PagoPendientePage';
+export { default as PagoFallidoPage } from './PagoFallidoPage';

@@ -21,6 +21,9 @@ import {
   PerfilPage,
   OrderConfirmationPage,
   PaymentResultPage,
+  PagoExitosoPage,
+  PagoPendientePage,
+  PagoFallidoPage,
   CocinaPage,
 } from '@/pages/index';
 import AdminDashboardPage from '@/features/admin/pages/AdminDashboardPage';
@@ -75,6 +78,11 @@ export default function Router() {
         <Route path="/pagar/:pedidoId" element={<PaymentPage />} />
         <Route path="/confirmacion/:pedidoId" element={<OrderConfirmationPage />} />
         <Route path="/pago/resultado/:pedidoId" element={<PaymentResultPage />} />
+
+        {/* MP return pages (Fase 1 — mensajes visuales sin webhook) */}
+        <Route path="/pago-exitoso" element={<PagoExitosoPage />} />
+        <Route path="/pago-pendiente" element={<PagoPendientePage />} />
+        <Route path="/pago-fallido" element={<PagoFallidoPage />} />
 
         {/* User address routes */}
         <Route path="/mis-direcciones" element={<DireccionesListPage />} />

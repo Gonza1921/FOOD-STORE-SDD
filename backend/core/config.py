@@ -45,6 +45,23 @@ class Settings(BaseSettings):
         description="Frontend base URL for MP redirects (back_urls)",
     )
 
+    # MercadoPago credentials
+    mp_access_token: str = Field(
+        default="",
+        description="MercadoPago access token (from MP dashboard)",
+    )
+    mp_public_key: str = Field(
+        default="",
+        description="MercadoPago public key (from MP dashboard)",
+    )
+
+    # MercadoPago webhook URL (notification_url sent in preference)
+    mp_webhook_url: str = Field(
+        default="http://localhost:8000/api/v1/pagos/webhook",
+        description="Public URL for MP IPN webhook notifications. "
+                    "Use ngrok for local dev.",
+    )
+
     # Environment
     environment: str = Field(
         default="development",

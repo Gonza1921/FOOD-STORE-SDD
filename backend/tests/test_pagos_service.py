@@ -22,25 +22,25 @@ class TestPagosService:
     @pytest.fixture
     def service(self, mock_mp_sdk):
         """Create PagosService with mocked MP"""
-        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+        with patch('backend.pagos.service.settings.mp_access_token', 'test_token'):
             return PagosService()
 
     def test_service_initialization(self):
         """Test service initializes correctly"""
-        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+        with patch('backend.pagos.service.settings.mp_access_token', 'test_token'):
             service = PagosService()
             assert service.mp_sdk is not None
 
     def test_service_initialization_missing_token(self):
         """Test service raises error without MP_ACCESS_TOKEN"""
-        with patch.dict('backend.pagos.service.os.environ', {}, clear=True):
+        with patch('backend.pagos.service.settings.mp_access_token', ''):
             with pytest.raises(Exception) as exc_info:
                 PagosService()
             assert "MP_ACCESS_TOKEN" in str(exc_info.value)
 
     def test_generar_idempotency_key(self):
         """Test idempotency key generation"""
-        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+        with patch('backend.pagos.service.settings.mp_access_token', 'test_token'):
             service = PagosService()
             key1 = service._generar_idempotency_key()
             key2 = service._generar_idempotency_key()

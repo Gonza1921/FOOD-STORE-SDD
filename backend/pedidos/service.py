@@ -513,12 +513,12 @@ class PedidoService:
         uow.session.add(pedido)
         await uow.session.flush()
 
-        # ---- Create history record (system operation, no usuario_id) ----
+        # ---- Create history record (system operation, use pedido's user) ----
         historial = HistorialEstadoPedido(
             pedido_id=pedido.id,
             estado_desde=estado_anterior,
             estado_nuevo=FSMEstados.CONFIRMADO,
-            usuario_id=0,  # System operation (webhook)
+            usuario_id=pedido.usuario_id,  # Use pedido's owner
             motivo="Pago aprobado por MercadoPago",
         )
         uow.session.add(historial)

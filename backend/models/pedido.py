@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
+from sqlalchemy import BigInteger, Column
 from sqlalchemy.orm import Mapped
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -120,7 +121,12 @@ class Pago(SQLModel, table=True):
     pedido_id: int = Field(foreign_key="pedido.id", unique=True, index=True)
 
     # MercadoPago IDs
-    mp_payment_id: Optional[int] = Field(default=None, unique=True)
+    # IMPORTANT: MP payment IDs are BIGINT (can exceed 32-bit INT4 range, e.g. 163227602024)
+    # Use sa_column=Column(BigInteger) to override the default INTEGER type from Optional[int]
+    mp_payment_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(BigInteger, unique=True)
+    )
     mp_status: str = Field(max_length=30)  # pending, approved, rejected
     external_reference: str = Field(unique=True, max_length=100)  # Pedido ID
     idempotency_key: str = Field(unique=True, max_length=100)  # Generated UUID

@@ -7,24 +7,88 @@
  *   1. Receive pedidoId from URL params
  *   2. Load pedido detail via usePedidoDetail hook
  *   3. Show order summary: items, totals, address, status
- *   4. User clicks "Ir a pagar ahora" → /pagar/{pedidoId}
- *   5. User clicks "Ver detalle del pedido" → /mis-pedidos/{pedidoId}
+ *   4. User clicks "Pagar con Mercado Pago" → creates MP preference → redirects to checkout
+ *   5. MP redirects back to /pago-exitoso, /pago-pendiente, or /pago-fallido
+ *   6. User clicks "Ver detalle del pedido" → /mis-pedidos/{pedidoId}
  */
 
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import type { AxiosError } from 'axios';
 import { usePedidoDetail } from '@/features/pedidos';
+import { axiosClient } from '@/shared/api/axiosClient';
+import { API } from '@/shared/api/endpoints';
 
 const COSTO_ENVIO = 500;
 
 export function OrderConfirmationPage() {
   const { pedidoId } = useParams<{ pedidoId: string }>();
-  const navigate = useNavigate();
   const pedidoIdNum = pedidoId ? parseInt(pedidoId, 10) : 0;
+  const navigate = useNavigate();
 
   const { data: pedido, isLoading, isError } = usePedidoDetail({
     id: pedidoIdNum,
     enabled: pedidoIdNum > 0,
   });
+
+  // 🚨 Los hooks DEBEN ir antes de cualquier return condicional
+  const [pagoLoading, setPagoLoading] = useState(false);
+  const [pagoError, setPagoError] = useState<string | null>(null);
+
+  // Polling automático: corre MIENTRAS el pago esté pendiente
+  // No necesita que el usuario apriete nada — solito detecta cuando MP aprueba
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [pagoConfirmado, setPagoConfirmado] = useState(false);
+  const [pollingActivo, setPollingActivo] = useState(false);
+
+  useEffect(() => {
+    if (!pedidoIdNum) return;
+    // Al montar el componente, ver si ya hay un pago aprobado
+    // (útil si el usuario recarga la página post-pago)
+    axiosClient
+      .get<{ mp_status: string }>(API.PAGOS.DETALLE(pedidoIdNum))
+      .then((res) => {
+        if (res.data.mp_status === "approved") {
+          setPagoConfirmado(true);
+        } else {
+          // Si está pendiente, empezar a pollear
+          setPollingActivo(true);
+        }
+      })
+      .catch(() => {
+        // No hay pago todavía (recién creó el pedido) — no poll ear
+      });
+  }, [pedidoIdNum]);
+
+  useEffect(() => {
+    if (!pollingActivo || !pedidoIdNum) return;
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const res = await axiosClient.get<{ mp_status: string }>(
+          API.PAGOS.DETALLE(pedidoIdNum)
+        );
+        if (res.data.mp_status === "approved") {
+          setPagoConfirmado(true);
+          setPollingActivo(false);
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        }
+      } catch {
+        // El pago puede no existir todavía — ignorar
+      }
+    }, 3000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [pollingActivo, pedidoIdNum]);
+
+  // Apenas se confirma el pago → redirigir al detalle del pedido
+  useEffect(() => {
+    if (pagoConfirmado && pedidoIdNum) {
+      navigate(`/mis-pedidos/${pedidoIdNum}`, { replace: true });
+    }
+  }, [pagoConfirmado, pedidoIdNum, navigate]);
 
   // ── Loading ──
   if (isLoading) {
@@ -64,6 +128,39 @@ export function OrderConfirmationPage() {
     0
   );
   const total = subtotal + COSTO_ENVIO;
+
+  // ── MercadoPago payment handler ──
+  const handlePagarMP = async () => {
+    if (!pedido) return;
+    setPagoLoading(true);
+    setPagoError(null);
+
+    try {
+      const response = await axiosClient.post<{
+        preference_id: string;
+        init_point: string;
+        pedido_id: number;
+      }>(API.PAGOS.CREAR_PREFERENCIA, { pedido_id: pedido.id });
+
+      // Abrir MP en NUEVA pestaña (no redirect). 
+      // La página principal queda en el sitio, y el error 404 del redirect
+      // de MP ocurre en la pestaña nueva que el usuario cierra.
+      const mpWindow = window.open(response.data.init_point, '_blank');
+      if (!mpWindow || mpWindow.closed) {
+        // Popup bloqueado — fallback a redirect directo
+        window.location.href = response.data.init_point;
+        return;
+      }
+      // Activar polling automático — NO necesita que el usuario apriete nada
+      setPollingActivo(true);
+      setPagoLoading(false);
+    } catch (err: unknown) {
+      const axiosError = err as AxiosError<{ detail: string }>;
+      const msg = axiosError.response?.data?.detail || 'Error al iniciar el pago. Intentá de nuevo.';
+      setPagoError(msg);
+      setPagoLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-surface">
@@ -151,22 +248,58 @@ export function OrderConfirmationPage() {
           </div>
         )}
 
+        {/* ── Error message ── */}
+        {pagoError && (
+          <div className="bg-error/10 border border-error/20 rounded-xl p-3 mb-4">
+            <p className="text-sm text-error">{pagoError}</p>
+          </div>
+        )}
+
         {/* ── Actions ── */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(`/pagar/${pedido.id}`)}
-            className="flex-1 bg-brand-600 text-white px-8 py-3 rounded-xl hover:bg-brand-700 transition-all text-sm font-semibold
-                       active:scale-[0.98] flex items-center justify-center gap-2"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: '"wght" 500' }}>
-              payments
-            </span>
-            Ir a pagar ahora
-          </button>
+        <div className="space-y-3">
+
+          {pollingActivo && (
+            <div className="bg-info/10 border border-info/20 rounded-xl p-4 text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <div className="w-5 h-5 border-2 border-info border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm font-medium text-on-surface">
+                  Procesando pago...
+                </span>
+              </div>
+              <p className="text-xs text-on-surface-variant">
+                Completá el pago en la nueva ventana de MercadoPago.
+                Apenas se confirme, te redirigimos automáticamente.
+              </p>
+            </div>
+          )}
+
+          {!pollingActivo && (
+            <button
+              type="button"
+              onClick={handlePagarMP}
+              disabled={pagoLoading}
+              className="w-full bg-brand-600 text-white px-8 py-3 rounded-xl hover:bg-brand-700 transition-all text-sm font-semibold
+                         active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {pagoLoading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px', fontVariationSettings: '"wght" 500' }}>
+                    payments
+                  </span>
+                  Pagar con Mercado Pago
+                </>
+              )}
+            </button>
+          )}
+
           <Link
             to={`/mis-pedidos/${pedido.id}`}
-            className="flex-1 bg-surface-container-high text-on-surface px-8 py-3 rounded-xl hover:bg-surface-container-highest transition-all text-sm font-semibold text-center"
+            className="block w-full bg-surface-container-high text-on-surface px-8 py-3 rounded-xl hover:bg-surface-container-highest transition-all text-sm font-semibold text-center"
           >
             Ver detalle del pedido
           </Link>
