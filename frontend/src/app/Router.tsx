@@ -114,6 +114,9 @@ export default function Router() {
         {/* Admin dashboard */}
         <Route path="/admin/dashboard" element={<DashboardPage />} />
 
+        {/* Admin metrics redirect — Sidebar link compatibility */}
+        <Route path="/admin/metricas" element={<Navigate to="/admin/dashboard" replace />} />
+
         {/* Admin root */}
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/usuarios" element={<AdminUsuariosPage />} />
