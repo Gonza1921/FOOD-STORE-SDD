@@ -3,9 +3,15 @@
  * Phase 7.1: Fields (nombre, descripcion, precio_base, stock_cantidad, disponible, categoria_id)
  * Uses TanStack Form validation, submit (create/update)
  * Refactored with Stitch-inspired styling.
+ *
+ * Image flow:
+ * ─ Create: file input → store File in state → create product → upload after success
+ * ─ Edit:   current image preview ↓
+ *           file input (replace) → upload immediately, update preview
+ *           "Eliminar" button   → delete from Cloudinary, clear preview
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   type Producto,
   type ProductoCreate,
@@ -13,7 +19,12 @@ import {
   useProductCreate,
   useProductUpdate,
 } from '../hooks';
-import type { CategoriaRef, IngredienteRef } from '../api/endpoints';
+import {
+  uploadProductImage,
+  deleteProductImage,
+  type CategoriaRef,
+  type IngredienteRef,
+} from '../api/endpoints';
 import { CategoriesSelector } from './CategoriesSelector';
 import { IngredientsSelector } from './IngredientsSelector';
 
@@ -66,7 +77,7 @@ export function ProductForm({
 }: ProductFormProps) {
   const isEditMode = !!product;
 
-  // Form state
+  // ── Form state ──
   const [formData, setFormData] = useState(initialFormData);
   const [selectedCategorias, setSelectedCategorias] = useState<number[]>([]);
   const [selectedIngredientes, setSelectedIngredientes] = useState<number[]>([]);
@@ -74,12 +85,29 @@ export function ProductForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mutations
+  // ── Image state (create + edit) ──
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
+  /** Tracks the current image URL: starts from product.imagen_url, updated after upload/delete */
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // Init currentImageUrl from product prop
+  useEffect(() => {
+    setCurrentImageUrl(product?.imagen_url ?? null);
+  }, [product?.imagen_url]);
+
+  // Revoke object URL on unmount or when preview changes
+  useEffect(() => {
+    return () => {
+      if (selectedFilePreview) URL.revokeObjectURL(selectedFilePreview);
+    };
+  }, [selectedFilePreview]);
+
+  // ── Mutations ──
+  // For create: handle onSuccess manually so we can upload image first
   const createMutation = useProductCreate({
-    onSuccess: (product) => {
-      setIsSubmitting(false);
-      onSuccess?.(product);
-    },
     onError: (error) => {
       setIsSubmitting(false);
       setErrors({ submit: error.message });
@@ -97,7 +125,7 @@ export function ProductForm({
     },
   });
 
-  // Populate form when editing
+  // ── Populate form when editing ──
   useEffect(() => {
     if (product) {
       setFormData({
@@ -116,10 +144,96 @@ export function ProductForm({
       setSelectedCategorias([]);
       setSelectedIngredientes([]);
       setPrincipalCategoria(null);
+      // Reset image state for create mode
+      setSelectedFile(null);
+      setSelectedFilePreview(null);
+      setCurrentImageUrl(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product]);
 
+  // ── File selection handler (used in BOTH create and edit) ──
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, imagen: 'La imagen no puede superar los 5MB' }));
+      // Reset file input
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    // Validate type
+    const allowedMime = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedMime.includes(file.type)) {
+      setErrors((prev) => ({ ...prev, imagen: 'Solo se permiten archivos JPG, PNG o WebP' }));
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
+    // Clear previous error
+    setErrors((prev) => { const next = { ...prev }; delete next.imagen; return next; });
+
+    // Create preview URL
+    if (selectedFilePreview) URL.revokeObjectURL(selectedFilePreview);
+    const previewUrl = URL.createObjectURL(file);
+    setSelectedFilePreview(previewUrl);
+    setSelectedFile(file);
+
+    // In edit mode: upload immediately
+    if (isEditMode && product) {
+      uploadEditImage(product.id, file);
+    }
+  };
+
+  // ── Upload image in edit mode (immediate, does NOT close form) ──
+  const uploadEditImage = async (productId: number, file: File) => {
+    setIsUploadingImage(true);
+    try {
+      const updated = await uploadProductImage(productId, file);
+      setCurrentImageUrl(updated.imagen_url ?? null);
+      // Clear selected file state since it's been uploaded
+      setSelectedFile(null);
+      // Keep preview showing the new URL (it will be replaced when component re-renders with updated currentImageUrl)
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        imagen: err instanceof Error ? err.message : 'Error al subir imagen',
+      }));
+      // Revert preview
+      if (selectedFilePreview) URL.revokeObjectURL(selectedFilePreview);
+      setSelectedFilePreview(null);
+      setSelectedFile(null);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // ── Delete image in edit mode ──
+  const handleDeleteImage = async () => {
+    if (!product || !currentImageUrl) return;
+    if (!confirm('¿Eliminar la imagen del producto?')) return;
+
+    setIsUploadingImage(true);
+    try {
+      await deleteProductImage(product.id);
+      setCurrentImageUrl(null);
+      setSelectedFilePreview(null);
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    } catch (err) {
+      setErrors((prev) => ({
+        ...prev,
+        imagen: err instanceof Error ? err.message : 'Error al eliminar imagen',
+      }));
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  // ── Validation ──
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -154,6 +268,7 @@ export function ProductForm({
     return Object.keys(newErrors).length === 0;
   };
 
+  // ── Submit: create → then upload image if file selected ──
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -169,6 +284,7 @@ export function ProductForm({
     ].filter(Boolean) as number[];
 
     if (isEditMode && product) {
+      // Edit: product data only (image handled separately via file input)
       const updateData: ProductoUpdate = {
         nombre: formData.nombre,
         descripcion: formData.descripcion || undefined,
@@ -180,26 +296,59 @@ export function ProductForm({
 
       updateMutation.mutate({ id: product.id, data: updateData });
     } else {
-      const createData: ProductoCreate = {
-        nombre: formData.nombre,
-        descripcion: formData.descripcion || undefined,
-        precio_base: formData.precio_base,
-        stock_cantidad: formData.stock_cantidad,
-        disponible: formData.disponible,
-        categoria_id: formData.categoria_id as number,
-        categorias: categoriasOrdenadas,
-        ingredientes: selectedIngredientes,
-      };
+      // Create: create product, THEN upload image if selected
+      try {
+        const createData: ProductoCreate = {
+          nombre: formData.nombre,
+          descripcion: formData.descripcion || undefined,
+          precio_base: formData.precio_base,
+          stock_cantidad: formData.stock_cantidad,
+          disponible: formData.disponible,
+          categoria_id: formData.categoria_id as number,
+          categorias: categoriasOrdenadas,
+          ingredientes: selectedIngredientes,
+        };
 
-      createMutation.mutate(createData);
+        const createdProduct = await createMutation.mutateAsync(createData);
+
+        // Upload image if user selected one
+        if (selectedFile) {
+          setIsUploadingImage(true);
+          try {
+            await uploadProductImage(createdProduct.id, selectedFile);
+          } catch (uploadErr) {
+            // Image upload failed, but product was created — notify and continue
+            setErrors((prev) => ({
+              ...prev,
+              imagen: `Producto creado, pero error al subir imagen: ${uploadErr instanceof Error ? uploadErr.message : 'error desconocido'}`,
+            }));
+            setIsUploadingImage(false);
+            setIsSubmitting(false);
+            // Still call onSuccess — product was created, just without image
+            onSuccess?.(createdProduct);
+            return;
+          }
+          setIsUploadingImage(false);
+        }
+
+        setIsSubmitting(false);
+        onSuccess?.(createdProduct);
+      } catch (err) {
+        setIsSubmitting(false);
+        setErrors({ submit: err instanceof Error ? err.message : 'Error al crear producto' });
+      }
     }
   };
 
+  // Combined loading state
   const isLoading =
-    isSubmitting || externalLoading || createMutation.isPending || updateMutation.isPending;
+    isSubmitting || externalLoading || createMutation.isPending || updateMutation.isPending || isUploadingImage;
 
   const set = (field: string, value: unknown) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+  // Determine which image to show in preview
+  const displayImage = selectedFilePreview ?? currentImageUrl;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -353,6 +502,80 @@ export function ProductForm({
         </div>
       </div>
 
+      {/* ════════════════════════════════════════════════════════════════
+          Image Upload Section — visible in BOTH create and edit modes
+          ════════════════════════════════════════════════════════════════ */}
+      <div>
+        <p className={labelStyle}>
+          Imagen del Producto
+          {isUploadingImage && (
+            <span className="ml-2 text-xs text-on-surface-variant">Subiendo imagen...</span>
+          )}
+        </p>
+        <div className="mt-2 space-y-3">
+          {/* ── Preview ── */}
+          {displayImage ? (
+            <div className="relative inline-block">
+              <img
+                src={displayImage}
+                alt="Vista previa del producto"
+                className="w-40 h-40 rounded-xl object-cover border border-outline-variant/30"
+              />
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center">
+                  <svg className="animate-spin h-6 w-6 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="w-40 h-40 rounded-xl bg-surface-container flex items-center justify-center border border-dashed border-outline-variant/40">
+              <span
+                className="material-symbols-outlined text-outline-variant/50"
+                style={{ fontSize: '40px', fontVariationSettings: '"wght" 200' }}
+              >
+                image
+              </span>
+            </div>
+          )}
+
+          {/* ── Upload controls ── */}
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleFileSelect}
+              disabled={isLoading}
+              className="block text-sm text-on-surface-variant file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-600 file:text-white hover:file:bg-brand-700 file:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+
+            {/* In edit mode: delete button when image exists */}
+            {isEditMode && currentImageUrl && (
+              <button
+                type="button"
+                onClick={handleDeleteImage}
+                disabled={isUploadingImage}
+                className="px-3 py-2 text-sm font-medium text-error bg-error-container/20 border border-error/20 rounded-lg hover:bg-error-container/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Eliminar imagen
+              </button>
+            )}
+
+            {/* In create mode: indicator that image will be uploaded after creation */}
+            {!isEditMode && selectedFile && (
+              <span className="text-xs text-brand-600 font-medium">
+                La imagen se subirá al crear el producto
+              </span>
+            )}
+          </div>
+
+          {errors.imagen && <p className={errorTextStyle}>{errors.imagen}</p>}
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant/20">
         {onCancel && (
@@ -393,7 +616,7 @@ export function ProductForm({
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              Guardando...
+              {isUploadingImage ? 'Subiendo imagen...' : 'Guardando...'}
             </>
           ) : isEditMode ? 'Actualizar Producto' : 'Crear Producto'}
         </button>

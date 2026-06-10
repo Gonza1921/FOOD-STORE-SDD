@@ -53,6 +53,7 @@ export interface Producto {
   disponible: boolean;
   categorias: CategoriaRef[];
   ingredientes: IngredienteRef[];
+  imagen_url?: string;
   creado_en: string;
   actualizado_en: string;
 }
@@ -71,6 +72,7 @@ export interface ProductoPublic {
   disponible: boolean;
   categorias: CategoriaRef[];
   ingredientes: IngredienteRef[];
+  imagen_url?: string;
 }
 
 export interface ProductoPublicDetail {
@@ -81,6 +83,7 @@ export interface ProductoPublicDetail {
   disponible: boolean;
   categorias: CategoriaRef[];
   ingredientes: IngredientePublicRef[];
+  imagen_url?: string;
 }
 
 export interface ProductoListResponse {
@@ -207,5 +210,29 @@ export async function getPublicProductoDetail(productoId: number): Promise<Produ
   const response = await axiosClient.get<ProductoPublicDetail>(
     `/productos/${productoId}/publico`
   );
+  return response.data;
+}
+
+/**
+ * Upload product image (requires STOCK or ADMIN role)
+ */
+export async function uploadProductImage(id: number, file: File): Promise<Producto> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const response = await axiosClient.post<Producto>(
+    API.PRODUCTS.UPLOAD_IMAGE(id),
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }
+  );
+  return response.data;
+}
+
+/**
+ * Delete product image (requires STOCK or ADMIN role)
+ */
+export async function deleteProductImage(id: number): Promise<Producto> {
+  const response = await axiosClient.delete<Producto>(API.PRODUCTS.DELETE_IMAGE(id));
   return response.data;
 }

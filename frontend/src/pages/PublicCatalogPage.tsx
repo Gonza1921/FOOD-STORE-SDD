@@ -211,12 +211,22 @@ export default function PublicCatalogPage() {
                     style={{ animationDelay: `${i * 60}ms` }}
                   >
                     {/* Image area */}
-                    <div className="h-40 bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <span className="material-symbols-outlined text-outline-variant/50" style={{ fontSize: '48px', fontVariationSettings: '"wght" 300' }}>
-                        image
-                      </span>
-                    </div>
+                    {product.imagen_url ? (
+                      <div className="h-40 overflow-hidden">
+                        <img
+                          src={product.imagen_url}
+                          alt={product.nombre}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-40 bg-gradient-to-br from-surface-container to-surface-container-high flex items-center justify-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        <span className="material-symbols-outlined text-outline-variant/50" style={{ fontSize: '48px', fontVariationSettings: '"wght" 300' }}>
+                          image
+                        </span>
+                      </div>
+                    )}
 
                     <div className="p-4">
                       <h3 className="text-sm font-semibold text-on-surface truncate group-hover:text-brand-600 transition-colors">
@@ -252,6 +262,7 @@ export default function PublicCatalogPage() {
                           productoId={product.id}
                           nombre={product.nombre}
                           precio={Number(product.precio_base)}
+                          imagen={product.imagen_url}
                         />
                       )}
                     </div>

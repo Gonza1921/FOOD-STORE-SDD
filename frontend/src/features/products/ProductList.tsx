@@ -87,14 +87,26 @@ export function ProductList({
  * ProductCard — Individual product card component
  */
 function ProductCard({ product }: { product: ProductoOutPublic }): React.ReactElement {
-  const priceInPesos = (product.precio_base / 100).toFixed(2);
+  const priceInPesos = Number(product.precio_base).toFixed(2);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
-      {/* Placeholder image */}
-      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-        <span className="text-4xl">🍛</span>
-      </div>
+      {/* Image */}
+      {product.imagen_url ? (
+        <div className="w-full h-48 overflow-hidden">
+          <img
+            src={product.imagen_url}
+            alt={product.nombre}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+          <span className="material-symbols-outlined text-4xl text-gray-400">
+            image
+          </span>
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-4">
@@ -105,6 +117,20 @@ function ProductCard({ product }: { product: ProductoOutPublic }): React.ReactEl
         <p className="text-sm text-gray-600 mb-3 line-clamp-2">
           {product.descripcion || 'Sin descripción'}
         </p>
+
+        {/* Categories */}
+        {product.categorias && product.categorias.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {product.categorias.map((cat) => (
+              <span
+                key={cat.id}
+                className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full"
+              >
+                {cat.nombre}
+              </span>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-3">
           <span className="text-2xl font-bold text-blue-600">${priceInPesos}</span>

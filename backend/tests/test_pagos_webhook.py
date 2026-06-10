@@ -27,8 +27,7 @@ class TestWebhookSignatureValidation:
     @pytest.fixture
     def service(self, mock_mp_sdk):
         """Create PagosService with mocked MP SDK"""
-        with patch.dict('backend.pagos.service.os.environ',
-                        {'MP_ACCESS_TOKEN': 'test_token_123'}):
+        with patch('backend.pagos.service.settings.mp_access_token', 'test_token_123'):
             from backend.pagos.service import PagosService
             return PagosService()
 
@@ -91,12 +90,12 @@ class TestWebhookSignatureValidation:
                 MockUoW.return_value = mock_uow_instance
 
                 # Configure mock attributes properly
-                mock_pagos_repo = MagicMock()
+                mock_pagos_repo = AsyncMock()
                 mock_pagos_repo.get_by_mp_payment_id.return_value = None
                 mock_pagos_repo.get_by_pedido_id.return_value = None
                 mock_uow_instance.pagos = mock_pagos_repo
 
-                mock_pedido_repo = MagicMock()
+                mock_pedido_repo = AsyncMock()
                 mock_pedido = MagicMock()
                 mock_pedido.estado_codigo = "PENDIENTE"
                 mock_pedido_repo.get_by_id.return_value = mock_pedido

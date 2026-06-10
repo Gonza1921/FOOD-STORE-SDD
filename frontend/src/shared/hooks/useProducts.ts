@@ -22,6 +22,7 @@ export interface ProductoOutPublic {
   descripcion?: string;
   precio_base: number;
   disponible: boolean;
+  imagen_url?: string;
   categorias: Array<{ id: number; nombre: string }>;
   ingredientes: Array<{ id: number; nombre: string }>;
 }
@@ -99,7 +100,7 @@ export function useProducts(filters: ProductFilters): UseProductsResult {
       }
 
       const response = await api.get<PaginatedProductList>(
-        `/api/v1/productos/publico/catalogo?${params.toString()}`
+        `/productos/publico/catalogo?${params.toString()}`
       );
       return response.data;
     },

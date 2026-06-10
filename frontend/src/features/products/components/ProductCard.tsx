@@ -82,12 +82,20 @@ export function ProductCard({ product, onEdit, onDelete, onStockEdit, isEditingS
     <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex gap-4">
         {/* Image / Placeholder */}
-        <div
-          className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-sm"
-          style={{ backgroundColor: bgColor }}
-        >
-          {initials}
-        </div>
+        {product.imagen_url ? (
+          <img
+            src={product.imagen_url}
+            alt={product.nombre}
+            className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+          />
+        ) : (
+          <div
+            className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center text-white font-bold text-lg shadow-sm"
+            style={{ backgroundColor: bgColor }}
+          >
+            {initials}
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-grow min-w-0">
