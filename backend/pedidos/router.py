@@ -20,13 +20,19 @@ Architecture: Router → Service (no DI, no session param)
 Matches patterns used in: auth, categorias, ingredientes, productos
 """
 
+import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query, Path, Body, Request, status
+from fastapi import APIRouter, Depends, Query, Path, Body, Request, WebSocket, WebSocketDisconnect, status
+from jose import JWTError
 
 from backend.core.dependencies import get_current_user, require_role
+from backend.core.order_tracker import order_tracker
 from backend.core.rate_limit import limiter_pedidos
+from backend.core.security import verify_token
 from backend.models.usuario import Usuario
+
+logger = logging.getLogger(__name__)
 from .schemas import (
     PedidoCreate,
     PedidoResponse,
@@ -71,7 +77,73 @@ def _build_pedido_response(pedido) -> dict:
         "creado_en": pedido.creado_en,
         "actualizado_en": pedido.actualizado_en,
         "direccion_snapshot": getattr(pedido, "direccion_snapshot", None),
+
+        # Tracking timestamps
+        "confirmado_en": getattr(pedido, "confirmado_en", None),
+        "en_preparacion_en": getattr(pedido, "en_preparacion_en", None),
+        "listo_en": getattr(pedido, "listo_en", None),
+        "en_camino_en": getattr(pedido, "en_camino_en", None),
+        "entregado_en": getattr(pedido, "entregado_en", None),
     }
+
+
+# ============================================================================
+# WebSocket: Real-time order tracking for customers
+# ============================================================================
+
+
+@router.websocket("/{pedido_id}/track")
+async def websocket_order_track(
+    websocket: WebSocket,
+    pedido_id: int,
+    token: str = Query(...),
+):
+    """WebSocket endpoint for real-time order tracking.
+
+    Auth: JWT via query parameter. Validates the user owns the order.
+    """
+    if not token:
+        await websocket.close(code=1008)
+        return
+
+    try:
+        payload = verify_token(token)
+        user_id_str = payload.get("sub")
+        if user_id_str is None:
+            await websocket.close(code=1008)
+            return
+        user_id = int(user_id_str)
+    except (JWTError, ValueError):
+        await websocket.close(code=1008)
+        return
+
+    svc = PedidoService()
+    try:
+        pedido = await svc.get_pedido(pedido_id=pedido_id, usuario_id=user_id)
+    except Exception:
+        await websocket.close(code=1008)
+        return
+
+    await websocket.accept()
+    await order_tracker.connect(pedido_id, websocket)
+
+    await websocket.send_json({
+        "tipo": "WELCOME",
+        "pedido": _build_pedido_response(pedido),
+        "timestamp": __import__("datetime").datetime.utcnow().isoformat(),
+    })
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+            if data.get("tipo") == "PONG":
+                continue
+    except WebSocketDisconnect:
+        logger.info("Order WS client disconnected from pedido %d", pedido_id)
+    except Exception as e:
+        logger.warning("Order WS error for pedido %d: %s", pedido_id, e)
+    finally:
+        await order_tracker.disconnect(pedido_id, websocket)
 
 
 # ============================================================================

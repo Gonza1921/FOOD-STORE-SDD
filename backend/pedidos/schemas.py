@@ -146,6 +146,13 @@ class PedidoResponse(BaseModel):
     actualizado_en: datetime
     direccion_snapshot: Optional[str] = Field(default=None, description="Address captured at order time")
 
+    # Tracking timestamps
+    confirmado_en: Optional[datetime] = None
+    en_preparacion_en: Optional[datetime] = None
+    listo_en: Optional[datetime] = None
+    en_camino_en: Optional[datetime] = None
+    entregado_en: Optional[datetime] = None
+
     class Config:
         from_attributes = True
 

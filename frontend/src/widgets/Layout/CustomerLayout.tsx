@@ -8,8 +8,13 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/widgets/Navbar';
 import { Footer } from '@/widgets/Footer';
+import { ToastContainer } from '@/shared/components/Toast';
+import { useToastStore } from '@/shared/hooks/useToast';
 
 export default function CustomerLayout() {
+  const toasts = useToastStore((s) => s.toasts);
+  const removeToast = useToastStore((s) => s.removeToast);
+
   return (
     <div className="min-h-screen bg-surface flex flex-col">
       <Navbar />
@@ -17,6 +22,7 @@ export default function CustomerLayout() {
         <Outlet />
       </main>
       <Footer />
+      <ToastContainer toasts={toasts} onDismiss={removeToast} />
     </div>
   );
 }

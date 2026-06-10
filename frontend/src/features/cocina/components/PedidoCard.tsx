@@ -36,7 +36,7 @@ export function PedidoCard({ pedido, onIniciar, onListo, isActing, onToggleDispo
   const handleToggleItem = (productoId: number, currentNoDisponible: boolean) => {
     const label = currentNoDisponible ? 'habilitar' : 'marcar como no disponible';
     if (!window.confirm(`¿Estás seguro de ${label} este producto?`)) return;
-    const nextDisponible = currentNoDisponible; // si estaba no disponible → ahora disponible
+    const nextDisponible = !currentNoDisponible; // si estaba no disponible → ahora disponible
     setNoDisponibles((prev) => {
       const next = new Set(prev);
       if (currentNoDisponible) {

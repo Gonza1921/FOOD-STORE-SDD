@@ -56,6 +56,30 @@
       "sessions": 2,
       "memories": 6,
       "prompts": 30
+    },
+    {
+      "id": "c5397ea0",
+      "created_by": "maxis",
+      "created_at": "2026-06-02T15:33:54Z",
+      "sessions": 2,
+      "memories": 4,
+      "prompts": 13
+    },
+    {
+      "id": "7ce268ec",
+      "created_by": "maxis",
+      "created_at": "2026-06-02T15:47:57Z",
+      "sessions": 1,
+      "memories": 2,
+      "prompts": 1
+    },
+    {
+      "id": "a1738980",
+      "created_by": "maxis",
+      "created_at": "2026-06-02T16:02:25Z",
+      "sessions": 0,
+      "memories": 5,
+      "prompts": 5
     }
   ]
 }

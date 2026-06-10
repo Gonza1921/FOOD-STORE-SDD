@@ -77,3 +77,163 @@ class TestPagosSchemas:
         assert response.preference_id == "pref_123"
         assert response.init_point == "https://mercadopago.com/checkout/123"
         assert response.pedido_id == 1
+
+
+class TestWebhookSignatureValidation:
+    """Test suite for webhook signature validation"""
+
+    @pytest.fixture
+    def mock_request(self):
+        """Create mock FastAPI Request with headers and body"""
+        request = MagicMock()
+        request.client.host = "192.168.1.1"
+        return request
+
+    @pytest.fixture
+    def webhook_payload(self):
+        """Sample webhook payload from MercadoPago"""
+        return {
+            "data": {
+                "id": "payment_123"
+            },
+            "action": "payment.created"
+        }
+
+    def test_webhook_valid_signature(self, mock_request, webhook_payload):
+        """Test webhook with valid signature passes through signature validation"""
+        # Setup
+        import asyncio
+        from unittest.mock import AsyncMock, patch
+        
+        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+            with patch('backend.pagos.service.mercadopago.SDK') as mock_sdk_class:
+                with patch('backend.pagos.service.UnitOfWork') as mock_uow_class:
+                    mock_sdk = MagicMock()
+                    mock_sdk_class.return_value = mock_sdk
+                    
+                    # Mock signature validation to return True
+                    mock_sdk.signature().validate.return_value = True
+                    
+                    # Mock UnitOfWork context manager
+                    mock_uow = MagicMock()
+                    mock_uow_class.return_value.__aenter__.return_value = mock_uow
+                    mock_uow_class.return_value.__aexit__.return_value = None
+                    
+                    service = PagosService()
+                    mock_request.headers = {
+                        "X-Signature": "valid_signature",
+                        "X-Request-ID": "req_id_123"
+                    }
+                    # Mock body() as async function
+                    mock_request.body = AsyncMock(return_value=b'{"data": {"id": "payment_123"}}')
+                    
+                    # Execute
+                    result = asyncio.run(service.procesar_webhook(webhook_payload, mock_request))
+                    
+                    # Verify signature validation was called
+                    mock_sdk.signature().validate.assert_called_once()
+
+    def test_webhook_invalid_signature(self, mock_request, webhook_payload):
+        """Test webhook with invalid signature returns error"""
+        # Setup
+        import asyncio
+        from unittest.mock import AsyncMock
+        
+        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+            with patch('backend.pagos.service.mercadopago.SDK') as mock_sdk_class:
+                mock_sdk = MagicMock()
+                mock_sdk_class.return_value = mock_sdk
+                
+                # Mock signature validation to return False
+                mock_sdk.signature().validate.return_value = False
+                
+                service = PagosService()
+                mock_request.headers = {
+                    "X-Signature": "invalid_signature",
+                    "X-Request-ID": "req_id_123"
+                }
+                mock_request.body = AsyncMock(return_value=b'{"data": {"id": "payment_123"}}')
+                
+                # Execute
+                result = asyncio.run(service.procesar_webhook(webhook_payload, mock_request))
+                
+                # Verify error response
+                assert result["status"] == "error"
+                assert result["reason"] == "Invalid signature"
+
+    def test_webhook_missing_signature_header(self, mock_request, webhook_payload):
+        """Test webhook without X-Signature header returns error"""
+        # Setup
+        import asyncio
+        
+        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+            with patch('backend.pagos.service.mercadopago.SDK') as mock_sdk_class:
+                mock_sdk = MagicMock()
+                mock_sdk_class.return_value = mock_sdk
+                
+                service = PagosService()
+                mock_request.headers = {
+                    # Missing X-Signature
+                    "X-Request-ID": "req_id_123"
+                }
+                
+                # Execute
+                result = asyncio.run(service.procesar_webhook(webhook_payload, mock_request))
+                
+                # Verify error response
+                assert result["status"] == "error"
+                assert result["reason"] == "Missing signature headers"
+
+    def test_webhook_missing_request_id_header(self, mock_request, webhook_payload):
+        """Test webhook without X-Request-ID header returns error"""
+        # Setup
+        import asyncio
+        
+        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+            with patch('backend.pagos.service.mercadopago.SDK') as mock_sdk_class:
+                mock_sdk = MagicMock()
+                mock_sdk_class.return_value = mock_sdk
+                
+                service = PagosService()
+                mock_request.headers = {
+                    "X-Signature": "some_signature"
+                    # Missing X-Request-ID
+                }
+                
+                # Execute
+                result = asyncio.run(service.procesar_webhook(webhook_payload, mock_request))
+                
+                # Verify error response
+                assert result["status"] == "error"
+                assert result["reason"] == "Missing signature headers"
+
+    def test_webhook_logs_source_ip(self, mock_request, webhook_payload, caplog):
+        """Test webhook logs include source IP"""
+        # Setup
+        import asyncio
+        import logging
+        from unittest.mock import AsyncMock
+        
+        with patch.dict('backend.pagos.service.os.environ', {'MP_ACCESS_TOKEN': 'test_token'}):
+            with patch('backend.pagos.service.mercadopago.SDK') as mock_sdk_class:
+                mock_sdk = MagicMock()
+                mock_sdk_class.return_value = mock_sdk
+                
+                # Mock invalid signature to trigger warning log
+                mock_sdk.signature().validate.return_value = False
+                
+                service = PagosService()
+                mock_request.headers = {
+                    "X-Signature": "invalid",
+                    "X-Request-ID": "req_id_123"
+                }
+                mock_request.body = AsyncMock(return_value=b'{"data": {"id": "payment_123"}}')
+                mock_request.client.host = "203.0.113.45"
+                
+                # Execute
+                with caplog.at_level(logging.WARNING):
+                    result = asyncio.run(service.procesar_webhook(webhook_payload, mock_request))
+                
+                # Verify log includes [MP] prefix and source IP
+                assert any("[MP]" in record.message for record in caplog.records)
+                assert any("203.0.113.45" in record.message for record in caplog.records)

@@ -1,7 +1,6 @@
 export { default as LoginPage } from './LoginPage';
 export { default as RegisterPage } from './RegisterPage';
 export { default as UnauthorizedPage } from './UnauthorizedPage';
-export { default as DashboardPage } from './DashboardPage';
 export { default as PublicCatalogPage } from './PublicCatalogPage';
 export { default as ProductCatalogPage } from './ProductCatalogPage';
 export { default as ProductoDetailPage } from './ProductoDetailPage';

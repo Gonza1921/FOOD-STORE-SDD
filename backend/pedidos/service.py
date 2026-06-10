@@ -13,6 +13,7 @@ Matches patterns used in: auth, categorias, ingredientes, productos
 """
 
 import logging
+from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 from backend.core.config import settings
 from backend.core.exceptions import ConflictError, NotFoundError, PriceConflictError, ValidationError
 from backend.core.unit_of_work import UnitOfWork
+from backend.core.order_tracker import order_tracker
 from backend.core.websocket_manager import websocket_manager
 from backend.models.pedido import Pedido, DetallePedido, HistorialEstadoPedido
 from backend.models.producto import Producto
@@ -392,6 +394,11 @@ class PedidoService:
                 "creado_en": pedido.creado_en.isoformat() if pedido.creado_en else None,
                 "actualizado_en": pedido.actualizado_en.isoformat() if pedido.actualizado_en else None,
                 "direccion_snapshot": pedido.direccion_snapshot,
+                "confirmado_en": None,
+                "en_preparacion_en": None,
+                "listo_en": None,
+                "en_camino_en": None,
+                "entregado_en": None,
             }
 
             return response_dict
@@ -513,6 +520,11 @@ class PedidoService:
         uow.session.add(pedido)
         await uow.session.flush()
 
+        # ---- Set tracking timestamp ----
+        pedido.confirmado_en = datetime.utcnow()
+        uow.session.add(pedido)
+        await uow.session.flush()
+
         # ---- Create history record (system operation, use pedido's user) ----
         historial = HistorialEstadoPedido(
             pedido_id=pedido.id,
@@ -536,6 +548,45 @@ class PedidoService:
             hasta=FSMEstados.CONFIRMADO,
             pedido_id=pedido.id,
         )
+
+        # ---- Notify customer order tracker (best-effort) ----
+        try:
+            pedido_dict = {
+                "id": pedido.id,
+                "usuario_id": pedido.usuario_id,
+                "estado": pedido.estado_codigo,
+                "total": float(pedido.total),
+                "costo_envio": float(pedido.costo_envio) if pedido.costo_envio else 500.0,
+                "items": [
+                    {
+                        "id": d.id,
+                        "producto_id": d.producto_id,
+                        "cantidad": d.cantidad,
+                        "precio_unitario": float(d.precio_snapshot),
+                        "subtotal": float(d.precio_snapshot * d.cantidad),
+                        "nombre_snapshot": d.nombre_snapshot,
+                    }
+                    for d in getattr(pedido, "detalles", [])
+                ],
+                "creado_en": pedido.creado_en.isoformat() if pedido.creado_en else None,
+                "actualizado_en": pedido.actualizado_en.isoformat() if pedido.actualizado_en else None,
+                "direccion_snapshot": getattr(pedido, "direccion_snapshot", None),
+                "confirmado_en": getattr(pedido, "confirmado_en", None),
+                "en_preparacion_en": getattr(pedido, "en_preparacion_en", None),
+                "listo_en": getattr(pedido, "listo_en", None),
+                "en_camino_en": getattr(pedido, "en_camino_en", None),
+                "entregado_en": getattr(pedido, "entregado_en", None),
+            }
+            await order_tracker.send_to_order(
+                pedido_id=pedido.id,
+                event_type="PEDIDO_CONFIRMADO",
+                payload=pedido_dict,
+            )
+        except Exception as ex:
+            logger.warning(
+                "Failed to send order tracking event for pedido %d: %s",
+                pedido.id, ex,
+            )
 
         return pedido
 
@@ -676,6 +727,19 @@ class PedidoService:
             uow.session.add(pedido)
             await uow.session.flush()
 
+            # ---- Set tracking timestamp ----
+            now = datetime.utcnow()
+            if nuevo_estado == FSMEstados.CONFIRMADO:
+                pedido.confirmado_en = now
+            elif nuevo_estado == FSMEstados.EN_PREP:
+                pedido.en_preparacion_en = now
+            elif nuevo_estado == FSMEstados.EN_CAMINO:
+                pedido.en_camino_en = now
+            elif nuevo_estado == FSMEstados.ENTREGADO:
+                pedido.entregado_en = now
+            uow.session.add(pedido)
+            await uow.session.flush()
+
             # ---- Create history record ----
             historial = HistorialEstadoPedido(
                 pedido_id=pedido.id,
@@ -699,6 +763,45 @@ class PedidoService:
                 hasta=nuevo_estado,
                 pedido_id=pedido.id,
             )
+
+            # ---- Notify customer order tracker (best-effort) ----
+            try:
+                pedido_dict = {
+                    "id": pedido.id,
+                    "usuario_id": pedido.usuario_id,
+                    "estado": pedido.estado_codigo,
+                    "total": float(pedido.total),
+                    "costo_envio": float(pedido.costo_envio) if pedido.costo_envio else 500.0,
+                    "items": [
+                        {
+                            "id": d.id,
+                            "producto_id": d.producto_id,
+                            "cantidad": d.cantidad,
+                            "precio_unitario": float(d.precio_snapshot),
+                            "subtotal": float(d.precio_snapshot * d.cantidad),
+                            "nombre_snapshot": d.nombre_snapshot,
+                        }
+                        for d in getattr(pedido, "detalles", [])
+                    ],
+                    "creado_en": pedido.creado_en.isoformat() if pedido.creado_en else None,
+                    "actualizado_en": pedido.actualizado_en.isoformat() if pedido.actualizado_en else None,
+                    "direccion_snapshot": getattr(pedido, "direccion_snapshot", None),
+                    "confirmado_en": getattr(pedido, "confirmado_en", None),
+                    "en_preparacion_en": getattr(pedido, "en_preparacion_en", None),
+                    "listo_en": getattr(pedido, "listo_en", None),
+                    "en_camino_en": getattr(pedido, "en_camino_en", None),
+                    "entregado_en": getattr(pedido, "entregado_en", None),
+                }
+                await order_tracker.send_to_order(
+                    pedido_id=pedido.id,
+                    event_type=f"PEDIDO_{nuevo_estado}",
+                    payload=pedido_dict,
+                )
+            except Exception as ex:
+                logger.warning(
+                    "Failed to send order tracking event for pedido %d: %s",
+                    pedido.id, ex,
+                )
 
             return pedido
 

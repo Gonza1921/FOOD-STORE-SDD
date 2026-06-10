@@ -41,7 +41,7 @@ const menuConfig = {
 
   // ADMIN: Full access
   admin: [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN'] },
+    { path: '/admin', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN'] },
     { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
     { path: '/admin/categorias', label: 'Categorías', icon: 'category', roles: ['ADMIN'] },
     { path: '/admin/ingredientes', label: 'Ingredientes', icon: 'nutrition', roles: ['ADMIN'] },
@@ -52,13 +52,13 @@ const menuConfig = {
 
   // STOCK: Product management
   stock: [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'STOCK'] },
+    { path: '/admin', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'STOCK'] },
     { path: '/admin/productos', label: 'Productos', icon: 'inventory_2', roles: ['ADMIN', 'STOCK'] },
   ],
 
   // PEDIDOS: Order management
   pedidos: [
-    { path: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'PEDIDOS'] },
+    { path: '/admin', label: 'Dashboard', icon: 'dashboard', roles: ['ADMIN', 'PEDIDOS'] },
     { path: '/admin/pedidos', label: 'Pedidos', icon: 'assignment', roles: ['ADMIN', 'PEDIDOS'] },
   ],
 

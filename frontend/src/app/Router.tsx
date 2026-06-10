@@ -3,7 +3,6 @@ import {
   LoginPage,
   RegisterPage,
   UnauthorizedPage,
-  DashboardPage,
   CategoriesPage,
   CategoryDetailPage,
   CategoriesAdminPage,
@@ -109,10 +108,10 @@ export default function Router() {
           ═══════════════════════════════════════════════════════════════ */}
       <Route element={<ProtectedRoute roles={['ADMIN', 'STOCK', 'PEDIDOS']}><AdminLayout /></ProtectedRoute>}>
         {/* Legacy /dashboard redirect */}
-        <Route path="/dashboard" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
 
-        {/* Admin dashboard */}
-        <Route path="/admin/dashboard" element={<DashboardPage />} />
+        {/* Legacy /admin/dashboard redirect */}
+        <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
 
         {/* Admin metrics redirect — Sidebar link compatibility */}
         <Route path="/admin/metricas" element={<Navigate to="/admin/dashboard" replace />} />

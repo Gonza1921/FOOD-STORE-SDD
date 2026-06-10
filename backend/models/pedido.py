@@ -61,6 +61,13 @@ class Pedido(SQLModel, table=True):
     creado_en: datetime = Field(default_factory=datetime.utcnow)
     actualizado_en: datetime = Field(default_factory=datetime.utcnow)
 
+    # Tracking timestamps — set on FSM transitions
+    confirmado_en: Optional[datetime] = Field(default=None)
+    en_preparacion_en: Optional[datetime] = Field(default=None)
+    listo_en: Optional[datetime] = Field(default=None)
+    en_camino_en: Optional[datetime] = Field(default=None)
+    entregado_en: Optional[datetime] = Field(default=None)
+
 
 class DetallePedido(SQLModel, table=True):
     """Order detail with product snapshots - immutable"""
